@@ -7,7 +7,8 @@ export const hollowKnight: Game = {
   description: 'Descend into the dark.',
   icon: Sword,
   type: 'html',
-  html: `<!DOCTYPE html>
+  html: 
+    <!DOCTYPE html>
 <html lang="en-us">
 
 <head>
