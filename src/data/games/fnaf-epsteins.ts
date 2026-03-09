@@ -10,7 +10,7 @@ export const fnafEpsteins: Game = {
   popularity: 75,
   series: 'FNAF',
   seriesOrder: 7,
-  html: <!DOCTYPE html>
+  html: `<!DOCTYPE html>
 <html lang="en-us">
   <head>
     <base href="https://cdn.jsdelivr.net/gh/web-ports/fnae@afd4e5071add297d6169665a4f999d62f312532e/">
