@@ -1,8 +1,16 @@
+import { useState } from 'react';
 import { popularGamesList } from '../data/games';
 import PageLayout from '../components/PageLayout';
 import GameCard from '../components/GameCard';
+import SearchBar from '../components/SearchBar';
 
 export default function PopularGames() {
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredGames = popularGamesList.filter(game =>
+    game.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <PageLayout 
       title="Popular Games" 
@@ -14,10 +22,18 @@ export default function PopularGames() {
         <p className="text-zinc-500 mt-2">The most played games right now, sorted by popularity.</p>
       </div>
 
+      <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search popular games..." />
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {popularGamesList.map((game) => (
-          <GameCard key={game.id} game={game} />
-        ))}
+        {filteredGames.length > 0 ? (
+          filteredGames.map((game) => (
+            <GameCard key={game.id} game={game} />
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12 text-zinc-500">
+            No games found matching "{searchQuery}"
+          </div>
+        )}
       </div>
     </PageLayout>
   );

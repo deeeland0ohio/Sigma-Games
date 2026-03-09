@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { allGamesList } from '../data/games';
 import PageLayout from '../components/PageLayout';
 import GameCard from '../components/GameCard';
+import SearchBar from '../components/SearchBar';
 import { useFavorites } from '../context/FavoritesContext';
 import { Heart } from 'lucide-react';
 import { useThemeColors } from '../context/ThemeContext';
@@ -8,8 +10,12 @@ import { useThemeColors } from '../context/ThemeContext';
 export default function Favorites() {
   const { favorites } = useFavorites();
   const colors = useThemeColors();
+  const [searchQuery, setSearchQuery] = useState('');
   
   const favoriteGames = allGamesList.filter(game => favorites.includes(game.id));
+  const filteredGames = favoriteGames.filter(game =>
+    game.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <PageLayout 
@@ -25,11 +31,21 @@ export default function Favorites() {
         <p className="text-zinc-500 mt-2">Your personal collection of favorite games.</p>
       </div>
 
+      {favoriteGames.length > 0 && (
+        <SearchBar value={searchQuery} onChange={setSearchQuery} placeholder="Search favorites..." />
+      )}
+
       {favoriteGames.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {favoriteGames.map((game) => (
-            <GameCard key={game.id} game={game} />
-          ))}
+          {filteredGames.length > 0 ? (
+            filteredGames.map((game) => (
+              <GameCard key={game.id} game={game} />
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12 text-zinc-500">
+              No favorites found matching "{searchQuery}"
+            </div>
+          )}
         </div>
       ) : (
         <div className="flex flex-col items-center justify-center py-24 text-center space-y-4">
