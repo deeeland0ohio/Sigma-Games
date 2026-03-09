@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Google AI Studio App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Silence benign Vite WebSocket errors that occur due to HMR being disabled in this environment
+      window.addEventListener('unhandledrejection', function(event) {
+        if (event.reason && event.reason.message && event.reason.message.includes('WebSocket')) {
+          event.preventDefault();
+        }
+      });
+      const originalError = console.error;
+      console.error = (...args) => {
+        if (args[0] && typeof args[0] === 'string' && args[0].includes('[vite] failed to connect to websocket')) return;
+        originalError.apply(console, args);
+      };
+    </script>
+  </body>
+</html>
+
