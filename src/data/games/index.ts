@@ -12,7 +12,9 @@ import { fnaf4Halloween } from './fnaf-4-halloween';
 import { fnafSl } from './fnaf-sl';
 import { fnafEpsteins } from './fnaf-epsteins';
 import { balatro } from './balatro';
-import { solarSmash, theyreComing, ironLung } from './misc';
+import { solarSmash } from './solar-smash';
+import { theyreComing } from './theyre-coming';
+import { ironLung } from './iron-lung';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
