@@ -125,6 +125,13 @@ export default function GamePlayer() {
               className="w-full h-full border-none" 
               allowFullScreen 
             />
+          ) : game.type === 'html' && game.html ? (
+            <iframe 
+              key={reloadKey}
+              srcDoc={game.html}
+              className="w-full h-full border-none" 
+              allowFullScreen 
+            />
           ) : (
             <div className="text-center p-8 max-w-md border border-dashed border-zinc-700 rounded-xl bg-zinc-900/50">
               <Terminal size={48} className="mx-auto text-zinc-600 mb-4" />

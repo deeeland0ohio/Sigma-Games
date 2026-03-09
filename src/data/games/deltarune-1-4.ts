@@ -1,19 +1,19 @@
 import { Sword } from 'lucide-react';
 import { Game } from '../../types';
 
-export const deltarune34: Game = {
-  id: 'deltarune-3-4',
-  title: 'Deltarune Chapters 3&4',
-  description: 'The story continues.',
+export const deltarune14: Game = {
+  id: 'deltarune-1-4',
+  title: 'Deltarune Chapters 1-4',
+  description: 'A different world, a different story.',
   icon: Sword,
   type: 'iframe',
-  popularity: 85,
+  popularity: 90,
   series: 'Deltarune',
-  seriesOrder: 2,
+  seriesOrder: 1,
   srcdoc: `<!DOCTYPE html>
 <html>
 <head>
-  <base href="https://cdn.jsdelivr.net/gh/genizy/web-port@bee69b8f59ea62007d9f023719ac92414cdb5a00/deltarune/">
+  <base href="https://cdn.jsdelivr.net/gh/technonyte00/deltarune@main/">
   <meta charset="UTF-8">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -21,6 +21,18 @@ export const deltarune34: Game = {
   <div class="logo-container">
     <img src="logo.png" alt="Logo" class="logo">
   </div>
+  
+  <div class="menu">
+    <a href="javascript:loadChapter(1)" class="row">
+      <span class="chapter">Chapter 1</span>
+      <span class="title">The Beginning</span>
+      <img src="icons/1.png">
+    </a>
+    <a href="javascript:loadChapter(2)" class="row">
+      <span class="chapter">Chapter 2</span>
+      <span class="title">A Cyber's World</span>
+      <img src="icons/2.png">
+    </a>
     <a href="javascript:loadChapter(3)" class="row">
       <span class="chapter">Chapter 3</span>
       <span class="title">Late Night</span>
@@ -31,10 +43,25 @@ export const deltarune34: Game = {
       <span class="title">Prophecy</span>
       <img src="icons/4.png">
     </a>
-      <span class="chapter">:)</span>
+    <a href="javascript:alert('Chapter 5 coming soon!')" class="disabled-row">
+      <span class="chapter">Chapter 5</span>
+      <span class="disabled-title">--</span>
+      <img src="icons/0.png">
+    </a>
+    <a href="javascript:alert('Chapter 6 coming soon!')" class="disabled-row">
+      <span class="chapter">Chapter 6</span>
+      <span class="disabled-title">--</span>
+      <img src="icons/0.png">
+    </a>
+    <a href="javascript:alert('Chapter 7 coming soon!')" class="disabled-row">
+      <span class="chapter">Chapter 7</span>
+      <span class="disabled-title">--</span>
+      <img src="icons/0.png">
+    </a>
+  </div>
   <audio id="drone" controls loop autoplay hidden>
     <source src="audios/AUDIO_DRONE.ogg" type="audio/ogg">
-    Your browser does not support the audio element.
+    your slow ass browser doesnt support AUDIO?
   </audio>
   <button id="mute">🔊</button>
   <script>
@@ -137,6 +164,6 @@ export const deltarune34: Game = {
       }
     });
   </script>
- </body>
+</body>
 </html>`
 };

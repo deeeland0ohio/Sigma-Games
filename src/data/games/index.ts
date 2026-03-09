@@ -1,7 +1,6 @@
 import { gtaViceCity } from './gta-vice-city';
 import { undertale } from './undertale';
-import { deltarune12 } from './deltarune-1-2';
-import { deltarune34 } from './deltarune-3-4';
+import { deltarune14 } from './deltarune-1-4';
 import { hollowKnight } from './hollow-knight';
 import { buckshotRoulette } from './buckshot-roulette';
 import { bitLife } from './bit-life';
@@ -19,8 +18,7 @@ import { Game } from '../../types';
 export const allGames: Game[] = [
   gtaViceCity,
   undertale,
-  deltarune12,
-  deltarune34,
+  deltarune14,
   hollowKnight,
   buckshotRoulette,
   bitLife,
