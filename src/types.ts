@@ -5,9 +5,10 @@ export type Game = {
   title: string;
   description: string;
   icon: LucideIcon;
-  type: 'component' | 'iframe' | 'folder';
+  type: 'component' | 'iframe' | 'folder' | 'html';
   url?: string;
   srcdoc?: string;
+  html?: string;
   popularity?: number;
   series?: string;
   seriesOrder?: number;
