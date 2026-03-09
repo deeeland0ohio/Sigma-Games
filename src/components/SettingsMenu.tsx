@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Settings, Palette, Monitor, Zap } from 'lucide-react';
+import { Settings, Palette, Monitor, Zap, Bug } from 'lucide-react';
 import { useTheme, Theme, BackgroundStyle } from '../context/ThemeContext';
 
 export default function SettingsMenu() {
@@ -120,7 +120,7 @@ export default function SettingsMenu() {
           </div>
 
           {/* Reset Section */}
-          <div className="px-4 py-3 border-t border-zinc-800 mt-2">
+          <div className="px-4 py-3 border-t border-zinc-800 mt-2 space-y-2">
             <button
               onClick={() => {
                 setTheme('red-green');
@@ -131,6 +131,15 @@ export default function SettingsMenu() {
             >
               Reset to Defaults
             </button>
+            <a
+              href="https://docs.google.com/forms/d/e/1FAIpQLSf5xlht7GbZtnMizaUe8bXjO4cp3k0Y0MDJ2zy9fEiPsxLkkg/viewform"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="w-full py-2 flex items-center justify-center gap-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg text-sm font-medium transition-colors"
+            >
+              <Bug size={16} />
+              Bug Report / New Game
+            </a>
           </div>
         </div>
       )}
