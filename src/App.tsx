@@ -1,4 +1,5 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Analytics } from '@vercel/analytics/react';
 import Home from './pages/Home';
 import GamePlayer from './pages/GamePlayer';
 import AllGames from './pages/AllGames';
@@ -21,6 +22,7 @@ export default function App() {
             <Route path="/favorites" element={<Favorites />} />
             <Route path="/play/:id" element={<GamePlayer />} />
           </Routes>
+          <Analytics />
         </BrowserRouter>
       </FavoritesProvider>
     </ThemeProvider>
