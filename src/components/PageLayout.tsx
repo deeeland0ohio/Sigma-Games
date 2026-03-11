@@ -31,7 +31,7 @@ export default function PageLayout({
   }[maxWidth];
 
   return (
-    <div className={`flex flex-col min-h-screen text-zinc-300 font-sans ${colors.selection}`}>
+    <div className={`flex flex-col min-h-[100dvh] text-zinc-300 font-sans ${colors.selection}`}>
       {/* Header */}
       <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className={`${maxWidthClass} mx-auto px-6 h-16 flex items-center justify-between`}>
@@ -75,7 +75,7 @@ export default function PageLayout({
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-zinc-800 mt-24 py-8 text-sm text-zinc-500 bg-zinc-950/50 backdrop-blur-sm">
+      <footer className="border-t border-zinc-800 py-8 text-sm text-zinc-500 bg-zinc-950/50 backdrop-blur-sm">
         <div className={`${maxWidthClass} mx-auto px-6 text-center`}>
           <p>© 2026 Sigma Games. All rights reserved.</p>
           <p className="mt-1 text-xs uppercase tracking-widest text-zinc-600">Entertainment purposes only.</p>
