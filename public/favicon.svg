@@ -5,8 +5,8 @@
       <stop offset="100%" stop-color="#93c5fd" />
     </linearGradient>
   </defs>
-  <rect width="100" height="100" fill="#000000"/>
   <g transform="translate(50, 58)">
+    <circle cx="0" cy="0" r="32" fill="#000000"/>
     <circle cx="0" cy="0" r="32" fill="none" stroke="#ef4444" stroke-width="1.5"/>
     <ellipse cx="0" cy="0" rx="32" ry="10" fill="none" stroke="#10b981" stroke-width="1.5"/>
     <ellipse cx="0" cy="0" rx="10" ry="32" fill="none" stroke="#ef4444" stroke-width="1.5"/>
