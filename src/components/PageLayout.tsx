@@ -42,14 +42,14 @@ export default function PageLayout({
             </Link>
           ) : (
             <div className={`flex items-center gap-2 ${colors.primary} font-mono font-bold text-xl tracking-tight`}>
-              <Terminal size={24} className={colors.secondary} />
+              <img src="/favicon.png" alt="Sigma Games Logo" className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
               <span>Sigma_Games</span>
             </div>
           )}
 
           {showBack && (
             <div className={`hidden md:flex items-center gap-2 ${colors.primary} font-mono font-bold text-xl tracking-tight`}>
-              <Terminal size={24} className={colors.secondary} />
+              <img src="/favicon.png" alt="Sigma Games Logo" className="w-8 h-8 object-contain" referrerPolicy="no-referrer" />
               <span>{title.replace(/\s+/g, '_')}</span>
             </div>
           )}

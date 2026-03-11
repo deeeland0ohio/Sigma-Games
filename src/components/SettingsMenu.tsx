@@ -22,7 +22,7 @@ export default function SettingsMenu() {
     { id: 'blue-pink', label: 'Blue & Pink', colors: ['bg-blue-500', 'bg-pink-500'] },
     { id: 'purple-cyan', label: 'Purple & Cyan', colors: ['bg-purple-500', 'bg-cyan-500'] },
     { id: 'orange-yellow', label: 'Orange & Yellow', colors: ['bg-orange-500', 'bg-yellow-500'] },
-    { id: 'monochrome', label: 'Monochrome', colors: ['bg-zinc-100', 'bg-zinc-400'] },
+    { id: 'moonchrome', label: 'Moonchrome', colors: ['bg-zinc-100', 'bg-zinc-400'] },
     { id: 'neon-green', label: 'Neon Green', colors: ['bg-lime-400', 'bg-emerald-500'] },
     { id: 'cyberpunk', label: 'Cyberpunk', colors: ['bg-yellow-400', 'bg-fuchsia-500'] },
     { id: 'synthwave', label: 'Synthwave', colors: ['bg-indigo-500', 'bg-fuchsia-500'] },
