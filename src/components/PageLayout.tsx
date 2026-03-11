@@ -31,7 +31,7 @@ export default function PageLayout({
   }[maxWidth];
 
   return (
-    <div className={`min-h-screen text-zinc-300 font-sans ${colors.selection}`}>
+    <div className={`flex flex-col min-h-screen text-zinc-300 font-sans ${colors.selection}`}>
       {/* Header */}
       <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md sticky top-0 z-50 shadow-sm">
         <div className={`${maxWidthClass} mx-auto px-6 h-16 flex items-center justify-between`}>
@@ -70,7 +70,7 @@ export default function PageLayout({
         </div>
       </header>
 
-      <main className={`${maxWidthClass} mx-auto px-6 py-12`}>
+      <main className={`flex-grow ${maxWidthClass} mx-auto px-6 py-12`}>
         {children}
       </main>
 
