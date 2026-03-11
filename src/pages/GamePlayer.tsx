@@ -20,6 +20,19 @@ export default function GamePlayer() {
   const colors = useThemeColors();
   const { toggleFavorite, isFavorite } = useFavorites();
   const [reloadKey, setReloadKey] = useState(0);
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (game && (game.html || game.srcdoc)) {
+      const content = game.html || game.srcdoc || '';
+      const blob = new Blob([content], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      setBlobUrl(url);
+      return () => URL.revokeObjectURL(url);
+    } else {
+      setBlobUrl(null);
+    }
+  }, [game, reloadKey]);
 
   if (!game) {
     return (
@@ -117,20 +130,23 @@ export default function GamePlayer() {
           id="game-container" 
           className="absolute inset-0 bg-black flex flex-col items-center justify-center"
         >
-          {game.type === 'iframe' && (game.url || game.srcdoc) ? (
+          {game.url ? (
             <iframe 
               key={reloadKey}
-              src={game.url ? getGameUrl() : undefined}
-              srcDoc={game.srcdoc}
+              src={getGameUrl()}
               className="w-full h-full border-none" 
               allowFullScreen 
+              referrerPolicy="no-referrer"
+              allow="autoplay; fullscreen; keyboard; gamepad; microphone; camera"
             />
-          ) : game.type === 'html' && game.html ? (
+          ) : blobUrl ? (
             <iframe 
               key={reloadKey}
-              srcDoc={game.html}
+              src={blobUrl}
               className="w-full h-full border-none" 
               allowFullScreen 
+              referrerPolicy="no-referrer"
+              allow="autoplay; fullscreen; keyboard; gamepad; microphone; camera"
             />
           ) : (
             <div className="text-center p-8 max-w-md border border-dashed border-zinc-700 rounded-xl bg-zinc-900/50">
