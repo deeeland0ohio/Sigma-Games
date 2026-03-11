@@ -5,7 +5,7 @@ export type Theme =
   | 'blue-pink' 
   | 'purple-cyan' 
   | 'orange-yellow' 
-  | 'monochrome' 
+  | 'moonchrome' 
   | 'neon-green' 
   | 'cyberpunk' 
   | 'synthwave' 
@@ -146,7 +146,7 @@ export function useThemeColors() {
       hexSecondary: 'rgba(234, 179, 8, 0.4)',
       hexMatrix: '#eab308' // yellow-500
     },
-    'monochrome': {
+    'moonchrome': {
       primary: 'text-zinc-100',
       secondary: 'text-zinc-400',
       tertiaryBg: 'bg-zinc-600',
