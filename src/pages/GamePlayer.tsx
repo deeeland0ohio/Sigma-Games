@@ -117,23 +117,20 @@ export default function GamePlayer() {
           id="game-container" 
           className="absolute inset-0 bg-black flex flex-col items-center justify-center"
         >
-          {game.url ? (
+          {game.type === 'iframe' && (game.url || game.srcdoc) ? (
             <iframe 
               key={reloadKey}
-              src={getGameUrl()}
+              src={game.url ? getGameUrl() : undefined}
+              srcDoc={game.srcdoc}
               className="w-full h-full border-none" 
               allowFullScreen 
-              allow="autoplay; fullscreen; keyboard; gamepad; microphone; camera"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-pointer-lock"
             />
-          ) : (game.html || game.srcdoc) ? (
+          ) : game.type === 'html' && game.html ? (
             <iframe 
               key={reloadKey}
-              srcDoc={game.html || game.srcdoc}
+              srcDoc={game.html}
               className="w-full h-full border-none" 
               allowFullScreen 
-              allow="autoplay; fullscreen; keyboard; gamepad; microphone; camera"
-              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals allow-downloads allow-pointer-lock"
             />
           ) : (
             <div className="text-center p-8 max-w-md border border-dashed border-zinc-700 rounded-xl bg-zinc-900/50">
