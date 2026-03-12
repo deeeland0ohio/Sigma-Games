@@ -17,7 +17,7 @@ export default function SettingsMenu() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const themes: { id: Theme; label: string; colors: string[] }[] = [
+  const baseThemes: { id: Theme; label: string; colors: string[] }[] = [
     { id: 'red-green', label: 'Red & Green', colors: ['bg-red-500', 'bg-emerald-500'] },
     { id: 'blue-pink', label: 'Blue & Pink', colors: ['bg-blue-500', 'bg-pink-500'] },
     { id: 'purple-cyan', label: 'Purple & Cyan', colors: ['bg-purple-500', 'bg-cyan-500'] },
@@ -30,10 +30,15 @@ export default function SettingsMenu() {
     { id: 'hacker', label: 'Hacker', colors: ['bg-emerald-500', 'bg-emerald-700'] },
   ];
 
+  const themes = background === 'starfield'
+    ? [{ id: 'lightspeed-special', label: 'LIGHTSPEED', colors: ['bg-cyan-400', 'bg-blue-500', 'bg-[#a1cff0]'] } as { id: Theme; label: string; colors: string[] }, ...baseThemes]
+    : baseThemes;
+
   const backgrounds: { id: BackgroundStyle; label: string }[] = [
     { id: 'dots', label: 'Interactive Dots' },
     { id: 'matrix', label: 'Matrix Flow' },
     { id: 'black-hole', label: 'Event Horizon' },
+    { id: 'starfield', label: 'Light speed' },
   ];
 
   return (
@@ -58,7 +63,14 @@ export default function SettingsMenu() {
             {backgrounds.map((bg) => (
               <button
                 key={bg.id}
-                onClick={() => setBackground(bg.id)}
+                onClick={() => {
+                  setBackground(bg.id);
+                  if (bg.id === 'starfield') {
+                    setTheme('lightspeed-special');
+                  } else {
+                    setTheme('red-green');
+                  }
+                }}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-colors ${
                   background === bg.id 
                     ? 'bg-zinc-800 text-white' 
@@ -112,8 +124,9 @@ export default function SettingsMenu() {
               >
                 <span>{t.label}</span>
                 <div className="flex gap-1">
-                  <div className={`w-3 h-3 rounded-full ${t.colors[0]}`} />
-                  <div className={`w-3 h-3 rounded-full ${t.colors[1]} border border-zinc-700`} />
+                  {t.colors.map((c, i) => (
+                    <div key={i} className={`w-3 h-3 rounded-full ${c} ${i > 0 ? 'border border-zinc-700' : ''}`} />
+                  ))}
                 </div>
               </button>
             ))}
