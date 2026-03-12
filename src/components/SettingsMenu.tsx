@@ -30,7 +30,7 @@ export default function SettingsMenu() {
     { id: 'hacker', label: 'Hacker', colors: ['bg-emerald-500', 'bg-emerald-700'] },
   ];
 
-  const themes = background === 'starfield'
+  const themes = background === 'lightspeed'
     ? [{ id: 'lightspeed-special', label: 'LIGHTSPEED', colors: ['bg-cyan-400', 'bg-blue-500', 'bg-[#a1cff0]'] } as { id: Theme; label: string; colors: string[] }, ...baseThemes]
     : baseThemes;
 
@@ -38,7 +38,7 @@ export default function SettingsMenu() {
     { id: 'dots', label: 'Interactive Dots' },
     { id: 'matrix', label: 'Matrix Flow' },
     { id: 'black-hole', label: 'Event Horizon' },
-    { id: 'starfield', label: 'Light speed' },
+    { id: 'lightspeed', label: 'Light speed' },
   ];
 
   return (
@@ -65,7 +65,7 @@ export default function SettingsMenu() {
                 key={bg.id}
                 onClick={() => {
                   setBackground(bg.id);
-                  if (bg.id === 'starfield') {
+                  if (bg.id === 'lightspeed') {
                     setTheme('lightspeed-special');
                   } else {
                     setTheme('red-green');

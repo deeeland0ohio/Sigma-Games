@@ -13,7 +13,7 @@ export type Theme =
   | 'hacker'
   | 'lightspeed-special';
 
-export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole' | 'starfield';
+export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole' | 'lightspeed';
 
 interface ThemeContextType {
   theme: Theme;
