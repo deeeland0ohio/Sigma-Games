@@ -48,13 +48,15 @@ export default function MatrixBackground({ color, power = 1.0 }: { color: string
     const maxDrops = Math.floor((width * height) / 4000); // Scale density based on screen size
     
     const createDrop = (yStart = -20) => {
+      // Slow down by 40% (multiply by 0.6)
+      const baseSpeed = (2 + Math.random() * 3) * 0.6;
       return {
         x: Math.random() * width,
         y: yStart,
         vx: 0,
-        vy: 2 + Math.random() * 3,
+        vy: baseSpeed,
         char: Math.random() > 0.5 ? '1' : '0',
-        speed: 2 + Math.random() * 3,
+        speed: baseSpeed,
         opacity: 0.3 + Math.random() * 0.7
       };
     };
@@ -87,7 +89,7 @@ export default function MatrixBackground({ color, power = 1.0 }: { color: string
         const speedMult = powerRef.current === 0 ? 0.4 : 1.0;
         
         // Gravity / natural flow
-        drop.vy += 0.05 * speedMult;
+        drop.vy += 0.05 * 0.6 * speedMult;
         if (drop.vy > drop.speed * 1.5 * speedMult) drop.vy = drop.speed * 1.5 * speedMult;
         
         // Mouse interaction (bounce off cursor like water)

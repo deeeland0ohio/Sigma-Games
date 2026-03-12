@@ -32,13 +32,13 @@ export default function SettingsMenu() {
 
   const themes = background === 'lightspeed'
     ? [{ id: 'lightspeed-special', label: 'LIGHTSPEED', colors: ['bg-cyan-400', 'bg-blue-500', 'bg-[#a1cff0]'] } as { id: Theme; label: string; colors: string[] }, ...baseThemes]
-    : baseThemes;
+    : [...baseThemes, { id: 'lightspeed-special', label: 'Blue Mix', colors: ['bg-cyan-400', 'bg-blue-500', 'bg-[#a1cff0]'] } as { id: Theme; label: string; colors: string[] }];
 
   const backgrounds: { id: BackgroundStyle; label: string }[] = [
     { id: 'dots', label: 'Interactive Dots' },
     { id: 'matrix', label: 'Matrix Flow' },
     { id: 'black-hole', label: 'Event Horizon' },
-    { id: 'lightspeed', label: 'Light speed' },
+    { id: 'lightspeed', label: 'Light Speed' },
   ];
 
   return (
@@ -64,10 +64,11 @@ export default function SettingsMenu() {
               <button
                 key={bg.id}
                 onClick={() => {
+                  const prevBg = background;
                   setBackground(bg.id);
                   if (bg.id === 'lightspeed') {
                     setTheme('lightspeed-special');
-                  } else {
+                  } else if (prevBg === 'lightspeed') {
                     setTheme('red-green');
                   }
                 }}
