@@ -3,6 +3,7 @@ import { useTheme, useThemeColors } from '../context/ThemeContext';
 import DotBackground from './DotBackground';
 import MatrixBackground from './MatrixBackground';
 import BlackHoleBackground from './BlackHoleBackground';
+import StarfieldBackground from './StarfieldBackground';
 
 export default function BackgroundManager() {
   const { background, simulationPower } = useTheme();
@@ -17,6 +18,10 @@ export default function BackgroundManager() {
   
   if (background === 'black-hole') {
     return <BlackHoleBackground color1={colors.hexPrimary} color2={colors.hexSecondary} power={powerMultiplier} />;
+  }
+
+  if (background === 'starfield') {
+    return <StarfieldBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} power={powerMultiplier} />;
   }
 
   return <DotBackground color1={colors.hexPrimary} color2={colors.hexSecondary} power={powerMultiplier} />;

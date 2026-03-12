@@ -10,9 +10,10 @@ export type Theme =
   | 'cyberpunk' 
   | 'synthwave' 
   | 'dracula' 
-  | 'hacker';
+  | 'hacker'
+  | 'lightspeed-special';
 
-export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole';
+export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole' | 'starfield';
 
 interface ThemeContextType {
   theme: Theme;
@@ -259,6 +260,26 @@ export function useThemeColors() {
       hexPrimary: 'rgba(16, 185, 129, 0.4)',
       hexSecondary: 'rgba(4, 120, 87, 0.4)',
       hexMatrix: '#10b981' // emerald-500
+    },
+    'lightspeed-special': {
+      primary: 'text-cyan-400',
+      secondary: 'text-blue-500',
+      tertiaryBg: 'bg-cyan-600',
+      primaryBg: 'bg-cyan-400',
+      secondaryBg: 'bg-blue-500',
+      hoverBorder: 'hover:border-cyan-400/50',
+      hoverShadow: 'hover:shadow-cyan-400/10',
+      gradientFrom: 'from-cyan-400/5',
+      gradientTo: 'to-blue-500/5',
+      groupHoverText: 'group-hover:text-cyan-400',
+      groupHoverBorder: 'group-hover:border-cyan-400/30',
+      selection: 'selection:bg-cyan-400/30',
+      terminalText: 'text-cyan-400',
+      cursor: 'bg-cyan-400',
+      hexPrimary: '#00FFFF',
+      hexSecondary: '#3B82F6',
+      hexTertiary: '#a1cff0',
+      hexMatrix: '#00FFFF'
     }
   };
 
