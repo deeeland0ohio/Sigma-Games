@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function StarfieldBackground({ color1, color2, color3, power = 1.0 }: { color1: string, color2: string, color3?: string, power?: number }) {
+export default function LightspeedBackground({ color1, color2, color3, power = 1.0 }: { color1: string, color2: string, color3?: string, power?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
 
