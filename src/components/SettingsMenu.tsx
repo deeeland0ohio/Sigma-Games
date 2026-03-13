@@ -30,9 +30,18 @@ export default function SettingsMenu() {
     { id: 'hacker', label: 'Hacker', colors: ['bg-emerald-500', 'bg-emerald-700'] },
   ];
 
-  const themes = background === 'lightspeed'
-    ? [{ id: 'lightspeed-special', label: 'LIGHTSPEED', colors: ['bg-cyan-400', 'bg-blue-500', 'bg-[#a1cff0]'] } as { id: Theme; label: string; colors: string[] }, ...baseThemes]
-    : [...baseThemes, { id: 'lightspeed-special', label: 'Blue Mix', colors: ['bg-cyan-400', 'bg-blue-500', 'bg-[#a1cff0]'] } as { id: Theme; label: string; colors: string[] }];
+  const lightspeedTheme = { id: 'lightspeed-special', label: background === 'lightspeed' ? 'LIGHTSPEED' : 'Blue Mix', colors: ['bg-cyan-400', 'bg-blue-500', 'bg-[#a1cff0]'] } as { id: Theme; label: string; colors: string[] };
+  const eventHorizonTheme = { id: 'event-horizon-special', label: background === 'black-hole' ? 'SINGULARITY' : 'Violet & Gold', colors: ['bg-violet-600', 'bg-orange-500', 'bg-amber-400', 'bg-rose-600'] } as { id: Theme; label: string; colors: string[] };
+  const pointOfNoReturnTheme = { id: 'event-horizon-blue-orange', label: background === 'black-hole' ? 'POINT OF NO RETURN' : 'Cyan & Orange', colors: ['bg-cyan-400', 'bg-orange-500', 'bg-blue-500', 'bg-amber-400'] } as { id: Theme; label: string; colors: string[] };
+
+  let themes = [...baseThemes];
+  if (background === 'lightspeed') {
+    themes = [lightspeedTheme, ...baseThemes, eventHorizonTheme, pointOfNoReturnTheme];
+  } else if (background === 'black-hole') {
+    themes = [eventHorizonTheme, pointOfNoReturnTheme, ...baseThemes, lightspeedTheme];
+  } else {
+    themes = [...baseThemes, lightspeedTheme, eventHorizonTheme, pointOfNoReturnTheme];
+  }
 
   const backgrounds: { id: BackgroundStyle; label: string }[] = [
     { id: 'dots', label: 'Interactive Dots' },
@@ -68,7 +77,9 @@ export default function SettingsMenu() {
                   setBackground(bg.id);
                   if (bg.id === 'lightspeed') {
                     setTheme('lightspeed-special');
-                  } else if (prevBg === 'lightspeed') {
+                  } else if (bg.id === 'black-hole') {
+                    setTheme('event-horizon-special');
+                  } else if (prevBg === 'lightspeed' || prevBg === 'black-hole') {
                     setTheme('red-green');
                   }
                 }}

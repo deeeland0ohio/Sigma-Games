@@ -43,13 +43,13 @@ export default function Credits() {
                   <h3 className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-2">Development</h3>
                   <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
                     <p className="text-zinc-300">
-                      <span className="text-zinc-500">Games:</span> <span className={colors.primary}>GN-Math, UGS and Truffled</span>
+                      <span className="text-zinc-500">Games:</span> <span className={colors.textGradient || colors.primary}>GN-Math, UGS and Truffled</span>
                     </p>
                     <p className="text-zinc-300 mt-2">
-                      <span className="text-zinc-500">Website:</span> <span className={colors.secondary}>All aspects of the website are my ideas, although it is coded by Gemini</span>
+                      <span className="text-zinc-500">Website:</span> <span className={colors.tertiary || colors.secondary}>All aspects of the website are my ideas, although it is coded by Gemini</span>
                     </p>
                     <p className="text-zinc-300 mt-2">
-                      <span className="text-zinc-500">Inspiration:</span> <span className="text-orange-500">Noah's Tutoring Hub</span>
+                      <span className="text-zinc-500">Inspiration:</span> <span className={colors.quaternary || 'text-orange-500'}>Noah's Tutoring Hub</span>
                     </p>
                   </div>
                 </div>

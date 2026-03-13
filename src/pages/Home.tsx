@@ -36,7 +36,7 @@ export default function Home() {
         <section className={`bg-black border border-zinc-800 rounded-xl p-6 font-mono text-sm md:text-base shadow-2xl ${colors.hoverShadow.replace('hover:', '')}`}>
           <div className="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-4 text-zinc-500">
             <div className={`w-3 h-3 rounded-full ${colors.primaryBg}`}></div>
-            <div className={`w-3 h-3 rounded-full ${colors.tertiaryBg}`}></div>
+            <div className={`w-3 h-3 rounded-full ${colors.tertiaryBg || colors.secondaryBg}`}></div>
             <div className={`w-3 h-3 rounded-full ${colors.secondaryBg}`}></div>
             <span className="ml-2 text-xs uppercase tracking-widest text-zinc-500">ACCESSING SIGMA GAMES...</span>
           </div>

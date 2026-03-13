@@ -11,7 +11,9 @@ export type Theme =
   | 'synthwave' 
   | 'dracula' 
   | 'hacker'
-  | 'lightspeed-special';
+  | 'lightspeed-special'
+  | 'event-horizon-special'
+  | 'event-horizon-blue-orange';
 
 export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole' | 'lightspeed';
 
@@ -264,22 +266,89 @@ export function useThemeColors() {
     'lightspeed-special': {
       primary: 'text-cyan-400',
       secondary: 'text-blue-500',
-      tertiaryBg: 'bg-cyan-600',
+      tertiary: 'text-[#a1cff0]',
+      quaternary: 'text-cyan-200',
+      tertiaryBg: 'bg-[#a1cff0]',
+      quaternaryBg: 'bg-cyan-200',
       primaryBg: 'bg-cyan-400',
       secondaryBg: 'bg-blue-500',
       hoverBorder: 'hover:border-cyan-400/50',
       hoverShadow: 'hover:shadow-cyan-400/10',
-      gradientFrom: 'from-cyan-400/5',
-      gradientTo: 'to-blue-500/5',
+      gradientFrom: 'from-cyan-400/10',
+      gradientVia: 'via-blue-500/10',
+      gradientTo: 'to-[#a1cff0]/10',
+      textGradient: 'text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-blue-500 to-[#a1cff0]',
       groupHoverText: 'group-hover:text-cyan-400',
+      groupHoverQuaternary: 'group-hover:text-cyan-200',
       groupHoverBorder: 'group-hover:border-cyan-400/30',
+      focusRing: 'focus:ring-cyan-400',
+      focusBorder: 'focus:border-cyan-400',
       selection: 'selection:bg-cyan-400/30',
       terminalText: 'text-cyan-400',
       cursor: 'bg-cyan-400',
       hexPrimary: '#00FFFF',
       hexSecondary: '#3B82F6',
       hexTertiary: '#a1cff0',
+      hexQuaternary: '#a8f0ff',
       hexMatrix: '#00FFFF'
+    },
+    'event-horizon-special': {
+      primary: 'text-violet-500',
+      secondary: 'text-orange-500',
+      tertiary: 'text-amber-400',
+      quaternary: 'text-rose-600',
+      tertiaryBg: 'bg-amber-400',
+      quaternaryBg: 'bg-rose-600',
+      primaryBg: 'bg-violet-600',
+      secondaryBg: 'bg-orange-500',
+      hoverBorder: 'hover:border-violet-500/50',
+      hoverShadow: 'hover:shadow-violet-500/10',
+      gradientFrom: 'from-violet-500/10',
+      gradientVia: 'via-orange-500/10',
+      gradientTo: 'to-amber-400/10',
+      textGradient: 'text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-orange-500 to-amber-400',
+      groupHoverText: 'group-hover:text-violet-500',
+      groupHoverQuaternary: 'group-hover:text-rose-600',
+      groupHoverBorder: 'group-hover:border-violet-500/30',
+      focusRing: 'focus:ring-violet-500',
+      focusBorder: 'focus:border-violet-500',
+      selection: 'selection:bg-violet-500/30',
+      terminalText: 'text-orange-400',
+      cursor: 'bg-violet-500',
+      hexPrimary: 'rgba(139, 92, 246, 0.4)', // violet-500
+      hexSecondary: 'rgba(249, 115, 22, 0.4)', // orange-500
+      hexTertiary: '#fbbf24', // amber-400
+      hexQuaternary: '#e11d48', // rose-600
+      hexMatrix: '#8b5cf6' // violet-500
+    },
+    'event-horizon-blue-orange': {
+      primary: 'text-blue-400',
+      secondary: 'text-orange-500',
+      tertiary: 'text-cyan-400',
+      quaternary: 'text-amber-400',
+      tertiaryBg: 'bg-cyan-400',
+      quaternaryBg: 'bg-amber-400',
+      primaryBg: 'bg-blue-500',
+      secondaryBg: 'bg-orange-500',
+      hoverBorder: 'hover:border-blue-400/50',
+      hoverShadow: 'hover:shadow-blue-400/10',
+      gradientFrom: 'from-blue-400/10',
+      gradientVia: 'via-cyan-400/10',
+      gradientTo: 'to-orange-500/10',
+      textGradient: 'text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-cyan-400 to-orange-500',
+      groupHoverText: 'group-hover:text-blue-400',
+      groupHoverQuaternary: 'group-hover:text-amber-400',
+      groupHoverBorder: 'group-hover:border-blue-400/30',
+      focusRing: 'focus:ring-blue-400',
+      focusBorder: 'focus:border-blue-400',
+      selection: 'selection:bg-blue-400/30',
+      terminalText: 'text-blue-400',
+      cursor: 'bg-blue-400',
+      hexPrimary: 'rgba(59, 130, 246, 0.6)', // blue-500
+      hexSecondary: 'rgba(249, 115, 22, 0.6)', // orange-500
+      hexTertiary: '#22d3ee', // cyan-400
+      hexQuaternary: '#fbbf24', // amber-400
+      hexMatrix: '#3b82f6' // blue-500
     }
   };
 

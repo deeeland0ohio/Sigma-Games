@@ -71,7 +71,7 @@ export default function GamePlayer() {
             >
               <RefreshCcw size={18} />
             </button>
-            <div className={`p-2 bg-zinc-900 rounded-lg border border-zinc-800 ${colors.secondary}`}>
+            <div className={`p-2 bg-zinc-900 rounded-lg border border-zinc-800 ${colors.tertiary || colors.secondary}`}>
               <game.icon size={18} />
             </div>
             <h1 className="font-bold text-white tracking-tight">{game.title}</h1>
@@ -79,7 +79,7 @@ export default function GamePlayer() {
               onClick={() => game && toggleFavorite(game.id)}
               className={`p-1.5 rounded-lg transition-all ${
                 isFavorite(game?.id || '') 
-                  ? `${colors.secondary} bg-zinc-800/50` 
+                  ? `${colors.quaternary || colors.secondary} bg-zinc-800/50` 
                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
               }`}
               title={isFavorite(game?.id || '') ? "Remove from Favorites" : "Add to Favorites"}

@@ -26,7 +26,7 @@ export default function Favorites() {
       <div className="mb-8 border-b border-zinc-800 pb-4">
         <div className="flex items-center gap-3">
           <h1 className="text-3xl font-bold text-white tracking-tight uppercase">Favorites</h1>
-          <Heart className={`fill-current ${colors.secondary}`} size={28} />
+          <Heart className={`fill-current ${colors.quaternary || colors.secondary}`} size={28} />
         </div>
         <p className="text-zinc-500 mt-2">Your personal collection of favorite games.</p>
       </div>

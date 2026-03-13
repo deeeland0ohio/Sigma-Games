@@ -17,12 +17,12 @@ export default function BackgroundManager() {
   }
   
   if (background === 'black-hole') {
-    return <BlackHoleBackground color1={colors.hexPrimary} color2={colors.hexSecondary} power={powerMultiplier} />;
+    return <BlackHoleBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} power={powerMultiplier} />;
   }
 
   if (background === 'lightspeed') {
-    return <LightspeedBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} power={powerMultiplier} />;
+    return <LightspeedBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} power={powerMultiplier} />;
   }
 
-  return <DotBackground color1={colors.hexPrimary} color2={colors.hexSecondary} power={powerMultiplier} />;
+  return <DotBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} power={powerMultiplier} />;
 }

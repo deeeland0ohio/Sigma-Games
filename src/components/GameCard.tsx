@@ -23,15 +23,15 @@ export default function GameCard({ game, to }: GameCardProps) {
       to={targetPath}
       className={`group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 ${colors.hoverBorder} hover:shadow-xl ${colors.hoverShadow} hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden`}
     >
-      <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} opacity-0 group-hover:opacity-100 transition-opacity`} />
+      <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientVia || ''} ${colors.gradientTo} opacity-0 group-hover:opacity-100 transition-opacity`} />
       
       {favorited && (
-        <div className={`absolute top-4 right-4 z-20 ${colors.secondary}`}>
+        <div className={`absolute top-4 right-4 z-20 ${colors.quaternary || colors.secondary}`}>
           <Heart size={16} className="fill-current" />
         </div>
       )}
 
-      <div className={`p-3 bg-zinc-950 rounded-xl border border-zinc-800 ${colors.secondary} group-hover:scale-110 ${colors.groupHoverText} ${colors.groupHoverBorder} transition-all`}>
+      <div className={`p-3 bg-zinc-950 rounded-xl border border-zinc-800 ${colors.tertiary || colors.secondary} group-hover:scale-110 ${colors.groupHoverQuaternary || colors.groupHoverText} ${colors.groupHoverBorder} transition-all`}>
         <Icon size={24} />
       </div>
       <div className="relative z-10">

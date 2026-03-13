@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function DotBackground({ color1, color2, power = 1.0 }: { color1: string, color2: string, power?: number }) {
+export default function DotBackground({ color1, color2, color3, color4, power = 1.0 }: { color1: string, color2: string, color3?: string, color4?: string, power?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
 
@@ -59,8 +59,10 @@ export default function DotBackground({ color1, color2, power = 1.0 }: { color1:
       
       for (let x = 0; x < width; x += spacing) {
         for (let y = 0; y < height; y += spacing) {
-          const isPrimary = Math.random() > 0.5;
-          let color = isPrimary ? color1 : color2;
+          const palette = [color1, color2];
+          if (color3) palette.push(color3);
+          if (color4) palette.push(color4);
+          let color = palette[Math.floor(Math.random() * palette.length)];
           
           dots.push({
             x, y,
@@ -160,7 +162,7 @@ export default function DotBackground({ color1, color2, power = 1.0 }: { color1:
       window.removeEventListener('resize', initDots);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [color1, color2]); // re-run when colors change
+  }, [color1, color2, color3, color4]); // re-run when colors change
 
   return (
     <canvas 

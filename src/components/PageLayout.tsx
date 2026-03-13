@@ -41,16 +41,16 @@ export default function PageLayout({
               <span className="hidden sm:inline">{backText}</span>
             </Link>
           ) : (
-            <div className={`flex items-center gap-2 ${colors.primary} font-mono font-bold text-xl tracking-tight`}>
+            <div className={`flex items-center gap-2 font-mono font-bold text-xl tracking-tight`}>
               <Terminal size={24} className={colors.secondary} />
-              <span>Sigma_Games</span>
+              <span className={colors.textGradient || colors.primary}>Sigma_Games</span>
             </div>
           )}
 
           {showBack && (
-            <div className={`hidden md:flex items-center gap-2 ${colors.primary} font-mono font-bold text-xl tracking-tight`}>
+            <div className={`hidden md:flex items-center gap-2 font-mono font-bold text-xl tracking-tight`}>
               <Terminal size={24} className={colors.secondary} />
-              <span>{title.replace(/\s+/g, '_')}</span>
+              <span className={colors.textGradient || colors.primary}>{title.replace(/\s+/g, '_')}</span>
             </div>
           )}
 
