@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function BlackHoleBackground({ color1, color2, power = 1.0 }: { color1: string, color2: string, power?: number }) {
+export default function BlackHoleBackground({ color1, color2, color3, color4, power = 1.0 }: { color1: string, color2: string, color3?: string, color4?: string, power?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
 
@@ -57,7 +57,11 @@ export default function BlackHoleBackground({ color1, color2, power = 1.0 }: { c
     const maxDashes = Math.floor((width * height) / 3000);
 
     const createDash = (xStart?: number) => {
-      const isPrimary = Math.random() > 0.5;
+      const palette = [color1, color2];
+      if (color3) palette.push(color3);
+      if (color4) palette.push(color4);
+      const color = palette[Math.floor(Math.random() * palette.length)];
+      
       const baseSpeed = 1 + Math.random() * 3;
       return {
         x: xStart ?? Math.random() * width,
@@ -67,7 +71,7 @@ export default function BlackHoleBackground({ color1, color2, power = 1.0 }: { c
         baseY: 0, // Set after creation
         baseSpeed,
         length: 10 + Math.random() * 30,
-        color: isPrimary ? color1 : color2,
+        color: color,
         opacity: 0.1 + Math.random() * 0.5
       };
     };
@@ -80,8 +84,23 @@ export default function BlackHoleBackground({ color1, color2, power = 1.0 }: { c
 
     // Initialize fluid blobs for the accretion disk
     const blobs: FluidBlob[] = [];
-    const fluidC1 = color1.replace('0.4)', '0.04)');
-    const fluidC2 = color2.replace('0.4)', '0.04)');
+    
+    const getFluidColor = (c: string) => {
+      if (c.includes('rgba')) {
+        return c.replace(/0\.\d+\)/, '0.04)');
+      } else if (c.startsWith('#')) {
+        // Convert hex to rgba
+        const r = parseInt(c.slice(1, 3), 16);
+        const g = parseInt(c.slice(3, 5), 16);
+        const b = parseInt(c.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, 0.04)`;
+      }
+      return c;
+    };
+
+    const fluidPalette = [getFluidColor(color1), getFluidColor(color2)];
+    if (color3) fluidPalette.push(getFluidColor(color3));
+    if (color4) fluidPalette.push(getFluidColor(color4));
     
     for (let i = 0; i < 45; i++) {
       blobs.push({
@@ -89,7 +108,7 @@ export default function BlackHoleBackground({ color1, color2, power = 1.0 }: { c
         speed: 0.005 + Math.random() * 0.015, // Base speed, multiplied by power in animate loop
         dist: 20 + Math.random() * 50,
         size: 40 + Math.random() * 50,
-        color: Math.random() > 0.5 ? fluidC1 : fluidC2,
+        color: fluidPalette[Math.floor(Math.random() * fluidPalette.length)],
         offset: Math.random() * 100
       });
     }
@@ -118,8 +137,21 @@ export default function BlackHoleBackground({ color1, color2, power = 1.0 }: { c
         // Intense inner gas glow
         const innerGlowRadius = 130; // Larger radius for a smoother fade
         const innerGlow = ctx.createRadialGradient(mouse.x, mouse.y, 35, mouse.x, mouse.y, innerGlowRadius);
-        const intenseC1 = color1.replace('0.4)', '0.6)');
-        const intenseC2 = color2.replace('0.4)', '0.6)'); // Balanced mid-glow
+        
+        const getIntenseColor = (c: string) => {
+          if (c.includes('rgba')) {
+            return c.replace(/0\.\d+\)/, '0.6)');
+          } else if (c.startsWith('#')) {
+            const r = parseInt(c.slice(1, 3), 16);
+            const g = parseInt(c.slice(3, 5), 16);
+            const b = parseInt(c.slice(5, 7), 16);
+            return `rgba(${r}, ${g}, ${b}, 0.6)`;
+          }
+          return c;
+        };
+
+        const intenseC1 = getIntenseColor(color1);
+        const intenseC2 = getIntenseColor(color2); // Balanced mid-glow
         
         innerGlow.addColorStop(0, intenseC1);
         innerGlow.addColorStop(0.35, intenseC2);
@@ -252,7 +284,7 @@ export default function BlackHoleBackground({ color1, color2, power = 1.0 }: { c
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [color1, color2]);
+  }, [color1, color2, color3, color4]);
 
   return (
     <canvas 

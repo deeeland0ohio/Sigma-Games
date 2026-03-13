@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function LightspeedBackground({ color1, color2, color3, power = 1.0 }: { color1: string, color2: string, color3?: string, power?: number }) {
+export default function LightspeedBackground({ color1, color2, color3, color4, power = 1.0 }: { color1: string, color2: string, color3?: string, color4?: string, power?: number }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
 
@@ -23,10 +23,12 @@ export default function LightspeedBackground({ color1, color2, color3, power = 1
     let warpFactor = 0;
 
     const stars: { x: number, y: number, z: number, color: string, warpStartZ: number }[] = [];
-    const numStars = 800; // Abundant stars
+    const numStars = 1440; // Abundant stars (800 * 1.8)
 
     const pickColor = () => {
-      const palette = color3 ? [color1, color2, color3] : [color1, color2];
+      const palette = [color1, color2];
+      if (color3) palette.push(color3);
+      if (color4) palette.push(color4);
       return palette[Math.floor(Math.random() * palette.length)];
     };
 
@@ -101,9 +103,9 @@ export default function LightspeedBackground({ color1, color2, color3, power = 1
       ctx.fillStyle = `rgba(0, 0, 0, 0.4)`; 
       ctx.fillRect(0, 0, width, height);
 
-      // Calculate speed based on warp factor and power
-      const baseSpeed = 3 * powerRef.current; // Faster base speed so it's not blank
-      const warpSpeed = warpFactor * 120 * powerRef.current;
+      // Calculate speed based on warp factor and power (reduced to 75% of original speed)
+      const baseSpeed = 2.25 * powerRef.current; // Faster base speed so it's not blank
+      const warpSpeed = warpFactor * 90 * powerRef.current;
       const speed = baseSpeed + warpSpeed;
 
       const fov = width;
@@ -218,7 +220,7 @@ export default function LightspeedBackground({ color1, color2, color3, power = 1
       window.removeEventListener('touchend', handlePointerUp);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [color1, color2, color3]);
+  }, [color1, color2, color3, color4]);
 
   return (
     <canvas 

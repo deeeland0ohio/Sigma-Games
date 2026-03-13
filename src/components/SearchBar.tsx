@@ -1,4 +1,5 @@
 import { Search } from 'lucide-react';
+import { useThemeColors } from '../context/ThemeContext';
 
 interface SearchBarProps {
   value: string;
@@ -7,6 +8,8 @@ interface SearchBarProps {
 }
 
 export default function SearchBar({ value, onChange, placeholder = "Search games..." }: SearchBarProps) {
+  const colors = useThemeColors();
+  
   return (
     <div className="relative w-full max-w-md mb-6">
       <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -14,7 +17,7 @@ export default function SearchBar({ value, onChange, placeholder = "Search games
       </div>
       <input
         type="text"
-        className="block w-full pl-10 pr-3 py-2 border border-zinc-700 rounded-md leading-5 bg-zinc-900 text-zinc-300 placeholder-zinc-500 focus:outline-none focus:ring-1 focus:ring-zinc-500 focus:border-zinc-500 sm:text-sm transition-colors"
+        className={`block w-full pl-10 pr-3 py-2 border border-zinc-700 rounded-md leading-5 bg-zinc-900 text-zinc-300 placeholder-zinc-500 focus:outline-none focus:ring-1 ${colors.focusRing || 'focus:ring-zinc-500'} ${colors.focusBorder || 'focus:border-zinc-500'} sm:text-sm transition-colors`}
         placeholder={placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}
