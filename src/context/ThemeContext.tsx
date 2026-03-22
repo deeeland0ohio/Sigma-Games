@@ -17,6 +17,29 @@ export type Theme =
 
 export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole' | 'lightspeed';
 
+export interface BackgroundConfig {
+  dots: {
+    speed: number;
+    size: number;
+    density: number;
+  };
+  matrix: {
+    speed: number;
+    size: number;
+    density: number;
+  };
+  blackHole: {
+    speed: number;
+    size: number;
+    density: number;
+  };
+  lightspeed: {
+    speed: number;
+    size: number;
+    density: number;
+  };
+}
+
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -24,6 +47,10 @@ interface ThemeContextType {
   setBackground: (bg: BackgroundStyle) => void;
   simulationPower: number;
   setSimulationPower: (power: number) => void;
+  backgroundConfig: BackgroundConfig;
+  setBackgroundConfig: (config: BackgroundConfig) => void;
+  isSettingsOpen: boolean;
+  setIsSettingsOpen: (isOpen: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -42,6 +69,25 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     return saved ? parseInt(saved, 10) : 40;
   });
 
+  const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>(() => {
+    const saved = localStorage.getItem('app-background-config');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error('Failed to parse background config', e);
+      }
+    }
+    return {
+      dots: { speed: 0.04, size: 2, density: 35 },
+      matrix: { speed: 40, size: 25, density: 50 },
+      blackHole: { speed: 40, size: 50, density: 50 },
+      lightspeed: { speed: 40, size: 50, density: 50 }
+    };
+  });
+
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+
   useEffect(() => {
     localStorage.setItem('app-theme', theme);
   }, [theme]);
@@ -54,8 +100,18 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('app-energy-level', simulationPower.toString());
   }, [simulationPower]);
 
+  useEffect(() => {
+    localStorage.setItem('app-background-config', JSON.stringify(backgroundConfig));
+  }, [backgroundConfig]);
+
   return (
-    <ThemeContext.Provider value={{ theme, setTheme, background, setBackground, simulationPower, setSimulationPower }}>
+    <ThemeContext.Provider value={{ 
+      theme, setTheme, 
+      background, setBackground, 
+      simulationPower, setSimulationPower,
+      backgroundConfig, setBackgroundConfig,
+      isSettingsOpen, setIsSettingsOpen
+    }}>
       {children}
     </ThemeContext.Provider>
   );

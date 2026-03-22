@@ -1,12 +1,23 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function DotBackground({ color1, color2, color3, color4, power = 1.0 }: { color1: string, color2: string, color3?: string, color4?: string, power?: number }) {
+export default function DotBackground({ color1, color2, color3, color4, power = 1.0, config }: { color1: string, color2: string, color3?: string, color4?: string, power?: number, config: { speed: number, size: number, density: number } }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
+  const configRef = useRef(config);
 
   useEffect(() => {
     powerRef.current = power;
   }, [power]);
+
+  const initDotsRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  useEffect(() => {
+    initDotsRef.current();
+  }, [config.density]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -37,9 +48,9 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
         x: e.clientX,
         y: e.clientY,
         radius: 0,
-        maxRadius: Math.max(width, height) * 0.5 * powerRef.current, // scale max radius with power
-        speed: 20 * Math.sqrt(powerRef.current), // scale speed slightly with power
-        force: 10 * powerRef.current  // scale force with power
+        maxRadius: Math.max(width, height) * 0.5 * powerRef.current,
+        speed: 20 * Math.sqrt(powerRef.current),
+        force: 10 * powerRef.current
       });
     };
 
@@ -48,7 +59,6 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
     window.addEventListener('click', handleClick);
 
     const dots: { x: number, y: number, baseX: number, baseY: number, vx: number, vy: number, color: string }[] = [];
-    const spacing = 35; // Distance between dots
     
     const initDots = () => {
       dots.length = 0;
@@ -57,8 +67,10 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       canvas.width = width;
       canvas.height = height;
       
-      for (let x = 0; x < width; x += spacing) {
-        for (let y = 0; y < height; y += spacing) {
+      const spacing = configRef.current.density;
+      
+      for (let x = 0; x < width + spacing; x += spacing) {
+        for (let y = 0; y < height + spacing; y += spacing) {
           const palette = [color1, color2];
           if (color3) palette.push(color3);
           if (color4) palette.push(color4);
@@ -74,14 +86,31 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       }
     };
 
+    initDotsRef.current = initDots;
     initDots();
     window.addEventListener('resize', initDots);
 
     let animationFrameId: number;
 
     const animate = () => {
+      const { speed, size, density: gridSpacing } = configRef.current;
+      
       ctx.clearRect(0, 0, width, height);
       
+      // Draw faint grid behind everything
+      ctx.beginPath();
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+      ctx.lineWidth = 0.4;
+      for (let x = 0; x < width; x += gridSpacing) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+      }
+      for (let y = 0; y < height; y += gridSpacing) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+      }
+      ctx.stroke();
+
       // Update shockwaves
       for (let j = shockwaves.length - 1; j >= 0; j--) {
         const sw = shockwaves[j];
@@ -104,7 +133,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
           const dx = mouse.x - dot.x;
           const dy = mouse.y - dot.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
-          const maxDistance = 120 * Math.sqrt(powerRef.current); // How far the mouse affects dots
+          const maxDistance = 120 * Math.sqrt(powerRef.current);
           
           if (distance < maxDistance && distance > 0) {
             const force = (maxDistance - distance) / maxDistance;
@@ -121,19 +150,22 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
             const sdy = dot.y - sw.y;
             const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
             
-            const ringThickness = 30; // smaller ring thickness
+            const ringThickness = 30;
             if (Math.abs(sdist - sw.radius) < ringThickness) {
               const forceMult = (ringThickness - Math.abs(sdist - sw.radius)) / ringThickness;
               const angle = Math.atan2(sdy, sdx);
-              // push outward from the shockwave center
               dot.vx += Math.cos(angle) * sw.force * forceMult;
               dot.vy += Math.sin(angle) * sw.force * forceMult;
             }
           }
           
-          // 3. Spring back to original position
-          dot.vx += (dot.baseX - dot.x) * 0.04;
-          dot.vy += (dot.baseY - dot.y) * 0.04;
+          // 3. Spring back to original position (with slight sway)
+          const time = Date.now() * 0.0008;
+          const swayX = Math.sin(time + dot.baseX * 0.01) * 6.0;
+          const swayY = Math.cos(time + dot.baseY * 0.01) * 6.0;
+          
+          dot.vx += (dot.baseX + swayX - dot.x) * speed;
+          dot.vy += (dot.baseY + swayY - dot.y) * speed;
           
           // 4. Friction (dampening)
           dot.vx *= 0.82;
@@ -144,10 +176,31 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
           dot.y += dot.vy;
         }
         
+        // Cursor brightness effect
+        const dx = mouse.x - dot.x;
+        const dy = mouse.y - dot.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const brightnessRadius = 150;
+        let brightness = 1;
+        if (distance < brightnessRadius) {
+          brightness = 1 + (1 - distance / brightnessRadius) * 2;
+        }
+
         ctx.beginPath();
-        ctx.arc(dot.x, dot.y, 2, 0, Math.PI * 2);
-        ctx.fillStyle = dot.color;
+        ctx.arc(dot.x, dot.y, size, 0, Math.PI * 2);
+        
+        // Apply brightness to color
+        if (brightness > 1) {
+          ctx.fillStyle = dot.color.replace('0.4', (0.4 * brightness).toString());
+          ctx.shadowBlur = 10 * (brightness - 1);
+          ctx.shadowColor = dot.color;
+        } else {
+          ctx.fillStyle = dot.color;
+          ctx.shadowBlur = 0;
+        }
+        
         ctx.fill();
+        ctx.shadowBlur = 0; // Reset for next dot
       }
       
       animationFrameId = requestAnimationFrame(animate);

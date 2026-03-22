@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { motion } from 'motion/react';
-import { games } from '../data/games';
+import { games, allGamesList } from '../data/games';
 import { useThemeColors } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
 import GameCard from '../components/GameCard';
 
 export default function Home() {
   const [bootSequence, setBootSequence] = useState<string[]>([]);
+  const [randomGameId, setRandomGameId] = useState<string | null>(null);
   const colors = useThemeColors();
   const bootLines = [
     '</ SYSTEM STARTING',
@@ -17,6 +18,12 @@ export default function Home() {
   ];
 
   useEffect(() => {
+    // Pick a random game on mount
+    if (allGamesList.length > 0) {
+      const randomGame = allGamesList[Math.floor(Math.random() * allGamesList.length)];
+      setRandomGameId(randomGame.id);
+    }
+
     let currentLine = 0;
     const interval = setInterval(() => {
       if (currentLine < bootLines.length) {
@@ -77,6 +84,7 @@ export default function Home() {
                   game.id === 'all-games' ? '/all-games' : 
                   game.id === 'popular' ? '/popular' : 
                   game.id === 'favorites' ? '/favorites' : 
+                  game.id === 'random' && randomGameId ? `/play/${randomGameId}` :
                   undefined
                 }
               />

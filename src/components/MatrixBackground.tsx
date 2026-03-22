@@ -1,12 +1,37 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function MatrixBackground({ color, power = 1.0 }: { color: string, power?: number }) {
+interface MatrixConfig {
+  speed: number;
+  size: number;
+  density: number;
+}
+
+export default function MatrixBackground({ 
+  color, 
+  power = 1.0,
+  config = { speed: 50, size: 50, density: 50 }
+}: { 
+  color: string, 
+  power?: number,
+  config?: MatrixConfig
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
+  const configRef = useRef(config);
 
   useEffect(() => {
     powerRef.current = power;
   }, [power]);
+
+  const initDropsRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  useEffect(() => {
+    initDropsRef.current();
+  }, [config.density]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -32,8 +57,6 @@ export default function MatrixBackground({ color, power = 1.0 }: { color: string
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseout', handleMouseLeave);
 
-    const fontSize = 16;
-    
     interface Drop {
       x: number;
       y: number;
@@ -44,12 +67,11 @@ export default function MatrixBackground({ color, power = 1.0 }: { color: string
       opacity: number;
     }
     
-    const drops: Drop[] = [];
-    const maxDrops = Math.floor((width * height) / 4000); // Scale density based on screen size
+    let drops: Drop[] = [];
     
     const createDrop = (yStart = -20) => {
-      // Slow down by 40% (multiply by 0.6)
-      const baseSpeed = (2 + Math.random() * 3) * 0.6;
+      const baseSpeed = (2 + Math.random() * 3);
+      
       return {
         x: Math.random() * width,
         y: yStart,
@@ -61,21 +83,35 @@ export default function MatrixBackground({ color, power = 1.0 }: { color: string
       };
     };
 
-    for (let i = 0; i < maxDrops; i++) {
-      drops.push(createDrop(Math.random() * height));
-    }
+    const initDrops = () => {
+      const { density } = configRef.current;
+      const densityFactor = density / 50;
+      const maxDrops = Math.floor((width * height) / 4000 * densityFactor);
+      drops = [];
+      for (let i = 0; i < maxDrops; i++) {
+        drops.push(createDrop(Math.random() * height));
+      }
+    };
+
+    initDropsRef.current = initDrops;
+    initDrops();
 
     const handleResize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width;
       canvas.height = height;
+      initDrops();
     };
     window.addEventListener('resize', handleResize);
 
     let animationFrameId: number;
 
     const animate = () => {
+      const { speed, size } = configRef.current;
+      const speedFactor = (speed / 50) * 0.6;
+      const fontSize = 12 + (size / 100) * 16; // Range 12-28, default ~20
+
       // Fade effect for trails
       ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
       ctx.fillRect(0, 0, width, height);
@@ -86,35 +122,30 @@ export default function MatrixBackground({ color, power = 1.0 }: { color: string
       for (let i = 0; i < drops.length; i++) {
         const drop = drops[i];
         
-        const speedMult = powerRef.current === 0 ? 0.4 : 1.0;
+        const currentTargetSpeed = drop.speed * speedFactor;
+        const speedMult = powerRef.current === 0 ? 0.4 : powerRef.current;
         
         // Gravity / natural flow
         drop.vy += 0.05 * 0.6 * speedMult;
-        if (drop.vy > drop.speed * 1.5 * speedMult) drop.vy = drop.speed * 1.5 * speedMult;
+        if (drop.vy > currentTargetSpeed * 1.5 * speedMult) drop.vy = currentTargetSpeed * 1.5 * speedMult;
         
         // Mouse interaction (bounce off cursor like water)
         const dx = drop.x - mouse.x;
         const dy = drop.y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
-        const maxDist = 120 * powerRef.current; // cursor repulsion radius scales with power
+        const maxDist = 120 * powerRef.current; 
         
         if (dist < maxDist && powerRef.current > 0) {
           const force = (maxDist - dist) / maxDist;
           const angle = Math.atan2(dy, dx);
-          
-          // Splash away (scaled by power)
           drop.vx += Math.cos(angle) * force * 1.5 * powerRef.current;
           drop.vy += Math.sin(angle) * force * 1.5 * powerRef.current;
         }
         
-        // Air resistance / return to normal flow
-        drop.vx *= 0.96; // slow down horizontal movement
-        
-        // Move
+        drop.vx *= 0.96; 
         drop.x += drop.vx;
         drop.y += drop.vy;
         
-        // Wrap around or reset
         if (drop.y > height + 20 || drop.x < -20 || drop.x > width + 20) {
           Object.assign(drop, createDrop(-20));
         }
