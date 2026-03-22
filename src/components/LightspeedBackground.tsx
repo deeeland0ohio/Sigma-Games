@@ -1,12 +1,43 @@
 import React, { useEffect, useRef } from 'react';
 
-export default function LightspeedBackground({ color1, color2, color3, color4, power = 1.0 }: { color1: string, color2: string, color3?: string, color4?: string, power?: number }) {
+interface LightspeedConfig {
+  speed: number;
+  size: number;
+  density: number;
+}
+
+export default function LightspeedBackground({ 
+  color1, 
+  color2, 
+  color3, 
+  color4, 
+  power = 1.0,
+  config = { speed: 50, size: 50, density: 50 }
+}: { 
+  color1: string, 
+  color2: string, 
+  color3?: string, 
+  color4?: string, 
+  power?: number,
+  config?: LightspeedConfig
+}) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
+  const configRef = useRef(config);
 
   useEffect(() => {
     powerRef.current = power;
   }, [power]);
+
+  const initStarsRef = useRef<() => void>(() => {});
+
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
+
+  useEffect(() => {
+    initStarsRef.current();
+  }, [config.density]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -23,7 +54,6 @@ export default function LightspeedBackground({ color1, color2, color3, color4, p
     let warpFactor = 0;
 
     const stars: { x: number, y: number, z: number, color: string, warpStartZ: number }[] = [];
-    const numStars = 1440; // Abundant stars (800 * 1.8)
 
     const pickColor = () => {
       const palette = [color1, color2];
@@ -46,6 +76,10 @@ export default function LightspeedBackground({ color1, color2, color3, color4, p
     };
 
     const initStars = () => {
+      const { density } = configRef.current;
+      const densityFactor = density / 50;
+      const numStars = Math.floor(1440 * densityFactor);
+
       stars.length = 0;
       width = window.innerWidth;
       height = window.innerHeight;
@@ -61,6 +95,7 @@ export default function LightspeedBackground({ color1, color2, color3, color4, p
       }
     };
 
+    initStarsRef.current = initStars;
     initStars();
     window.addEventListener('resize', initStars);
 
@@ -89,6 +124,10 @@ export default function LightspeedBackground({ color1, color2, color3, color4, p
       const dt = Math.min((time - lastTime) / 1000, 0.1);
       lastTime = time;
 
+      const { speed: configSpeed, size: configSize } = configRef.current;
+      const speedFactor = configSpeed / 50;
+      const sizeFactor = configSize / 50;
+
       // 5.0 seconds to reach max speed when clicking
       // 1.5 seconds to slow down when releasing
       if (isMouseDown) {
@@ -104,8 +143,8 @@ export default function LightspeedBackground({ color1, color2, color3, color4, p
       ctx.fillRect(0, 0, width, height);
 
       // Calculate speed based on warp factor and power (reduced to 75% of original speed)
-      const baseSpeed = 2.25 * powerRef.current; // Faster base speed so it's not blank
-      const warpSpeed = warpFactor * 90 * powerRef.current;
+      const baseSpeed = 2.25 * powerRef.current * speedFactor; // Faster base speed so it's not blank
+      const warpSpeed = warpFactor * 90 * powerRef.current * speedFactor;
       const speed = baseSpeed + warpSpeed;
 
       const fov = width;
@@ -142,7 +181,7 @@ export default function LightspeedBackground({ color1, color2, color3, color4, p
 
         // Size the star based on how close it is (shrunk by 25%)
         // NO size increase during warp
-        const radius = Math.max(0.375, (1 - star.z / width) * 2.25);
+        const radius = Math.max(0.375, (1 - star.z / width) * 2.25) * sizeFactor;
         
         // Fade in stars as they get closer
         let opacity = Math.max(0.1, 1 - star.z / width);

@@ -7,6 +7,7 @@ import BackgroundManager from './components/BackgroundManager';
 import { ThemeProvider } from './context/ThemeContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import Favorites from './pages/Favorites';
+import Settings from './pages/Settings';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="/all-games" element={<AllGames />} />
             <Route path="/popular" element={<PopularGames />} />
             <Route path="/favorites" element={<Favorites />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/play/:id" element={<GamePlayer />} />
           </Routes>
         </BrowserRouter>

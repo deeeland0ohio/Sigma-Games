@@ -27,11 +27,11 @@ export const games: Game[] = [
     type: 'folder',
   },
   {
-    id: 'unnamed-2',
-    title: 'Unnamed',
-    description: 'Coming soon...',
+    id: 'random',
+    title: 'Random Game',
+    description: 'Feeling lucky? Play a random game from our collection.',
     icon: Puzzle,
-    type: 'component',
+    type: 'folder',
   },
 ];
 
