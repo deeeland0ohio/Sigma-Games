@@ -74,8 +74,71 @@ export default function Settings() {
     });
   };
 
+  const [isAdvanced, setIsAdvanced] = React.useState(false);
+  const [showWarning, setShowWarning] = React.useState(false);
+
+  const toggleAdvanced = () => {
+    if (!isAdvanced) {
+      setShowWarning(true);
+    } else {
+      // Clamp values when disabling advanced mode
+      setSimulationPower(Math.min(simulationPower, 100));
+      setBackgroundConfig({
+        ...backgroundConfig,
+        dots: {
+          speed: Math.min(backgroundConfig.dots.speed, 0.15),
+          size: Math.min(backgroundConfig.dots.size, 8),
+          density: Math.min(backgroundConfig.dots.density, 80),
+        },
+        matrix: {
+          speed: Math.min(backgroundConfig.matrix.speed, 100),
+          size: Math.min(backgroundConfig.matrix.size, 100),
+          density: Math.min(backgroundConfig.matrix.density, 100),
+        },
+        blackHole: {
+          speed: Math.min(backgroundConfig.blackHole.speed, 100),
+          size: Math.min(backgroundConfig.blackHole.size, 100),
+          density: Math.min(backgroundConfig.blackHole.density, 100),
+        },
+        lightspeed: {
+          speed: Math.min(backgroundConfig.lightspeed.speed, 100),
+          size: Math.min(backgroundConfig.lightspeed.size, 100),
+          density: Math.min(backgroundConfig.lightspeed.density, 100),
+        },
+      });
+      setIsAdvanced(false);
+    }
+  };
+
+  const multiplier = isAdvanced ? 3 : 1;
+
   return (
     <PageLayout title="Settings" showBack={true}>
+      {showWarning && (
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+          <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl max-w-sm space-y-4">
+            <h3 className="text-xl font-bold text-white">Warning!</h3>
+            <p className="text-zinc-300">This is for experimental purposes only, and may cause intense lag.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => {
+                  setIsAdvanced(true);
+                  setShowWarning(false);
+                }}
+                className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium"
+              >
+                Enable
+              </button>
+              <button
+                onClick={() => setShowWarning(false)}
+                className="flex-1 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl font-medium"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="max-w-4xl mx-auto space-y-12 pb-20">
         <div className="flex items-center justify-between border-b border-zinc-800 pb-6">
           <div>
@@ -93,6 +156,7 @@ export default function Settings() {
                 blackHole: { speed: 40, size: 50, density: 50 },
                 lightspeed: { speed: 40, size: 50, density: 50 }
               });
+              setIsAdvanced(false);
             }}
             className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all font-medium"
           >
@@ -175,11 +239,23 @@ export default function Settings() {
           {/* Right Column: Precise Controls */}
           <div className="space-y-10">
             <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl">
-              <div className="flex items-center gap-3 text-zinc-100">
-                <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800">
-                  <Sliders size={20} className="text-emerald-400" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3 text-zinc-100">
+                  <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800">
+                    <Sliders size={20} className="text-emerald-400" />
+                  </div>
+                  <h2 className="text-xl font-bold">Precise Controls</h2>
                 </div>
-                <h2 className="text-xl font-bold">Precise Controls</h2>
+                <button
+                  onClick={toggleAdvanced}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all ${
+                    isAdvanced 
+                      ? 'bg-red-600 text-white' 
+                      : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'
+                  }`}
+                >
+                  {isAdvanced ? 'Advanced (ON)' : 'Advanced'}
+                </button>
               </div>
               
               <div className="space-y-8">
@@ -192,7 +268,7 @@ export default function Settings() {
                     <span className="text-xs font-mono text-emerald-400">{simulationPower}%</span>
                   </div>
                   <input
-                    type="range" min="0" max="100" step="1"
+                    type="range" min="0" max={100 * multiplier} step="1"
                     value={simulationPower}
                     onChange={(e) => setSimulationPower(parseInt(e.target.value, 10))}
                     className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -208,7 +284,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{(backgroundConfig.dots.speed * 1000).toFixed(0)}</span>
                       </div>
                       <input
-                        type="range" min="0.01" max="0.15" step="0.01"
+                        type="range" min="0.01" max={0.15 * multiplier} step="0.01"
                         value={backgroundConfig.dots.speed}
                         onChange={(e) => updateDotsConfig('speed', parseFloat(e.target.value))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -220,7 +296,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.dots.size}px</span>
                       </div>
                       <input
-                        type="range" min="1" max="8" step="0.5"
+                        type="range" min="1" max={8 * multiplier} step="0.5"
                         value={backgroundConfig.dots.size}
                         onChange={(e) => updateDotsConfig('size', parseFloat(e.target.value))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -232,7 +308,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.dots.density}</span>
                       </div>
                       <input
-                        type="range" min="20" max="80" step="1"
+                        type="range" min="20" max={80 * multiplier} step="1"
                         value={backgroundConfig.dots.density}
                         onChange={(e) => updateDotsConfig('density', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -249,7 +325,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.speed}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.matrix.speed}
                         onChange={(e) => updateMatrixConfig('speed', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -261,7 +337,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.size}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.matrix.size}
                         onChange={(e) => updateMatrixConfig('size', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -273,7 +349,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.density}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.matrix.density}
                         onChange={(e) => updateMatrixConfig('density', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -290,7 +366,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.speed}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.blackHole.speed}
                         onChange={(e) => updateBlackHoleConfig('speed', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -302,7 +378,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.size}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.blackHole.size}
                         onChange={(e) => updateBlackHoleConfig('size', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -314,7 +390,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.density}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.blackHole.density}
                         onChange={(e) => updateBlackHoleConfig('density', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -331,7 +407,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.speed}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.lightspeed.speed}
                         onChange={(e) => updateLightspeedConfig('speed', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -343,7 +419,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.size}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.lightspeed.size}
                         onChange={(e) => updateLightspeedConfig('size', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -355,7 +431,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.density}%</span>
                       </div>
                       <input
-                        type="range" min="0" max="100" step="1"
+                        type="range" min="0" max={100 * multiplier} step="1"
                         value={backgroundConfig.lightspeed.density}
                         onChange={(e) => updateLightspeedConfig('density', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
