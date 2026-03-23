@@ -15,6 +15,10 @@ import { balatro } from './balatro';
 import { solarSmash } from './solar-smash';
 import { theyreComing } from './theyre-coming';
 import { ironLung } from './iron-lung';
+import { brotato } from './brotato';
+import { omori } from './omori';
+import { badParenting } from './bad-parenting';
+import { ultrakill } from './ultrakill';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -34,5 +38,9 @@ export const allGames: Game[] = [
   balatro,
   solarSmash,
   theyreComing,
-  ironLung
+  ironLung,
+  brotato,
+  omori,
+  badParenting,
+  ultrakill
 ];

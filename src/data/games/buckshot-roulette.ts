@@ -149,8 +149,6 @@ export const buckshotRoulette: Game = {
         };
         window.godotRunStart = run;
     </script>
-
 </body>
-
 </html>`
 };
