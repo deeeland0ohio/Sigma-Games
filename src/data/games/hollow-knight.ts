@@ -8,5 +8,7 @@ export const hollowKnight: Game = {
   icon: Sword,
   type: 'iframe',
   url: '/games/hollow-knight/index.html',
-  popularity: 98
+  popularity: 98,
+  series: 'Hollow Knight',
+  seriesOrder: 1,
 };

@@ -8,12 +8,6 @@ import Credits from '../components/Credits';
 import { useThemeColors } from '../context/ThemeContext';
 import { useFavorites } from '../context/FavoritesContext';
 
-declare global {
-  interface Window {
-    // RufflePlayer removed
-  }
-}
-
 export default function GamePlayer() {
   const { id } = useParams<{ id: string }>();
   const game = games.find(g => g.id === id) || allGamesList.find(g => g.id === id);
@@ -47,10 +41,6 @@ export default function GamePlayer() {
 
   const reloadGame = () => {
     setReloadKey(prev => prev + 1);
-  };
-
-  const getGameUrl = () => {
-    return game.url || '';
   };
 
   return (
@@ -120,8 +110,9 @@ export default function GamePlayer() {
           {game.type === 'iframe' && (game.url || game.srcdoc) ? (
             <iframe 
               key={reloadKey}
-              src={game.url ? getGameUrl() : undefined}
+              src={game.url}
               srcDoc={game.srcdoc}
+              title={game.title}
               className="w-full h-full border-none" 
               allowFullScreen 
             />
@@ -129,25 +120,17 @@ export default function GamePlayer() {
             <iframe 
               key={reloadKey}
               srcDoc={game.html}
+              title={game.title}
               className="w-full h-full border-none" 
               allowFullScreen 
             />
           ) : (
             <div className="text-center p-8 max-w-md border border-dashed border-zinc-700 rounded-xl bg-zinc-900/50">
               <Terminal size={48} className="mx-auto text-zinc-600 mb-4" />
-              <h2 className="text-xl font-bold text-white mb-2">Insert Game Code Here</h2>
+              <h2 className="text-xl font-bold text-white mb-2">Game Content Missing</h2>
               <p className="text-zinc-400 text-sm mb-6">
-                Open <code className={`${colors.secondary} bg-zinc-950 px-1 py-0.5 rounded`}>src/pages/GamePlayer.tsx</code> and replace this placeholder with your actual game component or iframe.
+                This game entry is missing a valid URL or HTML content.
               </p>
-              <div className="text-xs font-mono text-zinc-400 bg-black p-4 rounded-lg text-left overflow-x-auto border border-zinc-800">
-                {`{/* Example for React Component */}`}
-                <br/>
-                <span className={colors.secondary}>{`{game.id === '${game.id}' && <YourGame />}`}</span>
-                <br/><br/>
-                {`{/* Example for iframe */}`}
-                <br/>
-                <span className={colors.primary}>{`<iframe src="YOUR_URL" className="w-full h-full" />`}</span>
-              </div>
             </div>
           )}
         </div>
