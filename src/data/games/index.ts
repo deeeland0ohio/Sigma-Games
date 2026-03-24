@@ -24,6 +24,8 @@ import { brotato } from './brotato';
 import { omori } from './omori';
 import { badParenting } from './bad-parenting';
 import { ultrakill } from './ultrakill';
+import { ragdollArchers } from './ragdoll-archers';
+import { ragdollHit } from './ragdoll-hit';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -52,5 +54,7 @@ export const allGames: Game[] = [
   brotato,
   omori,
   badParenting,
-  ultrakill
+  ultrakill,
+  ragdollArchers,
+  ragdollHit
 ];
