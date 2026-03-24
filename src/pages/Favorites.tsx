@@ -13,9 +13,14 @@ export default function Favorites() {
   const [searchQuery, setSearchQuery] = useState('');
   
   const favoriteGames = allGamesList.filter(game => favorites.includes(game.id));
-  const filteredGames = favoriteGames.filter(game =>
-    game.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredGames = favoriteGames.filter(game => {
+    const query = searchQuery.toLowerCase();
+    return (
+      game.title.toLowerCase().includes(query) ||
+      game.series?.toLowerCase().includes(query) ||
+      game.description.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <PageLayout 

@@ -7,9 +7,14 @@ import SearchBar from '../components/SearchBar';
 export default function PopularGames() {
   const [searchQuery, setSearchQuery] = useState('');
 
-  const filteredGames = popularGamesList.filter(game =>
-    game.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredGames = popularGamesList.filter(game => {
+    const query = searchQuery.toLowerCase();
+    return (
+      game.title.toLowerCase().includes(query) ||
+      game.series?.toLowerCase().includes(query) ||
+      game.description.toLowerCase().includes(query)
+    );
+  });
 
   return (
     <PageLayout 

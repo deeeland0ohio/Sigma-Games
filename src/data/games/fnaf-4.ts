@@ -3,7 +3,7 @@ import { Game } from '../../types';
 
 export const fnaf4: Game = {
   id: 'fnaf-4',
-  title: 'FNAF 4',
+  title: "Five Nights at Freddy's 4",
   description: 'What have you brought home?',
   icon: Ghost,
   type: 'iframe',

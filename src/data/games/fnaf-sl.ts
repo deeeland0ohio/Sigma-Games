@@ -3,7 +3,7 @@ import { Game } from '../../types';
 
 export const fnafSl: Game = {
   id: 'fnaf-sl',
-  title: 'FNAF Sister Location',
+  title: "Five Nights at Freddy's Sister Location",
   description: "Welcome to Circus Baby's Pizza World.",
   icon: Ghost,
   type: 'iframe',
