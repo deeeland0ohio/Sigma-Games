@@ -8,6 +8,7 @@ export const fnafWorldRefreshed: Game = {
   icon: Gamepad2,
   type: "iframe",
   url: "/games/fnaf-world-refreshed/index.html",
-  series: 'fnaf',
-  seriesOrder: 7,
+  popularity: 85,
+  series: 'FNAF',
+  seriesOrder: 10,
 };

@@ -5,17 +5,18 @@ import { useThemeColors } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
 import GameCard from '../components/GameCard';
 
+const BOOT_LINES = [
+  '</ SYSTEM STARTING',
+  "</ WELCOME TO SIGMA GAMES.",
+  '</ CONNECTING',
+  '</ GAMES LOADING...',
+  '</ READY TO PLAY...'
+];
+
 export default function Home() {
   const [bootSequence, setBootSequence] = useState<string[]>([]);
   const [randomGameId, setRandomGameId] = useState<string | null>(null);
   const colors = useThemeColors();
-  const bootLines = [
-    '</ SYSTEM STARTING',
-    "</ WELCOME TO SIGMA GAMES.",
-    '</ CONNECTING',
-    '</ GAMES LOADING...',
-    '</ READY TO PLAY...'
-  ];
 
   useEffect(() => {
     // Pick a random game on mount
@@ -26,8 +27,8 @@ export default function Home() {
 
     let currentLine = 0;
     const interval = setInterval(() => {
-      if (currentLine < bootLines.length) {
-        setBootSequence(prev => [...prev, bootLines[currentLine]]);
+      if (currentLine < BOOT_LINES.length) {
+        setBootSequence(prev => [...prev, BOOT_LINES[currentLine]]);
         currentLine++;
       } else {
         clearInterval(interval);
@@ -40,7 +41,7 @@ export default function Home() {
     <PageLayout title="Home">
       <div className="space-y-24">
         {/* Terminal Boot Sequence */}
-        <section className={`bg-black border border-zinc-800 rounded-xl p-6 font-mono text-sm md:text-base shadow-2xl ${colors.hoverShadow.replace('hover:', '')}`}>
+        <section className={`bg-black border border-zinc-800 rounded-xl p-6 font-mono text-sm md:text-base shadow-2xl ${colors.shadow}`}>
           <div className="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-4 text-zinc-500">
             <div className={`w-3 h-3 rounded-full ${colors.primaryBg}`}></div>
             <div className={`w-3 h-3 rounded-full ${colors.tertiaryBg || colors.secondaryBg}`}></div>
@@ -58,7 +59,7 @@ export default function Home() {
                 {line}
               </motion.div>
             ))}
-            {bootSequence.length === bootLines.length && (
+            {bootSequence.length === BOOT_LINES.length && (
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: [0, 1, 0] }}
@@ -72,7 +73,7 @@ export default function Home() {
         {/* Games Grid */}
         <section id="games" className="space-y-8">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-            <h2 className="text-2xl font-bold text-white tracking-tight">ALL GAMES</h2>
+            <h2 className="text-2xl font-bold text-white tracking-tight">GAMES</h2>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -9,6 +9,6 @@ export const hollowKnightSilksong: Game = {
   type: 'iframe',
   url: '/games/hollow-knight-silksong/index.html',
   popularity: 99,
-  series: 'hollow-knight',
+  series: 'Hollow Knight',
   seriesOrder: 2,
 };

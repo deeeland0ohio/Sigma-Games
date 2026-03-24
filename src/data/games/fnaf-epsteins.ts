@@ -9,6 +9,6 @@ export const fnafEpsteins: Game = {
   type: 'iframe',
   popularity: 75,
   series: 'FNAF',
-  seriesOrder: 7,
+  seriesOrder: 11,
   url: '/games/fnaf-epsteins/index.html'
 };

@@ -35,13 +35,6 @@ export const games: Game[] = [
   },
 ];
 
-const seriesPopularity: Record<string, number> = {};
-allGames.forEach(g => {
-  if (g.series) {
-    seriesPopularity[g.series] = Math.max(seriesPopularity[g.series] || 0, g.popularity || 0);
-  }
-});
-
 export const allGamesList = [...allGames].sort((a, b) => {
   const keyA = a.series || a.title;
   const keyB = b.series || b.title;

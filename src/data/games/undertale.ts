@@ -9,4 +9,6 @@ export const undertale: Game = {
   type: 'iframe',
   url: '/games/undertale/index.html',
   popularity: 95,
+  series: 'Undertale',
+  seriesOrder: 1,
 };

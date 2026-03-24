@@ -9,6 +9,6 @@ export const fnafUCN: Game = {
   type: 'iframe',
   url: '/games/fnaf-ucn/index.html',
   popularity: 95,
-  series: 'fnaf',
-  seriesOrder: 8,
+  series: 'FNAF',
+  seriesOrder: 9,
 };
