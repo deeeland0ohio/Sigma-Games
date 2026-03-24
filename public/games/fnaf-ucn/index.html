@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <base href="https://cdn.jsdelivr.net/gh/genizy/fnaf@latest/ucn/">
+    <link rel="stylesheet" type="text/css" href="style.css"/>
+    <link rel="icon" type="image/x-icon" href="favicon.ico" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, target-densitydpi=device-dpi" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black" />
+    <meta name="HandheldFriendly" content="true" />
+    <title>Five Nights at Freddy's UCN</title>
+    <style>
+        body {
+            background-color: #000;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            color: white;
+            font-family: sans-serif;
+            overflow: hidden;
+        }
+        #progress-container {
+            width: 80%;
+            max-width: 400px;
+            margin-top: 20px;
+        }
+        .progress-bar-bg {
+            width: 100%;
+            background: #444;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 10px;
+        }
+        .progress-bar-fill {
+            height: 10px;
+            width: 0%;
+            transition: width 0.2s;
+        }
+        #download-bar { background: #3b82f6; }
+        #extract-bar { background: #10b981; }
+    </style>
+</head>
+
+<body>
+    <div style="display: inline-block; -webkit-user-select: none; text-align: left">
+        <canvas id="MMFCanvas" width="1280" height="720"> Your browser does not support Canvas, Please try again. </canvas>
+    </div>
+    <div id="progress-container">
+        <div style="margin-bottom: 6px;">Downloading... <span id="download-text">0%</span></div>
+        <div class="progress-bar-bg">
+            <div id="download-bar" class="progress-bar-fill"></div>
+        </div>
+        <div style="margin: 12px 0 6px;">Extracting... <span id="extract-text">0%</span></div>
+        <div class="progress-bar-bg">
+            <div id="extract-bar" class="progress-bar-fill"></div>
+        </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script src="main.js"></script>
+</body>
+
+</html>
