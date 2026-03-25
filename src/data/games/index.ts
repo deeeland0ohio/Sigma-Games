@@ -30,6 +30,18 @@ import { baldisBasics } from './baldis-basics';
 import { baldisBasicsClassicRemastered } from './baldis-basics-classic-remastered';
 import { baldisBasicsPlus } from './baldis-basics-plus';
 import { jeffreyEpsteinsBasics } from './jeffrey-epsteins-basics';
+import { vex4 } from './vex-4';
+import { vex5 } from './vex-5';
+import { vex6 } from './vex-6';
+import { vex7 } from './vex-7';
+import { vex8 } from './vex-8';
+import { vexChallenges } from './vex-challenges';
+import { vexX3m } from './vex-x3m';
+import { vexX3m2 } from './vex-x3m-2';
+import { skyRiders } from './sky-riders';
+import { endoparasitic1 } from './endoparasitic-1';
+import { endoparasitic2 } from './endoparasitic-2';
+import { repo } from './repo';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -64,5 +76,17 @@ export const allGames: Game[] = [
   baldisBasics,
   baldisBasicsClassicRemastered,
   baldisBasicsPlus,
-  jeffreyEpsteinsBasics
+  jeffreyEpsteinsBasics,
+  vex4,
+  vex5,
+  vex6,
+  vex7,
+  vex8,
+  vexChallenges,
+  vexX3m,
+  vexX3m2,
+  skyRiders,
+  endoparasitic1,
+  endoparasitic2,
+  repo
 ];

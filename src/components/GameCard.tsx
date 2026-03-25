@@ -22,7 +22,7 @@ export default function GameCard({ game, to }: GameCardProps) {
   const favorited = isFavorite(game.id);
 
   const handleClick = (e: React.MouseEvent) => {
-    if (game.id === 'hollow-knight-silksong' && !showWarning) {
+    if ((game.id === 'hollow-knight-silksong' || game.id === 'repo') && !showWarning) {
       e.preventDefault();
       setShowWarning(true);
     }
@@ -53,22 +53,26 @@ export default function GameCard({ game, to }: GameCardProps) {
             <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mb-4">
               <AlertTriangle size={24} />
             </div>
-            <h2 className="text-xl font-bold text-white mb-2">Warning!</h2>
+            <h2 className="text-xl font-bold text-white mb-2">
+              {game.id === 'repo' ? 'Loading' : 'Warning!'}
+            </h2>
             <p className="text-zinc-400 mb-6">
-              This Game needs at least 4GB of ram to play! Your school Chromebook probably doesn't have that.
+              {game.id === 'repo' 
+                ? "If you see a black screen for a long time, don't worry it's just loading." 
+                : "This Game needs at least 4GB of ram to play! Your school Chromebook probably doesn't have that."}
             </p>
             <div className="flex gap-3 w-full">
               <button
                 onClick={handleCancel}
                 className="flex-1 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg font-medium transition-colors"
               >
-                Cancel
+                {game.id === 'repo' ? 'Close' : 'Cancel'}
               </button>
               <button
                 onClick={handleConfirm}
                 className={`flex-1 py-2.5 ${colors.primaryBg} hover:opacity-90 text-white rounded-lg font-medium transition-opacity`}
               >
-                I Understand
+                {game.id === 'repo' ? 'Play Now' : 'I Understand'}
               </button>
             </div>
           </div>
