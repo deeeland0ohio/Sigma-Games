@@ -29,6 +29,7 @@ import { ragdollHit } from './ragdoll-hit';
 import { baldisBasics } from './baldis-basics';
 import { baldisBasicsClassicRemastered } from './baldis-basics-classic-remastered';
 import { baldisBasicsPlus } from './baldis-basics-plus';
+import { jeffreyEpsteinsBasics } from './jeffrey-epsteins-basics';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -62,5 +63,6 @@ export const allGames: Game[] = [
   ragdollHit,
   baldisBasics,
   baldisBasicsClassicRemastered,
-  baldisBasicsPlus
+  baldisBasicsPlus,
+  jeffreyEpsteinsBasics
 ];
