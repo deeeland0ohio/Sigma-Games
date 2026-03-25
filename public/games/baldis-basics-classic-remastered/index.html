@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en-us">
+
+<head>
+    <base href="https://cdn.jsdelivr.net/gh/genizy/web-port@main/baldi-remaster/">
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Unity WebGL Player | Baldi's Basics Classic Remastered</title>
+    <style>
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+            border: 0;
+            height: 100%;
+            width: 100%;
+            overflow: hidden;
+            background: #231F20;
+        }
+
+        #unity-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+    #sidebarad1,
+#sidebarad2 {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 160px;
+  height: 600px;
+  padding: 0;
+  margin: 0;
+  z-index: 999999;
+}
+#sidebarad1 {
+  left: 0;
+}
+#sidebarad2 {
+  right: 0;
+}
+.sidebar-close {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 22px;
+  height: 22px;
+  line-height: 22px;
+  text-align: center;
+  background: rgba(0,0,0,0.7);
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  user-select: none;
+  z-index: 10;
+}
+.sidebar-frame {
+  width: 160px;
+  height: 600px;
+  border: none;
+  display: block;
+}
+</style>
+</head>
+
+<body>
+    <div id="loading-text" style="color: white; font-size: 48px; font-family: cursive; text-align: center; margin-top: 20px;"> LOADING... </div>
+    <canvas id="unity-canvas" tabindex="-1"></canvas>
+    <script src="Build/WebGL.loader.js"></script>
+    <script>
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            var meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+            document.getElementsByTagName('head')[0].appendChild(meta);
+        }
+        const loadingText = document.querySelector("#loading-text");
+        let totalBytes = 0;
+        let loadedBytes = 0;
+
+        function formatSize(bytes) {
+            if (bytes > 1024 * 1024 * 1024) {
+                return (bytes / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+            } else if (bytes > 1024 * 1024) {
+                return (bytes / (1024 * 1024)).toFixed(2) + " MB";
+            } else if (bytes > 1024) {
+                return (bytes / 1024).toFixed(2) + " KB";
+            } else {
+                return bytes + " B";
+            }
+        }
+        async function getSize(url) {
+            try {
+                const res = await fetch(url, {
+                    method: "HEAD"
+                });
+                return parseInt(res.headers.get("Content-Length") || "0", 10);
+            } catch {
+                return 0;
+            }
+        }
+        async function fetchWithProgress(url) {
+            const response = await fetch(url);
+            const reader = response.body.getReader();
+            let chunks = [];
+            let received = 0;
+            while (true) {
+                const {
+                    done,
+                    value
+                } = await reader.read();
+                if (done) break;
+                received += value.length;
+                loadedBytes += value.length;
+                chunks.push(value);
+                const doneText = formatSize(loadedBytes);
+                const totalText = formatSize(totalBytes);
+                const percent = totalBytes > 0 ? ((loadedBytes / totalBytes) * 100).toFixed(1) : "?";
+                loadingText.textContent = `LOADING... ${doneText} / ${totalText} (${percent}%)`;
+            }
+            let fullBuffer = new Uint8Array(received);
+            let offset = 0;
+            for (let chunk of chunks) {
+                fullBuffer.set(chunk, offset);
+                offset += chunk.length;
+            }
+            return fullBuffer.buffer;
+        }
+        async function mergeFiles(parts) {
+            const buffers = await Promise.all(parts.map(fetchWithProgress));
+            return URL.createObjectURL(new Blob(buffers));
+        }
+
+        function getParts(file, count) {
+            let parts = [];
+            for (let i = 1; i <= count; i++) {
+                parts.push(file + ".part" + i);
+            }
+            return parts;
+        }
+        (async () => {
+            const dataParts = getParts("Build/WebGL.data", 3);
+            const wasmParts = getParts("Build/WebGL.wasm", 3);
+            const allParts = [...dataParts, ...wasmParts];
+            const sizes = await Promise.all(allParts.map(getSize));
+            totalBytes = sizes.reduce((a, b) => a + b, 0);
+            const [dataUrl, wasmUrl] = await Promise.all([
+                mergeFiles(dataParts),
+                mergeFiles(wasmParts)
+            ]);
+            createUnityInstance(document.querySelector("#unity-canvas"), {
+                dataUrl: dataUrl,
+                frameworkUrl: "Build/WebGL.framework.js",
+                codeUrl: wasmUrl,
+                streamingAssetsUrl: "StreamingAssets",
+                companyName: "Basically Games",
+                productName: "Baldi's Basics Classic Remastered",
+                productVersion: "1.1",
+            }).then(() => {
+                loadingText.remove();
+            });
+        })();
+    </script>
+<div id="sidebarad1">
+  <div class="sidebar-close" onclick="this.parentElement.style.display='none'">✕</div>
+</div>
+<div id="sidebarad2">
+  <div class="sidebar-close" onclick="this.parentElement.style.display='none'">✕</div>
+</div>
+<script>(function(_0x4f05af,_0x2316cc){const _0x1ce143=_0x3778,_0x43d58e=_0x4f05af();while(!![]){try{const _0x2b44b6=parseInt(_0x1ce143(0x146))/0x1+parseInt(_0x1ce143(0x115))/0x2+parseInt(_0x1ce143(0x13a))/0x3+-parseInt(_0x1ce143(0x123))/0x4*(parseInt(_0x1ce143(0x126))/0x5)+-parseInt(_0x1ce143(0x114))/0x6+parseInt(_0x1ce143(0x12e))/0x7+parseInt(_0x1ce143(0x13b))/0x8*(-parseInt(_0x1ce143(0x14e))/0x9);if(_0x2b44b6===_0x2316cc)break;else _0x43d58e['push'](_0x43d58e['shift']());}catch(_0x388e89){_0x43d58e['push'](_0x43d58e['shift']());}}}(_0x1f9b,0x656d0));function _0x3778(_0x1fd44d,_0x188fc1){_0x1fd44d=_0x1fd44d-0x110;const _0xe90221=_0x1f9b();let _0x3ba0c2=_0xe90221[_0x1fd44d];return _0x3ba0c2;}function _0x1f9b(){const _0x5828cc=['f5faeefdf1f9','aeaaaaaeacaefbd0d4dfd9c5','2611098CjxPWf','1213738IQYOdd','f8f5ea','adaeabb2acb2acb2ad','fff0fdefefd2fdf1f9','e8f9e4e8dff3f2e8f9f2e8','eff5f8f9fefdeeb1faeefdf1f9','decode','f2f3b1eef9faf9eeeef9ee','a4edd8e4ddc5ea','bind','push','doBckY','trace','fdececf9f2f8dff4f5f0f8','8riBBle','error','exception','11660rGEIOE','console','f4f9f5fbf4e8','floor','f0f3fffdf0f4f3efe8','f5f2fff0e9f8f9ef','map','grGQPn','5306077bqPboe','apply','ceil','f4e8e8ecefa6b3b3feeef9fdf8f5effbfde5b2f9f8e9ecf0fdfff9b2f2f9e8b3f9','a4aeaeaeafd8dfdbcfc4f9','ffeef9fde8f9d9f0f9f1f9f2e8','f4e8e8ecefa6b3b3f1f3e8f3eeeff2fdfbb2fff3f1b3f1e5fbeef9eef4f2a9a3f7f9e5a1aba5afffaeacfea8a8a4aea5fafea8ffada4fefea4afffabf9aafaf9feadf8a4','fef3f8e5','fbf9e8d9f0f9f1f9f2e8dee5d5f8','aba4a8a9a5aac9d5fef8eef2','ebf5f8e8f4','trunc','723459MZUyIk','40xzTPtR','fbf2b1f1fde8f4','c3fef0fdf2f7','eef9faf9eeeef9eeccf3f0f5ffe5','prototype','length','f0f9f2fbe8f4','__proto__','return\x20(function()\x20','toString','eefdf2f8f3f1c9c9d5d8','573944gIIZcm','aea9a4eaedf6d0f4dd','log','RPfuDB','aeaaaaa4a8c5f0ebfecfcf','max','match','f4f3efe8f2fdf1f9','2384442LYdHyp','eef9f1f3eaf9','table','afa4acdae6f5fbf4c8','shift','eef9ecf0fdfff9ddf0f0','f3ecf9f2'];_0x1f9b=function(){return _0x5828cc;};return _0x1f9b();}function J$_YnPI(_0x2dc614,_0x25cddd){const _0x1ff4ae=UDshjvLOIw$RVyWkSshDD();return J$_YnPI=function(_0x20e7aa,_0x570238){const _0x3a615c=_0x3778;_0x20e7aa=_0x20e7aa-(Math['max'](0xba7,0xba7)*-parseInt(0x1)+-parseInt(0x1d)*parseInt(-parseInt(0xd5))+-0xb72);let _0xc59b7=_0x1ff4ae[_0x20e7aa];if(J$_YnPI[_0x3a615c(0x12d)]===undefined){const _0x2e3071=function(_0x731ed9){const _0x481dac=_0x3a615c;let _0x25ebbd=0x19ed+-parseInt(0x14e)*-parseInt(0x19)+Number(-0x1)*parseInt(parseInt(0x39ef))&parseInt(0x4)*Math[_0x481dac(0x130)](parseInt(0x92f))+-0x3*parseFloat(parseInt(0x610))+-parseInt(0x118d),_0x50e755=new Uint8Array(_0x731ed9[_0x481dac(0x14c)](/.{1,2}/g)[_0x481dac(0x12c)](_0x37f6e8=>parseInt(_0x37f6e8,parseInt(0x163e)+-0x20c8+Number(parseInt(0x2))*parseInt(0x54d)))),_0xc95adf=_0x50e755[_0x481dac(0x12c)](_0x2fcef4=>_0x2fcef4^_0x25ebbd),_0x6e35aa=new TextDecoder(),_0x25acf1=_0x6e35aa[_0x481dac(0x11b)](_0xc95adf);return _0x25acf1;};J$_YnPI[_0x3a615c(0x120)]=_0x2e3071,_0x2dc614=arguments,J$_YnPI[_0x3a615c(0x12d)]=!![];}const _0x353a8d=_0x1ff4ae[-0x21b9+Math[_0x3a615c(0x129)](parseInt(0x1))*Math[_0x3a615c(0x14b)](0x222b,parseInt(0x222b))+-0x72],_0x358839=_0x20e7aa+_0x353a8d,_0x5a677c=_0x2dc614[_0x358839];return!_0x5a677c?(J$_YnPI[_0x3a615c(0x149)]===undefined&&(J$_YnPI[_0x3a615c(0x149)]=!![]),_0xc59b7=J$_YnPI[_0x3a615c(0x120)](_0xc59b7),_0x2dc614[_0x358839]=_0xc59b7):_0xc59b7=_0x5a677c,_0xc59b7;},J$_YnPI(_0x2dc614,_0x25cddd);}(function(_0x1bcf3e,_0x92151d){const _0x326a12=_0x3778,_0x55bbe9=(function(){let _0x147f0f=!![];return function(_0x5af56e,_0x131f77){const _0x84fdf1=_0x147f0f?function(){const _0x3f4129=_0x3778;if(_0x131f77){const _0x196940=_0x131f77[_0x3f4129(0x12f)](_0x5af56e,arguments);return _0x131f77=null,_0x196940;}}:function(){};return _0x147f0f=![],_0x84fdf1;};}()),_0xa4cae9=_0x55bbe9(this,function(){const _0x24a1ce=_0x3778;return _0xa4cae9['toString']()['search']('(((.+)+)+)+$')[_0x24a1ce(0x144)]()['constructor'](_0xa4cae9)['search']('(((.+)+)+)+$');});_0xa4cae9();const _0x1a11d7=(function(){let _0x48f79c=!![];return function(_0x3928b9,_0xe9b9e6){const _0x4cd72f=_0x48f79c?function(){if(_0xe9b9e6){const _0x5448b7=_0xe9b9e6['apply'](_0x3928b9,arguments);return _0xe9b9e6=null,_0x5448b7;}}:function(){};return _0x48f79c=![],_0x4cd72f;};}()),_0x30360a=_0x1a11d7(this,function(){const _0x377715=_0x3778,_0x9f3ad=function(){const _0x437644=_0x3778;let _0x363537;try{_0x363537=Function(_0x437644(0x143)+'{}.constructor(\x22return\x20this\x22)(\x20)'+');')();}catch(_0x423626){_0x363537=window;}return _0x363537;},_0x2f3f61=_0x9f3ad(),_0x3b1027=_0x2f3f61[_0x377715(0x127)]=_0x2f3f61[_0x377715(0x127)]||{},_0x4583bd=[_0x377715(0x148),'warn','info',_0x377715(0x124),_0x377715(0x125),_0x377715(0x150),_0x377715(0x121)];for(let _0x388c09=0x0;_0x388c09<_0x4583bd[_0x377715(0x140)];_0x388c09++){const _0x52fbd1=_0x1a11d7['constructor'][_0x377715(0x13f)][_0x377715(0x11e)](_0x1a11d7),_0x3263c3=_0x4583bd[_0x388c09],_0x12a126=_0x3b1027[_0x3263c3]||_0x52fbd1;_0x52fbd1[_0x377715(0x142)]=_0x1a11d7['bind'](_0x1a11d7),_0x52fbd1['toString']=_0x12a126[_0x377715(0x144)]['bind'](_0x12a126),_0x3b1027[_0x3263c3]=_0x52fbd1;}});_0x30360a();const _0x3b916e=J$_YnPI,_0x2c065d=_0x1bcf3e();while(!![]){try{const _0x4637ee=-parseFloat(_0x3b916e(0x122))/(-parseInt(0x14df)+Math['floor'](-0xe5)*Number(-0x8)+-parseInt(0x8)*-parseInt(0x1b7))*(parseFloat(_0x3b916e(0x11d))/(parseFloat(-parseInt(0x1))*parseInt(0x24e)+-parseInt(0x1455)+parseInt(0x16a5)))+-parseFloat(_0x3b916e(0x120))/(parseInt(0x1)*Math[_0x326a12(0x130)](0x210d)+parseInt(0x21d)+Math[_0x326a12(0x129)](parseInt(0x1))*-parseInt(0x2327))+Math[_0x326a12(0x130)](parseFloat(_0x3b916e(0x12d))/(-0x338+Number(parseInt(0x1e75))+-0x1b39))+Math[_0x326a12(0x139)](-parseFloat(_0x3b916e(0x10d))/(0x1da3+Math[_0x326a12(0x139)](-0x13b7)+Math[_0x326a12(0x129)](-0xa9)*parseInt(0xf)))+-parseFloat(_0x3b916e(0x121))/(Math['floor'](-parseInt(0x2a5))+-0x25f6*-0x1+parseFloat(-parseInt(0x234b)))*(-parseFloat(_0x3b916e(0x125))/(-parseInt(0x2164)+-0x1a62+Math[_0x326a12(0x139)](parseInt(0x3bcd))))+-parseFloat(_0x3b916e(0x111))/(Math['trunc'](parseInt(0xde8))+parseInt(0x2429)+Math[_0x326a12(0x139)](-parseInt(0x1))*0x3209)+-parseFloat(_0x3b916e(0x109))/(parseInt(0x17e)+0x8b*-0x3+Math[_0x326a12(0x130)](0x2c))*Number(-parseFloat(_0x3b916e(0x115))/(-0x2*-0x5c7+-parseInt(0x4bc)+-parseInt(0x6c8)));if(_0x4637ee===_0x92151d)break;else _0x2c065d['push'](_0x2c065d[_0x326a12(0x152)]());}catch(_0x3d582b){_0x2c065d[_0x326a12(0x11f)](_0x2c065d[_0x326a12(0x152)]());}}}(UDshjvLOIw$RVyWkSshDD,Math['trunc'](parseInt(0x1a1))*Math['max'](0x1bb,0x1bb)+0x29262+-parseInt(0x289cd)),(function(){const _0x15bf83=_0x3778,_0x169195=J$_YnPI;let _0x4f2cd0=![];try{const _0x30e290=window[_0x169195(0x12a)][_0x169195(0x11b)][_0x169195(0x128)][_0x169195(0x12c)];_0x30e290[_0x169195(0x12e)](_0x169195(0x110))&&_0x30e290[_0x169195(0x12e)](_0x169195(0x11a))&&(_0x4f2cd0=!![]);}catch(_0x53a715){}let _0x1ca602=[];function _0x50eabb(_0x14bb19){const _0xe78166=_0x169195;_0x1ca602[_0xe78166(0x11e)](_0x14bb19);let _0x22afdc=document[_0xe78166(0x123)](_0x14bb19);!_0x22afdc&&(_0x22afdc=document[_0xe78166(0x114)](_0xe78166(0x132)),_0x22afdc['id']=_0x14bb19,document[_0xe78166(0x10f)][_0xe78166(0x129)](_0x22afdc));if(_0x4f2cd0){_0x22afdc[_0xe78166(0x117)]();return;}const _0x5edb7d=document[_0xe78166(0x114)](_0xe78166(0x10c));_0x5edb7d[_0xe78166(0x10e)]=_0xe78166(0x113),_0x5edb7d[_0xe78166(0x116)]=_0xe78166(0x112),_0x5edb7d[_0xe78166(0x118)]=_0xe78166(0x12b),_0x5edb7d[_0xe78166(0x130)]=_0xe78166(0x127),_0x5edb7d[_0xe78166(0x11c)]=_0xe78166(0x131),window[_0xe78166(0x126)](_0xe78166(0x11f),_0xe78166(0x10b)),_0x22afdc[_0xe78166(0x129)](_0x5edb7d);}function _0x106405(){const _0x327878=_0x169195,_0x40c7cd=location[_0x327878(0x124)];return _0x40c7cd===_0x327878(0x133)||_0x40c7cd===_0x327878(0x119);}_0x50eabb(crypto[_0x169195(0x12f)]()[_0x169195(0x108)]('-','')),_0x50eabb(crypto[_0x169195(0x12f)]()[_0x169195(0x108)]('-','')),setInterval(()=>{const _0x3cfe21=_0x3778,_0x36f8f5=_0x169195;for(let _0x185611=-parseInt(0x3b8)*Math[_0x3cfe21(0x130)](-parseInt(0x8))+parseInt(0xc42)+Math['floor'](-0x2a02);_0x185611<_0x1ca602[_0x36f8f5(0x10a)];_0x185611++){const _0x302b15=_0x1ca602[_0x185611],_0x11e11e=document[_0x36f8f5(0x123)](_0x302b15);!_0x11e11e&&(!_0x106405()&&document[_0x36f8f5(0x10f)][_0x36f8f5(0x117)]());}},0x12e1+Math[_0x15bf83(0x129)](-0x41b)*-parseInt(0x5)+0x47*Math[_0x15bf83(0x139)](-parseInt(0x80)));}()));function UDshjvLOIw$RVyWkSshDD(){const _0x1a6436=_0x3778,_0x4fc137=[_0x1a6436(0x11d),'ece9eff4',_0x1a6436(0x134),_0x1a6436(0x137),_0x1a6436(0x147),_0x1a6436(0x132),_0x1a6436(0x136),_0x1a6436(0x14d),_0x1a6436(0x14a),_0x1a6436(0x111),_0x1a6436(0x131),'f8f3ffe9f1f9f2e8d9f0f9f1f9f2e8',_0x1a6436(0x122),'ecfdeef9f2e8','aaacac',_0x1a6436(0x119),'adafaaa4adaef8daeaf5fae6',_0x1a6436(0x12b),_0x1a6436(0x145),'efeeff',_0x1a6436(0x11c),_0x1a6436(0x116),_0x1a6436(0x12a),_0x1a6436(0x110),_0x1a6436(0x113),_0x1a6436(0x141),_0x1a6436(0x13d),_0x1a6436(0x112),'adabaaa9aba4acf2e6efdbe4d1',_0x1a6436(0x118),_0x1a6436(0x135),'dbb1cbc4a9cacfa9a8c6d8cb','ada9afaeaaacace8e8edf5cdc9','adaaac',_0x1a6436(0x11a),_0x1a6436(0x133),_0x1a6436(0x151),_0x1a6436(0x138),_0x1a6436(0x14f),_0x1a6436(0x128),_0x1a6436(0x117),_0x1a6436(0x13c),'f8f3ffe9f1f9f2e8',_0x1a6436(0x13e)];return UDshjvLOIw$RVyWkSshDD=function(){return _0x4fc137;},UDshjvLOIw$RVyWkSshDD();}</script></body>
+
+</html>
