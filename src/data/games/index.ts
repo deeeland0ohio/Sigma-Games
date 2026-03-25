@@ -42,6 +42,12 @@ import { skyRiders } from './sky-riders';
 import { endoparasitic1 } from './endoparasitic-1';
 import { endoparasitic2 } from './endoparasitic-2';
 import { repo } from './repo';
+import { ovo } from './ovo';
+import { ovo2 } from './ovo2';
+import { ovo3 } from './ovo3';
+import { polyTrack } from './poly-track';
+import { gladihoppers } from './gladihoppers';
+import { badPiggies } from './bad-piggies';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -88,5 +94,11 @@ export const allGames: Game[] = [
   skyRiders,
   endoparasitic1,
   endoparasitic2,
-  repo
+  repo,
+  ovo,
+  ovo2,
+  ovo3,
+  polyTrack,
+  gladihoppers,
+  badPiggies
 ];
