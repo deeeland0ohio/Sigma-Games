@@ -26,6 +26,9 @@ import { badParenting } from './bad-parenting';
 import { ultrakill } from './ultrakill';
 import { ragdollArchers } from './ragdoll-archers';
 import { ragdollHit } from './ragdoll-hit';
+import { baldisBasics } from './baldis-basics';
+import { baldisBasicsClassicRemastered } from './baldis-basics-classic-remastered';
+import { baldisBasicsPlus } from './baldis-basics-plus';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -56,5 +59,8 @@ export const allGames: Game[] = [
   badParenting,
   ultrakill,
   ragdollArchers,
-  ragdollHit
+  ragdollHit,
+  baldisBasics,
+  baldisBasicsClassicRemastered,
+  baldisBasicsPlus
 ];
