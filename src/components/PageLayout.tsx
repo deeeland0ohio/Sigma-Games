@@ -19,7 +19,7 @@ export default function PageLayout({
   title, 
   showBack = false, 
   backTo = "/", 
-  backText = "Back to Hub",
+  backText = "Back to Games",
   maxWidth = '6xl'
 }: PageLayoutProps) {
   const colors = useThemeColors();
