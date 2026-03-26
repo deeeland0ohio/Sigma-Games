@@ -59,6 +59,9 @@ import { webfishing } from './webfishing';
 import { granny } from './granny';
 import { cuphead } from './cuphead';
 import { aSmallWorldCup } from './a-small-world-cup';
+import { idleBreakout } from './idle-breakout';
+import { basketRandom } from './basket-random';
+import { blockBlast } from './block-blast';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -122,5 +125,8 @@ export const allGames: Game[] = [
   webfishing,
   granny,
   cuphead,
-  aSmallWorldCup
+  aSmallWorldCup,
+  idleBreakout,
+  basketRandom,
+  blockBlast
 ];

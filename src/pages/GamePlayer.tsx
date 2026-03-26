@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
-import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart } from 'lucide-react';
+import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import SettingsMenu from '../components/SettingsMenu';
 import Credits from '../components/Credits';
@@ -18,7 +18,8 @@ export default function GamePlayer() {
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    if (id === 'crazy-cattle-3d') {
+    const popupGames = ['crazy-cattle-3d', 'basket-random'];
+    if (id && popupGames.includes(id)) {
       setShowPopup(true);
     }
   }, [id]);
@@ -141,14 +142,20 @@ export default function GamePlayer() {
             <motion.div 
               initial={{ opacity: 0, scale: 0.9, y: 20 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              className={`max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl ${colors.shadow}`}
+              className={`max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl ${colors.shadow} flex flex-col items-center text-center`}
             >
-              <p className="text-zinc-400 leading-relaxed mb-8 text-center text-lg">
-                This website is an ad free unblocked games website, don't worry about the 'unofficial port' popup you will see in game. This website would be classified as an 'other ad-free "unblocked game" website'.
+              <div className={`w-16 h-16 rounded-full ${colors.tertiaryBg || colors.secondaryBg} ${colors.groupHoverQuaternary || colors.groupHoverText || 'text-white'} flex items-center justify-center mb-6`}>
+                <AlertTriangle size={32} />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
+              <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
+                {id === 'basket-random' 
+                  ? "The ads you see on this game are NOT from this website they are embedded in the code."
+                  : "This website is an ad free unblocked games website, don't worry about the 'unofficial port' popup you will see in game. This website would be classified as an 'other ad-free \"unblocked game\" website'."}
               </p>
               <button
                 onClick={() => setShowPopup(false)}
-                className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg}`}
+                className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
               >
                 UNDERSTOOD
               </button>
