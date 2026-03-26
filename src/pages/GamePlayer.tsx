@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
 import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart } from 'lucide-react';
@@ -14,6 +15,13 @@ export default function GamePlayer() {
   const colors = useThemeColors();
   const { toggleFavorite, isFavorite } = useFavorites();
   const [reloadKey, setReloadKey] = useState(0);
+  const [showPopup, setShowPopup] = useState(false);
+
+  useEffect(() => {
+    if (id === 'crazy-cattle-3d') {
+      setShowPopup(true);
+    }
+  }, [id]);
 
   if (!game) {
     return (
@@ -126,6 +134,27 @@ export default function GamePlayer() {
             </div>
           )}
         </div>
+
+        {/* Game Specific Popups */}
+        {showPopup && (
+          <div className="absolute inset-0 z-[60] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className={`max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl ${colors.shadow}`}
+            >
+              <p className="text-zinc-400 leading-relaxed mb-8 text-center text-lg">
+                This website is an ad free unblocked games website, don't worry about the 'unofficial port' popup you will see in game. This website would be classified as an 'other ad-free "unblocked game" website'.
+              </p>
+              <button
+                onClick={() => setShowPopup(false)}
+                className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg}`}
+              >
+                UNDERSTOOD
+              </button>
+            </motion.div>
+          </div>
+        )}
       </main>
     </div>
   );

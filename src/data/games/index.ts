@@ -48,6 +48,17 @@ import { ovo3 } from './ovo3';
 import { polyTrack } from './poly-track';
 import { gladihoppers } from './gladihoppers';
 import { badPiggies } from './bad-piggies';
+import { basketBros } from './basket-bros';
+import { cloverPit } from './clover-pit';
+import { clusterRush } from './cluster-rush';
+import { crazyCars } from './crazy-cars';
+import { crazyCattle3d } from './crazy-cattle-3d';
+import { crazyChickens3d } from './crazy-chickens-3d';
+import { crazyKitty3d } from './crazy-kitty-3d';
+import { webfishing } from './webfishing';
+import { granny } from './granny';
+import { cuphead } from './cuphead';
+import { aSmallWorldCup } from './a-small-world-cup';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -100,5 +111,16 @@ export const allGames: Game[] = [
   ovo3,
   polyTrack,
   gladihoppers,
-  badPiggies
+  badPiggies,
+  basketBros,
+  cloverPit,
+  clusterRush,
+  crazyCars,
+  crazyCattle3d,
+  crazyChickens3d,
+  crazyKitty3d,
+  webfishing,
+  granny,
+  cuphead,
+  aSmallWorldCup
 ];

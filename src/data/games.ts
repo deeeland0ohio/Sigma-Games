@@ -1,4 +1,4 @@
-import { Folder, Star, Heart, Puzzle, Skull } from 'lucide-react';
+import { Folder, Star, Heart, Puzzle, Skull, Zap } from 'lucide-react';
 import { Game } from '../types';
 import { allGames } from './games/index';
 
