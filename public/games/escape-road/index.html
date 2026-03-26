@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Escape Road</title>
+<link rel="shortcut icon" href="https://cdn.jsdelivr.net/gh/bubbls/escape-road@45b2d69c626dc365753f6922d2c48c4075683ef5/drive.google.com/escape%20road/icon.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bubbls/escape-road@45b2d69c626dc365753f6922d2c48c4075683ef5/drive.google.com/escape%20road/TemplateData/style.css">
+</head>
+<style>
+  @font-face {
+  font-family: myFirstFont;
+  src: url(https://cdn.jsdelivr.net/gh/bubbls/escape-road@45b2d69c626dc365753f6922d2c48c4075683ef5/drive.google.com/escape%20road/Chainwhacks.otf);
+  }
+  #logo-canvas, body
+  {
+    font-family: myFirstFont;
+  }
+</style>
+<body class="dark">
+<div id="unity-container" class="unity-desktop"><p style="opacity: 0;position: absolute;">_</p>
+<canvas id="unity-canvas"></canvas>
+</div>
+<div id="loading-cover" style="display:none;background: black;">
+<div id="unity-loading-bar">
+<canvas id="logo-canvas" style="position: absolute; background-color: black;">
+<img src="https://cdn.jsdelivr.net/gh/bubbls/escape-road@45b2d69c626dc365753f6922d2c48c4075683ef5/drive.google.com/escape%20road/loading.png" id="ld_bg">
+<img src="https://cdn.jsdelivr.net/gh/bubbls/escape-road@45b2d69c626dc365753f6922d2c48c4075683ef5/drive.google.com/escape%20road/car-icon.png" id="ld_car">
+</canvas>
+</div>
+</div>
+<img id="azlogo" class="az" src="https://cdn.jsdelivr.net/gh/bubbls/escape-road@45b2d69c626dc365753f6922d2c48c4075683ef5/drive.google.com/escape%20road/az_logo.png">
+<script>
+    const container = document.querySelector("#unity-container");
+    const canvas = document.querySelector("#unity-canvas");
+    const loadingCover = document.querySelector("#loading-cover");
+
+    const buildUrl = "https://cdn.jsdelivr.net/gh/bubbls/escape-road@45b2d69c626dc365753f6922d2c48c4075683ef5/drive.google.com/escape%20road/TemplateData";
+    const loaderUrl = buildUrl + "/loader.js";
+    const config = {
+      dataUrl: buildUrl + "/data.unityweb",
+      frameworkUrl: buildUrl + "/framework.js.unityweb",
+      codeUrl: buildUrl + "/wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "1games.io",
+      productName: "Escape Road",
+      productVersion: "2.0",
+    };
+
+    if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+      container.className = "unity-mobile";
+      config.devicePixelRatio = 1;
+    }
+    
+    async function load() {
+      var az_logo = document.getElementById('azlogo');
+      az_logo.style.opacity = 0;
+      az_logo.style.display = 'none';
+      
+      createUnityInstance(canvas, config, (progress) => {
+        logo_loading_percent = progress;
+        drawCanvas(progress);
+      }).then((unityInstance) => {
+        window.unityInstance = unityInstance;
+        setTimeout(() => {
+          loadingCover.style.display = "none";
+          logo_loaded = true;
+          window.focus();
+        }, 2000);
+      }).catch((message) => {
+        alert(message);
+      });
+    }
+
+    loadingCover.style.display = "";
+
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      load();
+    };
+
+    var logo_loaded = false;
+    var logo_loading_percent = 0;
+
+    window.onresize = () => {
+      drawCanvas(logo_loading_percent);
+    }
+    window.onload = () => {
+      drawCanvas(logo_loading_percent);
+    }
+
+    var logo_canvas = document.getElementById("logo-canvas");
+    function drawCanvas(_percent = 0) {
+      if (logo_loaded) {
+        return;
+      }
+      resizeLogoCanvas();
+      var ctx = logo_canvas.getContext("2d");
+      var ld_bg = document.getElementById("ld_bg");
+
+      if (_percent > 1) {
+        _percent = 1;
+      }
+
+      ctx.drawImage(ld_bg, 0, 0, logo_canvas.width, logo_canvas.height);
+
+      ctx.fillStyle = "#977e21";
+      var _lw = 700;
+      var _lh = 50;
+      ctx.fillRect((1920 - _lw) * 0.5 * (logo_canvas.width / 1920), (1080 - 150) * (logo_canvas.height / 1080), _lw * (logo_canvas.width / 1920), _lh * (logo_canvas.height / 1080));
+
+      ctx.fillStyle = "#fad234";
+      var _pad = 5;
+      var _pw = (_lw - _pad * 2);
+      var _ph = _lh - _pad * 2;
+      var _px = (1920 - _pw) * 0.5;
+      ctx.fillRect(_px * (logo_canvas.width / 1920), (1080 - 150 + _pad) * (logo_canvas.height / 1080), _pw * _percent * (logo_canvas.width / 1920), _ph * (logo_canvas.height / 1080));
+
+      ctx.font = "35px myFirstFont";
+      ctx.textAlign = "center";
+      ctx.fillStyle = "#fff";
+      ctx.shadowColor = "black";
+      ctx.shadowOffsetY = 2;
+      var new_per = parseInt(_percent * 100);
+      ctx.fillText("" + new_per + "%", logo_canvas.width / 2, logo_canvas.height / 2 + (logo_canvas.height / 1080) * 425);
+    }
+    function resizeLogoCanvas() {
+      var _w = window.innerWidth;
+      var _h = window.innerHeight;
+      var _nw = _h * 16 / 9;
+      if (_nw <= _w) {
+        logo_canvas.width = _nw;
+        logo_canvas.height = _h;
+      }
+      else {
+        logo_canvas.width = _w;
+        logo_canvas.height = _w * 9 / 16;
+      }
+    }
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
