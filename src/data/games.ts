@@ -36,12 +36,7 @@ export const games: Game[] = [
 ];
 
 export const allGamesList = [...allGames].sort((a, b) => {
-  const keyA = a.series || a.title;
-  const keyB = b.series || b.title;
-  if (keyA !== keyB) {
-    return keyA.localeCompare(keyB);
-  }
-  return (a.seriesOrder || 0) - (b.seriesOrder || 0);
+  return a.title.localeCompare(b.title);
 });
 
 export const popularGamesList = [...allGames].sort((a, b) => {

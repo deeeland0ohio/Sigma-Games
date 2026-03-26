@@ -62,6 +62,9 @@ import { aSmallWorldCup } from './a-small-world-cup';
 import { idleBreakout } from './idle-breakout';
 import { basketRandom } from './basket-random';
 import { blockBlast } from './block-blast';
+import { blackJack } from './black-jack';
+import { ballBlast } from './ball-blast';
+import { iceDodo } from './ice-dodo';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -128,5 +131,8 @@ export const allGames: Game[] = [
   aSmallWorldCup,
   idleBreakout,
   basketRandom,
-  blockBlast
+  blockBlast,
+  blackJack,
+  ballBlast,
+  iceDodo
 ];
