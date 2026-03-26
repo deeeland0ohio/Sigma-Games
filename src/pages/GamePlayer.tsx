@@ -18,7 +18,7 @@ export default function GamePlayer() {
   const [showPopup, setShowPopup] = useState(false);
 
   useEffect(() => {
-    const popupGames = ['crazy-cattle-3d', 'basket-random'];
+    const popupGames = ['crazy-cattle-3d', 'basket-random', 'soccer-random'];
     if (id && popupGames.includes(id)) {
       setShowPopup(true);
     }
@@ -149,7 +149,7 @@ export default function GamePlayer() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
               <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
-                {id === 'basket-random' 
+                {id === 'basket-random' || id === 'soccer-random'
                   ? "The ads you see on this game are NOT from this website they are embedded in the code."
                   : "This website is an ad free unblocked games website, don't worry about the 'unofficial port' popup you will see in game. This website would be classified as an 'other ad-free \"unblocked game\" website'."}
               </p>
