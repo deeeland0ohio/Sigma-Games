@@ -64,7 +64,6 @@ import { basketRandom } from './basket-random';
 import { blockBlast } from './block-blast';
 import { blackJack } from './black-jack';
 import { ballBlast } from './ball-blast';
-import { iceDodo } from './ice-dodo';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -133,6 +132,5 @@ export const allGames: Game[] = [
   basketRandom,
   blockBlast,
   blackJack,
-  ballBlast,
-  iceDodo
+  ballBlast
 ];
