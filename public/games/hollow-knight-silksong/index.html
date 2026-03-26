@@ -14,7 +14,82 @@
         height: 100%;
         overflow: hidden;
       }
+      /* Aggressively hide any potential unofficial port popups via CSS */
+      .unofficial-port-warning, 
+      #unofficial-port-msg,
+      [id*="unofficial"],
+      [class*="unofficial"] {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
     </style>
+    <script>
+      // Suppress "unofficial port" popups and alerts
+      const blockPattern = /unofficial port/i;
+      
+      const originalAlert = window.alert;
+      window.alert = function(msg) {
+        if (msg && typeof msg === 'string' && blockPattern.test(msg)) {
+          console.log('Blocked unofficial port alert:', msg);
+          return;
+        }
+        originalAlert(msg);
+      };
+
+      const originalConfirm = window.confirm;
+      window.confirm = function(msg) {
+        if (msg && typeof msg === 'string' && blockPattern.test(msg)) {
+          console.log('Blocked unofficial port confirm:', msg);
+          return true;
+        }
+        return originalConfirm(msg);
+      };
+
+      const originalPrompt = window.prompt;
+      window.prompt = function(msg, defaultVal) {
+        if (msg && typeof msg === 'string' && blockPattern.test(msg)) {
+          console.log('Blocked unofficial port prompt:', msg);
+          return defaultVal || '';
+        }
+        return originalPrompt(msg, defaultVal);
+      };
+
+      // Intercept DOM elements
+      const suppressNode = (node) => {
+        if (node.nodeType === 1) {
+          const text = node.textContent || '';
+          const html = node.innerHTML || '';
+          if (blockPattern.test(text) || blockPattern.test(html)) {
+            node.style.display = 'none';
+            node.style.visibility = 'hidden';
+            node.remove();
+            return true;
+          }
+        }
+        return false;
+      };
+
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          mutation.addedNodes.forEach(suppressNode);
+        });
+      });
+      observer.observe(document.documentElement, { childList: true, subtree: true });
+
+      // Periodic cleanup for anything that might have slipped through
+      setInterval(() => {
+        document.querySelectorAll('*').forEach(suppressNode);
+      }, 500);
+
+      // Override console.warn/error if they trigger UI
+      const originalWarn = console.warn;
+      console.warn = function(...args) {
+        if (args.some(arg => typeof arg === 'string' && blockPattern.test(arg))) return;
+        originalWarn.apply(console, args);
+      };
+    </script>
   </head>
   <body>
     <div id="loading-text" style="color: white; font-size: 48px; font-family: cursive; text-align: center; margin-top: 20px;"> LOADING...</div>
@@ -196,6 +271,10 @@ function getParts(file, start, end) {
     const warningBanner = document.querySelector("#unity-warning");
 
     function unityShowBanner(msg, type) {
+      if (msg && typeof msg === 'string' && msg.toLowerCase().includes('unofficial port')) {
+        console.log('Blocked unofficial port banner:', msg);
+        return;
+      }
       function update() {
         warningBanner.style.display =
           warningBanner.children.length ? 'block' : 'none';

@@ -47,10 +47,10 @@ export default function GameCard({ game, to }: GameCardProps) {
       {showWarning && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4" onClick={handleCancel}>
           <div 
-            className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full shadow-2xl flex flex-col items-center text-center"
+            className={`bg-zinc-900 border border-zinc-800 ${colors.shadow} rounded-xl p-6 max-w-md w-full shadow-2xl flex flex-col items-center text-center`}
             onClick={e => e.stopPropagation()}
           >
-            <div className="w-12 h-12 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center mb-4">
+            <div className={`w-12 h-12 rounded-full ${colors.tertiaryBg || colors.secondaryBg} ${colors.groupHoverQuaternary || colors.groupHoverText || 'text-white'} flex items-center justify-center mb-4`}>
               <AlertTriangle size={24} />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">

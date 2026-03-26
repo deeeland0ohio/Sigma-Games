@@ -145,6 +145,8 @@ export function useThemeColors() {
       selection: 'selection:bg-red-500/30',
       terminalText: 'text-emerald-400',
       cursor: 'bg-red-500',
+      popupBg: 'bg-red-950/90',
+      popupText: 'text-red-50',
       hexPrimary: 'rgba(239, 68, 68, 0.4)',
       hexSecondary: 'rgba(16, 185, 129, 0.4)',
       hexMatrix: '#10b981' // emerald-500
@@ -165,6 +167,8 @@ export function useThemeColors() {
       selection: 'selection:bg-blue-500/30',
       terminalText: 'text-pink-400',
       cursor: 'bg-blue-500',
+      popupBg: 'bg-blue-950/90',
+      popupText: 'text-blue-50',
       hexPrimary: 'rgba(59, 130, 246, 0.4)',
       hexSecondary: 'rgba(236, 72, 153, 0.4)',
       hexMatrix: '#ec4899' // pink-500
@@ -185,6 +189,8 @@ export function useThemeColors() {
       selection: 'selection:bg-purple-500/30',
       terminalText: 'text-cyan-400',
       cursor: 'bg-purple-500',
+      popupBg: 'bg-purple-950/90',
+      popupText: 'text-purple-50',
       hexPrimary: 'rgba(168, 85, 247, 0.4)',
       hexSecondary: 'rgba(6, 182, 212, 0.4)',
       hexMatrix: '#06b6d4' // cyan-500
@@ -205,6 +211,8 @@ export function useThemeColors() {
       selection: 'selection:bg-orange-500/30',
       terminalText: 'text-yellow-400',
       cursor: 'bg-orange-500',
+      popupBg: 'bg-orange-950/90',
+      popupText: 'text-orange-50',
       hexPrimary: 'rgba(249, 115, 22, 0.4)',
       hexSecondary: 'rgba(234, 179, 8, 0.4)',
       hexMatrix: '#eab308' // yellow-500
@@ -225,6 +233,8 @@ export function useThemeColors() {
       selection: 'selection:bg-zinc-100/30',
       terminalText: 'text-zinc-400',
       cursor: 'bg-zinc-100',
+      popupBg: 'bg-zinc-900/95',
+      popupText: 'text-zinc-50',
       hexPrimary: 'rgba(244, 244, 245, 0.4)',
       hexSecondary: 'rgba(161, 161, 170, 0.4)',
       hexMatrix: '#f4f4f5' // zinc-100
@@ -245,6 +255,8 @@ export function useThemeColors() {
       selection: 'selection:bg-lime-400/30',
       terminalText: 'text-emerald-400',
       cursor: 'bg-lime-400',
+      popupBg: 'bg-lime-950/90',
+      popupText: 'text-lime-50',
       hexPrimary: 'rgba(163, 230, 53, 0.4)',
       hexSecondary: 'rgba(16, 185, 129, 0.4)',
       hexMatrix: '#a3e635' // lime-400
@@ -265,6 +277,8 @@ export function useThemeColors() {
       selection: 'selection:bg-yellow-400/30',
       terminalText: 'text-fuchsia-400',
       cursor: 'bg-yellow-400',
+      popupBg: 'bg-zinc-950/90',
+      popupText: 'text-yellow-50',
       hexPrimary: 'rgba(250, 204, 21, 0.4)',
       hexSecondary: 'rgba(217, 70, 239, 0.4)',
       hexMatrix: '#facc15' // yellow-400
@@ -285,6 +299,8 @@ export function useThemeColors() {
       selection: 'selection:bg-indigo-500/30',
       terminalText: 'text-fuchsia-400',
       cursor: 'bg-indigo-500',
+      popupBg: 'bg-indigo-950/90',
+      popupText: 'text-indigo-50',
       hexPrimary: 'rgba(99, 102, 241, 0.4)',
       hexSecondary: 'rgba(217, 70, 239, 0.4)',
       hexMatrix: '#d946ef' // fuchsia-500
@@ -305,6 +321,8 @@ export function useThemeColors() {
       selection: 'selection:bg-purple-400/30',
       terminalText: 'text-pink-400',
       cursor: 'bg-purple-400',
+      popupBg: 'bg-purple-950/90',
+      popupText: 'text-purple-50',
       hexPrimary: 'rgba(192, 132, 252, 0.4)',
       hexSecondary: 'rgba(236, 72, 153, 0.4)',
       hexMatrix: '#c084fc' // purple-400
@@ -325,6 +343,8 @@ export function useThemeColors() {
       selection: 'selection:bg-emerald-500/30',
       terminalText: 'text-emerald-500',
       cursor: 'bg-emerald-500',
+      popupBg: 'bg-emerald-950/90',
+      popupText: 'text-emerald-50',
       hexPrimary: 'rgba(16, 185, 129, 0.4)',
       hexSecondary: 'rgba(4, 120, 87, 0.4)',
       hexMatrix: '#10b981' // emerald-500
@@ -353,6 +373,8 @@ export function useThemeColors() {
       selection: 'selection:bg-cyan-400/30',
       terminalText: 'text-cyan-400',
       cursor: 'bg-cyan-400',
+      popupBg: 'bg-cyan-950/90',
+      popupText: 'text-cyan-50',
       hexPrimary: '#00FFFF',
       hexSecondary: '#3B82F6',
       hexTertiary: '#a1cff0',
@@ -383,6 +405,8 @@ export function useThemeColors() {
       selection: 'selection:bg-violet-500/30',
       terminalText: 'text-orange-400',
       cursor: 'bg-violet-500',
+      popupBg: 'bg-violet-950/90',
+      popupText: 'text-violet-50',
       hexPrimary: 'rgba(139, 92, 246, 0.4)', // violet-500
       hexSecondary: 'rgba(249, 115, 22, 0.4)', // orange-500
       hexTertiary: '#fbbf24', // amber-400
@@ -413,6 +437,8 @@ export function useThemeColors() {
       selection: 'selection:bg-blue-400/30',
       terminalText: 'text-blue-400',
       cursor: 'bg-blue-400',
+      popupBg: 'bg-blue-950/90',
+      popupText: 'text-blue-50',
       hexPrimary: 'rgba(59, 130, 246, 0.6)', // blue-500
       hexSecondary: 'rgba(249, 115, 22, 0.6)', // orange-500
       hexTertiary: '#22d3ee', // cyan-400
