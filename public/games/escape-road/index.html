@@ -54,14 +54,18 @@
     }
     
     async function load() {
+      console.log("Starting Unity load process");
       var az_logo = document.getElementById('azlogo');
       az_logo.style.opacity = 0;
       az_logo.style.display = 'none';
       
+      console.log("Calling createUnityInstance with config:", config);
       createUnityInstance(canvas, config, (progress) => {
+        console.log("Unity loading progress:", progress);
         logo_loading_percent = progress;
         drawCanvas(progress);
       }).then((unityInstance) => {
+        console.log("Unity instance created successfully.");
         window.unityInstance = unityInstance;
         setTimeout(() => {
           loadingCover.style.display = "none";
@@ -69,7 +73,8 @@
           window.focus();
         }, 2000);
       }).catch((message) => {
-        alert(message);
+        console.error("Unity loading error:", message);
+        alert("Unity loading error: " + message);
       });
     }
 

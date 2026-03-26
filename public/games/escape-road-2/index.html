@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>Escape Road 2</title>
+	<style>
+		html { box-sizing: border-box }
+		*, *:before, *:after { box-sizing: inherit }
+		html, body { height: 100%; overflow: hidden; margin: 0; padding: 0; background: #231f20; }
+		canvas { display: block; width: 100%; height: 100%; }
+		#unity-container { width: 100%; height: 100%; }
+		#unity-loading-bar {
+			position: absolute;
+			left: 0; top: 0; width: 100%; height: 100%;
+			display: flex; flex-direction: column;
+			justify-content: center; align-items: center;
+		}
+		#unity-progress-bar-empty {
+			width: 80%; height: 24px;
+			margin: 10px; text-align: left;
+			border: 1px solid #fff; padding: 2px;
+		}
+		#unity-progress-bar-full { width: 0%; height: 100%; background: #fff; }
+	</style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      var canvas = document.querySelector("#unity-canvas");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+
+      const config = {
+        dataUrl: "https://cdn.jsdelivr.net/gh/lonya-k/aws@8e4931429a9c08b542c8def752b11a412dfef6b2/eks_cicd/csrd.js",
+        frameworkUrl: "https://cdn.jsdelivr.net/gh/genizy/google-class@3b96af8847aa44f44774e663a9e99b9ca235da7f/escaperoad2/random1.js",
+        codeUrl: "https://cdn.jsdelivr.net/gh/lonya-k/aws@8e4931429a9c08b542c8def752b11a412dfef6b2/eks_cicd/csrw.js",
+        streamingAssetsUrl: "https://cdn.jsdelivr.net/gh/lonya-k/aws@193add90970804b994d7c2cb1159bf825810a8be/eks_cicd",
+        companyName: "1games.io",
+        productName: "Escape Road 2",
+        productVersion: "2.0",
+      };
+
+      var script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/gh/genizy/google-class@main/escaperoad2/random3.js";
+      script.onload = () => {
+        createUnityInstance(canvas, config, (progress) => {
+          progressBarFull.style.width = 100 * progress + "%";
+        }).then((unityInstance) => {
+          loadingBar.style.display = "none";
+        }).catch((message) => {
+          console.error(message);
+        });
+      };
+      document.body.appendChild(script);
+    </script>
+  </body>
+</html>
