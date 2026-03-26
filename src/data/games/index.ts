@@ -62,7 +62,6 @@ import { aSmallWorldCup } from './a-small-world-cup';
 import { idleBreakout } from './idle-breakout';
 import { basketRandom } from './basket-random';
 import { blockBlast } from './block-blast';
-import { goldDiggerFrvr } from './gold-digger-frvr';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -129,6 +128,5 @@ export const allGames: Game[] = [
   aSmallWorldCup,
   idleBreakout,
   basketRandom,
-  blockBlast,
-  goldDiggerFrvr
+  blockBlast
 ];
