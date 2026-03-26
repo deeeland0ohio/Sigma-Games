@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-title" content="Gold Digger FRVR">
+    <meta name="theme-color" content="#202020">
+    <meta name="HandheldFriendly" content="true">	
+    <meta name="format-detection" content="telephone=no">
+    <meta name="msapplication-tap-highlight" content="no">
+    <meta name="google" content="notranslate">   
+
+    <title>Gold Digger FRVR - Deep Mining - Dig and Match Exploration</title>
+    <style>
+        body { background:#c8c8c8; overflow:hidden; position:fixed; font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; border:0px;padding:0px;margin:0px; width:100%; height:100%; padding-top: constant(safe-area-inset-top); }
+        preloader{ display:block; width:100%; height:100%; background: #EEEEEE; background:radial-gradient(ellipse at center, #ffffff 1%,#c8c8c8 150%); position:fixed; z-index:5; }
+        preloader canvas, preloader img{ position: fixed; }
+        preloader loadbar{ display:none; position:fixed; border:1px solid #afafaf; }
+        preloader loadbar div{ display:block; width:0%; height:100%; background-color:#007bb2; }
+        #gameCanvas{ position: fixed; top:0px; left:0px; width:0px; height:0px; background-color:#000000 }
+        #overlay{ position:absolute; z-index:3; left:50%; margin-left:-70px; visibility:hidden; bottom:3px; overflow:hidden; text-align: center; }
+        #overlay div{ float:left; }
+        #overlay.cn { margin-left: -190px; }
+        #overlay.cn div#___plusone_0 { width: 68px !important; }
+        #overlay.cn div#___plusone_0 iframe { position: relative !important; top: -4px !important; }
+        #overlay wb\:share-button iframe { width: 105px !important; }
+        #overlay iframe[version="1.0"] { position: relative !important; top: -2px; }
+        @-ms-viewport{width:100%}
+        content{ background-color:#ffffff; display: block; padding:20px; height:100%; overflow:scroll; }
+        content metadata{ float:right; margin-left:10px; text-align:center; }
+        h1{ margin:0px; font-weight:100; font-size:50px; }
+        a{ line-height:2em; }
+        h3{ margin-bottom:0px; }
+        @keyframes w{0%{transform:rotate(0deg);}20%{transform:rotate(-3deg) scale(1.4) translate(0px,-5px);}50%{transform:rotate(3deg) scale(1.4) translate(0px,-5px);}80%{transform:rotate(-3deg) scale(1.4) translate(0px,-5px);}100%{transform:rotate(0deg);}}
+        .w {animation:w 1.5s 1;}
+    </style>
+</head>
+<body>
+    <div id="debug" style="position:absolute; color:red; left:40px; z-index: 9999999"></div>
+    <script>
+        window.__antialias = false;
+        var version = "1.2.4";
+        var initTime = 1*new Date();
+        window.vpath = "https://cdn.jsdelivr.net/gh/a456pur/seraph@tree/ae2fcc6d6a9cd051654fcc0519080db1f79cf2a7/games/golddiggerfrvr/v/1576154523809";
+        window.spath = "https://cdn.jsdelivr.net/gh/a456pur/seraph@ae2fcc6d6a9cd051654fcc0519080db1f79cf2a7/games/golddiggerfrvr/v/1576154523809/external.js";
+        window.extsize = 1811152;
+        var preloader = document.createElement('preloader');document.body.appendChild(preloader);
+    </script>
+    <script>
+        if(!(window.console && console.log)) {
+            var fn = function(){};
+            console={log:fn,debug:fn,info:fn,warn:fn,error:fn};
+        }
+        Host = {
+            Localize:{
+            languages: []
+            },dataUrlsSupported:(function(){
+                var c = document.createElement("canvas");
+                return c.toDataURL&&(c.toDataURL("image/png").indexOf("data:image/png") == 0);
+            })()
+        };
+
+        (function(scope){
+            var relasedCanvasElements = []
+            var completed = 0;
+            var preview = 0;
+            var facebookAPIInited = false;
+            var gameIsLoaded = false;
+
+            scope._jsonData={};
+            scope._jsonData['ab_tests'] = {"ab_ftue":{"cohorts":["disabled","enabled"]},"ab_blastpreview":{"cohorts":["disabled","enabled"]}};
+
+            scope.getNewCanvasObject = function(){
+                var cachedElement = relasedCanvasElements.pop();
+                if(cachedElement) return cachedElement;
+                return document.createElement('canvas')
+            }
+            scope.releaseCanvas = function(canvas){
+                canvas.getContext('2d').setTransform(1, 0, 0, 1, 0, 0);
+                canvas.width = canvas.height = 1
+                relasedCanvasElements.push(canvas)
+            }
+
+            var isFBInstant = !!window.FBInstant;
+            var isTwitch = !!window.Twitch;
+
+            var loadQueue = [];
+            var loadQueueTimer = null;
+            function triggerQueue() {
+                var t = new Date().getTime();
+                while(loadQueue.length && (new Date().getTime() - t < 10)) {
+                    loadQueue.shift()();
+                }
+                if(loadQueue.length) {
+                    popQueue();
+                }
+            }
+            function popQueue() {
+                clearTimeout(loadQueueTimer);
+                if(loadQueueTimer === null) triggerQueue();
+                loadQueueTimer = setTimeout(function() {
+                    triggerQueue();
+                }, 1);
+            }
+
+            function buildCharIndex(chars) {
+                var index = {};
+                for(var i = 0; i < chars.length; i++) index[chars[i]] = i;
+                return index;
+            }
+
+            var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/!#$&*-,.:;@()<=>?[]^`{|}";
+            var charIndex = buildCharIndex(chars);
+            var intChars = "()<=>?[]^`{|}";
+            var intCharIndex = buildCharIndex(intChars);
+
+            scope.getJSGImageWrapper = function getJSGImageWrapper(path, actions, cords, drawCallback) {
+                function getCord() {
+                    var first = cords[cordOffset++];
+                    var res, intChar;
+                    switch(first) {
+                        case '_': res = 0; break;
+                        case '~': res = 1; break;
+                        case '%': res = 149932; break;
+                        case '\'': res = -149932; break;
+                        case '@':
+                            res = 
+                                  charIndex[cords[cordOffset++]]
+                                + charIndex[cords[cordOffset++]] * 74
+                                + charIndex[cords[cordOffset++]] * 5476 // (74 * 74)
+                                + charIndex[cords[cordOffset++]] * 405224; // (74 * 74 * 74)
+                            res = (res / 100) - 149932;
+                            break;
+                        default:
+                            intChar = intCharIndex[first];
+                            if(intChar !== undefined) {
+                                res = intChar * 88 + charIndex[cords[cordOffset++]];
+                            } else {
+                                res =
+                                      charIndex[first]
+                                    + charIndex[cords[cordOffset++]] * 74
+                                    + charIndex[cords[cordOffset++]] * 5476; // (74 * 74)
+                                res = (res / 100) - 2026;
+                            }
+                    }
+                    return res;
+                }
+                function getColor() {
+                    return getCord()
+                        ? 'rgb(' + getCord() + ',' + getCord() + ',' + getCord() + ')'
+                        : 'rgba(' + getCord() + ',' + getCord() + ',' + getCord() + ',' + getCord() + ')';
+                }
+                function toCanvas(canvas, scale) {
+                    canvas.width = Math.ceil(assetWidth * scale);
+                    canvas.height = Math.ceil(assetHeight * scale);
+                    var ctx = canvas.getContext('2d');
+                    ctx.scale(scale, scale);
+                    var canvasStack = [canvas];
+                    var fillObject;
+                    try {
+                        for(var a = 0; a < actions.length; a++) {
+                            switch(actions[a]) {
+                                case '4': 
+                                    var newCanvas = getNewCanvasObject();
+                                    newCanvas.width = getCord();
+                                    newCanvas.height = getCord();
+                                    ctx = newCanvas.getContext('2d');
+                                    canvasStack.push(newCanvas);
+                                    break;
+                                case 'b':
+                                    var pattern = ctx.createPattern(ctx.canvas, 'no-repeat');
+                                    var removed = canvasStack.pop();
+                                    releaseCanvas(removed);
+                                    ctx = canvasStack[canvasStack.length - 1].getContext('2d');
+                                    ctx.fillStyle = pattern;
+                                    break;
+                                case 't': fillObject = ctx.createLinearGradient(getCord(), getCord(), getCord(), getCord()); break;
+                                case 'D': fillObject = ctx.createRadialGradient(getCord(), getCord(), getCord(), getCord(), getCord(), getCord()); break;
+                                case '8': fillObject.addColorStop(getCord(), getColor()); break;
+                                case 'F': ctx.fillStyle = fillObject; break;
+                                case 'f': ctx.save(); break;
+                                case '/': ctx.bezierCurveTo(getCord(), getCord(), getCord(), getCord(), getCord(), getCord()); break;
+                                case 'p': ctx.strokeStyle = getColor(); break;
+                                case 'w': ctx.lineCap = 'butt'; break;
+                                case 'y': ctx.lineJoin = 'miter'; break;
+                                case '9': ctx.miterLimit = getCord(); break;
+                                case '6': ctx.fillStyle = getColor(); break;
+                                case 'n': ctx.beginPath(); break;
+                                case 'q': ctx.closePath(); break;
+                                case 'o': ctx.fill(); break;
+                                case 'P': ctx.stroke(); break;
+                                case 'r': ctx.restore(); break;
+                                case '2': ctx.arc(getCord(), getCord(), getCord(), getCord(), getCord(), getCord() === 1); break;
+                                case 'm': ctx.moveTo(getCord(),getCord()); break;
+                                case 'l': ctx.lineTo(getCord(),getCord()); break;
+                                case '5': ctx.quadraticCurveTo(getCord(), getCord(), getCord(), getCord()); break;
+                                case 'C': ctx.clip(); break;
+                                case 'E': ctx.lineWidth = getCord(); break;
+                                case 'A': ctx.transform(getCord(), getCord(), getCord(), getCord(), getCord(), getCord()); break;
+                                case 'u': ctx.translate(getCord(), getCord()); break;
+                                case 'V': ctx.scale(getCord(), getCord()); break;
+                                case '0': ctx.rotate(getCord()); break;
+                                case 'K': ctx.globalAlpha = getCord(); break;
+                                case 'G': ctx.strokeStyle = fillObject; break;
+                                default: console.error('unhandled', actions[a]);
+                            }
+                        }
+                    } catch(err) {
+                        window.onerror && window.onerror('Draw failure in > ' + path + ' ' + err.message, err.sourceURL, err.line);
+                    }
+                    // Reset JSG drawing
+                    cordOffset = 0;
+                    getCord();
+                    getCord();
+                    return canvas;
+                }
+
+                function handleDraw(config) {
+                    config = config || {};
+                    var scale = config.scale || 1;
+                    var forceCanvas = config.forceCanvas || false;
+                    var jsgImage;
+                    function handleCallback() {
+                        jsgImage.onload = null;
+                        jsgImage.onerror = null;
+                        drawCallback && drawCallback()
+                        drawCallback = null;
+                    }
+                    function loadNext() {
+                        var jsgCanvas = toCanvas(getNewCanvasObject(), scale);
+                        if(typeof drawCallback === 'function') {
+                            jsgImage.onload = handleCallback;
+                            jsgImage.onerror = handleCallback;
+                        }
+                        jsgImage.src = jsgCanvas.toDataURL();
+                        releaseCanvas(jsgCanvas);
+                    }
+                    if(Host.dataUrlsSupported && !forceCanvas) {
+                        jsgImage = new Image();
+                        loadNext();
+                        return jsgImage;
+                    } else {
+                        var jsgCanvas = toCanvas(getNewCanvasObject(), scale);
+                        jsgCanvas.isCanvas = true;
+                        drawCallback && drawCallback()
+                        drawCallback = null
+                        return jsgCanvas;
+                    }
+                }
+
+                var cordOffset = 0;
+                var assetWidth = getCord();
+                var assetHeight = getCord();
+                var jsgWrapper = {
+                    isJSG: true,
+                    path: path,
+                    width: assetWidth,
+                    height: assetHeight,
+                    actions: actions,
+                    cords: cords,
+                    draw: handleDraw
+                };
+
+                return jsgWrapper;
+            };
+
+            var canvas, loadbar, progressbar, logoOptions = {forceCanvas: true};
+            if(!isFBInstant) {
+                canvas = getJSGImageWrapper('logo','6nmllmllo6nmllmllo6nmllllllmlllmlllmllllo6nmllmlllmllo6nmllmlllmlllmllllo6nmlllmlllmllllmllllo6nmlllmlllo6nmlllllllllllllmlllllll//lllllml//lllmllllllllllmlllllll//lllllml//lllm////m////lm////lll//llllm/////llo6nmlllmllmlllmllllo6nmllo6nmlllo6KnmllmllllllllmlllllllloK','Iq7|s~<+(2)N>4>o=K?j>m?r{[<=}b>G}^<W~</(3(`=M?i=E]U>m?q):)]=;=O)#<(~<h<g<n|U(]>4>n>{>P?9=w[D=W`N(0|H_(T>(_==(.=})t?}?9=w>{>P=;=O>Y).:G7>K,D6?7`-[9`i[H{,[H~)y)y)y|U(]k*5)F}^<W(X=[(>)0):)](.=},D6?7|,[@`-[+~_)1<h{W=J}^<W|U(]<I?k)x?E)t?}=E]U[D=W?9=w>Y).?d<n`i[H]r>;]V>}`H]W`-[+~)u)!)!>4>n|U(]{W=J>m?q=E]U(.[3(T>()t?}Ov6<(Iq7<^:G7>K{,[H||>}]$>6`|?<{,[H`i[H]r>;~)J)})7):)])x?E)t?}(.=}>^>Q=y=L=;=O>{>P~(K)z<c)`|s<h|H<h{W=P{W=i{E=i`+<h`+<h^;=h^;=,^k=,^Z)]^Z)/^s)/|s>Y|s>9|H>9{a>|{a?*|s[V|s[h|V?5{SY8uqK1DTvMs0[i`YDTvMNz6!u^Z?B^Z>V^Z>D^r>D|r>Y|s>Y|s>9^:?F^:?0^:yLuSiz?+`YyLu`3;+t`*?G`*>9`*>9^:>9^:^M|s^h|d`m^Z`L^Z^5^3]{{&]Y^3[,^Z[p^Z]u|d]&|s{C|s{n|H{n{a{!{a|u|s|}|s}L|V|i{SSE4qK18k4Ms0}M`Y8k4MNzqI4^Z{&^Z{A^Z`-^r`-|r{C|s{C|s{n^:{.^:QQ3,LzOd3+hz|n`YOd34h0kG3iz0{.`*{m`*{n^:{n^:}P^f}PYEyGq448x}u]|cy548x6y5QBy}<^f6y5s2ycy50:y}u^+Gq4+:y}Pg0y}P^f}.^foq5O;xam5Y*x}u^E}ZY*xIx4E;x}V^f}Vu4y*24K#y}u^4}*U#yyq5q5y}.^f}.^f}g^Oe.4+Hy0E5gHy}x^OOa5gHyMd54Ly}9^WMd5Aeyia52iy}0^juS5qlyIU5Eny}3^m}+^u}3^u}x^nmK5EnyWJ5gly}t^jJF5kkyFB5aky}m^j}m^v}g^v}g^O}g^O}m^eAC5sdysG5sdy}u^evS5sdycU5wcy}2^XcU5:RyqT5aQy}1^UYQ5sOyuN5iOy}v^T2G5iOyHD5sOy}m^T}m^e}m^e~)C)R)O=E]U?F[g{W=J>m?q=M?i<I?k=E]U>Y).<r)+):)]=;=O||>}Ov6<(Gn6)+O.5(.}^<W~_)u)>[q?o`H]W]V>}~_<E<q|B]e`H]W`-[+|,[@~_(x(*mAl}^<W|U=N{[<=]r>;]V>}[q?o[]?*]x?h^E?R^@?X]$>7]r>;?{=P?x=h?x=h>?>K>{>P?9=w?9=w[E=W?{=P~').draw(logoOptions);
+                loadbar = document.createElement('loadbar');
+                progressbar = document.createElement('div');
+                preloader.appendChild(loadbar);
+                loadbar.appendChild(progressbar);
+                preloader.appendChild(canvas);
+            }
+
+            var ow = 0
+            var oh = 0
+            function handleResize(){
+                if(!isFBInstant){
+                    var w = document.documentElement.clientWidth;
+                    var h = Math.min(window.innerHeight,document.documentElement.clientHeight);
+                    if(ow!=w||oh!=h){
+                        ow = w;oh = h;
+                        var s = Math.min(w,h)*.8>>0
+                        var nh = s*0.8187702265>>0
+                        var t = ((h-nh*1.15)/2>>0)
+
+                        loadbar.style.width = canvas.style.width = s+"px"
+                        canvas.style.height = nh +"px"
+                        loadbar.style.left = canvas.style.left = ((w-s)/2>>0)+"px"
+                        canvas.style.top = t+"px"
+                        loadbar.style.height = Math.max(Math.min((s/40>>0),10),4) + "px"
+                        loadbar.style.top = (t + nh*1.05)+"px"
+                    }
+                }
+            }
+            handleResize()
+
+            scope.htmlprogress = function(total, left){
+                completed = Math.max((left / total), completed)
+            }
+
+            var timer = setInterval(function(){
+                if(completed < .5){
+                    completed += (.5-completed)/100
+                }
+                preview += (completed-preview)/10
+
+                if(isFBInstant && facebookAPIInited){
+                    FBInstant.setLoadingProgress(preview*100>>0)
+                } else {                        
+                    progressbar&&(progressbar.style.width = (preview*100>>0) + "%")
+                }
+                handleResize();
+            },50)
+
+            setTimeout(function(){
+                loadbar&&(loadbar.style.display = "block")
+            },500)
+
+            function handleFacebookLoaded() {
+                if(isFBInstant && facebookAPIInited && gameIsLoaded) {
+                    FBInstant.setLoadingProgress(100);
+                    function handleSuccess() {
+                        var locale = false;
+                        if(locale && locale != 'en-US' && Host.Localize.languages.indexOf(locale) > -1) {
+                            Host.Localize.Load(locale, function(language, success) {
+                                Host.emit('FBInstantPreloadComplete');
+                            });
+                        } else {
+                            Host.emit('FBInstantPreloadComplete');
+                        }
+                    }
+                    function handleError(err) {
+                        window.onerror && window.onerror('handleFacebookLoaded > startGameAsync (' + FBInstant.getSDKVersion() + ') > ' + (err.message || err.toString()), err);
+                        Host.emit('FBInstantPreloadComplete');
+                    }
+
+                    FBInstant.startGameAsync()
+                        .then(handleSuccess)
+                        .catch(handleError);
+                }
+            }
+
+            scope.htmlclean = function() {
+                gameIsLoaded = true;
+                clearInterval(timer)
+                if(preloader){
+                    preloader.parentNode&&preloader.parentNode.removeChild(preloader)
+                }
+                if(canvas){
+                    canvas.width = canvas.height = 1
+                }
+                loadbar = progressbar = canvas = preloader = null;
+                handleFacebookLoaded()
+            }
+
+            scope.embeddedFiles = {};
+            scope.embedFiles = function(files,data) { 
+                for( var a=0;a<files.length;a++){
+                    var d = data[a]
+                    scope.embeddedFiles[files[a]] = d;
+                }
+            }
+
+            scope.embeddedAssets = {};
+            scope.embedLoad = function(path,file){
+                scope.embeddedAssets[path] = file;
+            }
+
+            scope.loadAssets = function(files, svgCommands, data){
+                for( var a=0;a<files.length;a++){
+                    var path = files[a]
+                    var svg = svgCommands[a];
+                    if(svg){
+                        scope.embedLoad(path,[svg,data[a]])
+                    }else{
+                        scope.embedLoad(path, data[a])
+                    }
+                }
+            }
+
+            var req = new XMLHttpRequest();
+            req.addEventListener('load', function(event){
+                var s = document.createElement("script");
+                s.text = event.target.responseText;
+                document.documentElement.appendChild(s);
+            })
+
+            req.addEventListener("progress", function(event) {
+                if (event.lengthComputable) {
+                    htmlprogress(event.total, event.loaded*.7)
+                } else {
+                    htmlprogress(scope.extsize||500000, event.loaded)
+                }
+            }, false);
+
+            if(scope.spath !== undefined){
+                req.open("GET", spath);
+                req.send()
+            }
+
+        })(this)
+    </script>
+
+    <canvas id="gameCanvas" width="640" height="360" style="height: 360px; width: 640px;"></canvas>
+    <script>
+        var cs = document.getElementById('gameCanvas').style;
+        cs.width = cs.height = "100%"
+    </script>
+
+    <div id="overlay"></div>
+</body>
+</html>
