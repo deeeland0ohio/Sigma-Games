@@ -67,6 +67,7 @@ import { ballBlast } from './ball-blast';
 import { tombOfTheMask } from './tomb-of-the-mask';
 import { soccerRandom } from './soccer-random';
 import { granny2 } from './granny-2';
+import { granny3 } from './granny-3';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -138,5 +139,6 @@ export const allGames: Game[] = [
   ballBlast,
   tombOfTheMask,
   soccerRandom,
-  granny2
+  granny2,
+  granny3
 ];
