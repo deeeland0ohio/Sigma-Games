@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Rooftop Snipers</title>
+    <base href="https://cdn.jsdelivr.net/gh/genizy/assets@main/rooftop-snipers/">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="TemplateData/style.css" />
+    <script src="TemplateData/UnityProgress.js"></script>
+    <script src="TemplateData/UnityLoader.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background: #000; }
+        #gameContainer { width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+    <div class="webgl-content">
+        <div id="gameContainer"></div>
+    </div>
+    <script>
+        var gameInstance = UnityLoader.instantiate("gameContainer", "Build/rooftop-snipers.json", {
+            onProgress: UnityProgress,
+            Module: {
+                onRuntimeInitialized: function () {
+                    UnityProgress(gameInstance, "complete");
+                },
+            },
+        });
+    </script>
+</body>
+</html>
