@@ -7,6 +7,7 @@
       <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/UnityProgress.js"></script>
       <script src="https://cdn.jsdelivr.net/gh/n-101-1/1@main/2.7.js"></script>
       <script type="text/javascript">
+        window.firebaseLogin = function() { console.log("firebaseLogin called"); };
         var gameInstance;
         window.onload = function() {
             gameInstance = UnityLoader.instantiate("gameContainer", "https://cdn.jsdelivr.net/gh/n-101-1/1@main/2.7.json", {
