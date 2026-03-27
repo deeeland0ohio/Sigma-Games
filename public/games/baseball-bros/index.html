@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <base href="https://cdn.jsdelivr.net/gh/bubbls/UGS-Assets@d7f8079f5d979182e04f05b1ade24f2a757253a3/football%20bros/">
+    <base href="https://cdn.jsdelivr.net/gh/bubbls/UGS-Assets@ae6706e5224c55594c491edfc7f5ad541e2ea02b/baseball%20bros/">
     <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Football Bros</title>
-    <script type="text/javascript" src="./FootballBros.js?th=272"></script>
+    <title>Baseball Bros</title>
+    <script type="text/javascript" src="./BaseballBros.js?th=76"></script>
     <script>
         window.addEventListener("touchmove", function(event) { event.preventDefault(); }, { capture: false, passive: false });
         if (typeof window.devicePixelRatio != 'undefined' && window.devicePixelRatio > 2) {
@@ -25,7 +25,7 @@
     </style>
     <script>
         // Mock Firebase with localStorage to remove external tracking
-        var userData = localStorage.getItem('footballBrosData') || "";
+        var userData = localStorage.getItem('baseballBrosData') || "";
 
         function triggerSignIn() {
             // Mock sign in
@@ -35,11 +35,11 @@
         }
         function saveGameData(gameData) {
             userData = gameData;
-            localStorage.setItem('footballBrosData', gameData);
+            localStorage.setItem('baseballBrosData', gameData);
         }
         function loadGameData() { return userData; }
         function loadGameDataAsync() {
-            var data = localStorage.getItem('footballBrosData');
+            var data = localStorage.getItem('baseballBrosData');
             if (data) {
                 userData = data;
                 if (typeof Main != "undefined") { Main.LoadDataComplete(); }
@@ -65,7 +65,7 @@
         var lastRefresh6 = 0;
         var doTagOnce = true;
         var lastRefresh2 = 0;
-        var sid = 'dnq3hin5g67igk2rb6viv78pd1';
+        var sid = 'mock_sid';
 
         // Auto load on start
         setTimeout(() => {
@@ -78,18 +78,18 @@
         <center><img src="assets/loading4.png" alt="Loading..."></center>
     </div>
     <div id="preroll" style="width: 960px; height: 540px; display: none; position: absolute; top: 50%; left: 50%; z-index: 100; transform: translate(-50%, -50%);"></div>
-    <div id="footballbros-io_300x250" style="display: none;"></div>
-    <div id="footballbros-io_300x250_2" style="display: none;"></div>
-    <div id="footballbros-io_336x280" style="display: none;"></div>
-    <div id="footballbros-io_336x280_2" style="display: none;"></div>
-    <div id="footballbros-io_728x90" style="display: none;"></div>
-    <div id="footballbros-io_728x90_m" style="display: none;"></div>
-    <div id="footballbros-io_970x250" style="display: none;"></div>
-    <div id="footballbros-io_160x600" style="display: none;"></div>
-    <div id="footballbros-io_160x600_2" style="display: none;"></div>
+    <div id="baseballbros-io_300x250" style="display: none;"></div>
+    <div id="baseballbros-io_300x250_2" style="display: none;"></div>
+    <div id="baseballbros-io_336x280" style="display: none;"></div>
+    <div id="baseballbros-io_336x280_2" style="display: none;"></div>
+    <div id="baseballbros-io_728x90" style="display: none;"></div>
+    <div id="baseballbros-io_728x90_m" style="display: none;"></div>
+    <div id="baseballbros-io_970x250" style="display: none;"></div>
+    <div id="baseballbros-io_160x600" style="display: none;"></div>
+    <div id="baseballbros-io_160x600_2" style="display: none;"></div>
     <div id="openfl-content" onblur="window.focus();" tabindex="0"></div>
     <script type="text/javascript">
-        lime.embed("FootballBros", "openfl-content", 0, 0, { parameters: {} });
+        lime.embed("BaseballBros", "openfl-content", 0, 0, { parameters: {} });
     </script>
     <script>
         // Mock ad functions to prevent game from hanging
@@ -99,11 +99,6 @@
         window.GamePlayStart = function() {};
         window.GamePlayStop = function() {};
         window.HappyTime = function() {};
-
-        const element = document.getElementById('openfl-content');
-        function keepFocus() { element.focus(); }
-        element.addEventListener('blur', keepFocus);
-        element.addEventListener('focusout', keepFocus);
     </script>
 </body>
 </html>
