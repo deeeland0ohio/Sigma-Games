@@ -18,6 +18,16 @@
     loading... <span id="pct">0%</span>
   </div>
 <script>
+  window.fileMergerConfig = {
+    files: [
+      { name: 'escape-road-city-2-v25022604.data.unityweb', parts: 2 },
+    ],
+    basePath: 'https://cdn.jsdelivr.net/gh/bubbls/UGS-Assets@main/escaperoad2city/Build/',
+    debug: true
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/gh/bubbls/UGS-Assets@main/merge.js"></script>
+<script>
     var canvas = document.getElementById("unity-canvas");
     var container = document.getElementById("gameContainer");
     var loadingBar = document.getElementById("loadingBar");
