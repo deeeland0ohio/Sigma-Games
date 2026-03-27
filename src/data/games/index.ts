@@ -72,7 +72,6 @@ import { escapeRoad } from './escape-road';
 import { escapeRoad2 } from './escape-road-2';
 import { escapeRoadCity2 } from './escape-road-city-2';
 import { dogeMiner } from './doge-miner';
-import { oneVoneLol } from './1v1-lol';
 import { Game } from '../../types';
 
 export const allGames: Game[] = [
@@ -150,5 +149,4 @@ export const allGames: Game[] = [
   escapeRoad2,
   escapeRoadCity2,
   dogeMiner,
-  oneVoneLol
 ];
