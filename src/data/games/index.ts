@@ -87,6 +87,7 @@ import { fnfSarvente } from "./fnf-sarvente";
 import { fnfVsWhitty } from "./fnf-vs-whitty";
 import { fnfVsSonicExe } from "./fnf-vs-sonic-exe";
 import { fnfVsImpostorV4 } from "./fnf-vs-impostor-v4";
+import { shortLife } from "./short-life";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -179,4 +180,5 @@ export const allGames: Game[] = [
   fnfVsWhitty,
   fnfVsSonicExe,
   fnfVsImpostorV4,
+  shortLife,
 ];
