@@ -9,4 +9,5 @@ export const templeRun2: Game = {
   type: 'iframe',
   url: '/games/temple-run-2/index.html',
   popularity: 98,
+  keywords: ["temple", "run", "endless"],
 };

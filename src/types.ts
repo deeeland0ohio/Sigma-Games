@@ -11,4 +11,5 @@ export type Game = {
   popularity?: number;
   series?: string;
   seriesOrder?: number;
+  keywords?: string[];
 };

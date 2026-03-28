@@ -12,7 +12,8 @@ export default function PopularGames() {
     return (
       game.title.toLowerCase().includes(query) ||
       game.series?.toLowerCase().includes(query) ||
-      game.description.toLowerCase().includes(query)
+      game.description.toLowerCase().includes(query) ||
+      game.keywords?.some(kw => kw.toLowerCase().includes(query))
     );
   });
 

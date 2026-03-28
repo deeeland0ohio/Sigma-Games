@@ -78,6 +78,15 @@ import { rooftopSnipers2 } from "./rooftop-snipers-2";
 import { footballBros } from "./football-bros";
 import { baseballBros } from "./baseball-bros";
 import { templeRun2 } from "./temple-run-2";
+import { retroBowl } from "./retro-bowl";
+import { gunSpin } from "./gun-spin";
+import { fridayNightFunkin } from "./friday-night-funkin";
+import { fnfVsHex } from "./fnf-vs-hex";
+import { fnfVsGarcello } from "./fnf-vs-garcello";
+import { fnfSarvente } from "./fnf-sarvente";
+import { fnfVsWhitty } from "./fnf-vs-whitty";
+import { fnfVsSonicExe } from "./fnf-vs-sonic-exe";
+import { fnfVsImpostorV4 } from "./fnf-vs-impostor-v4";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -161,4 +170,13 @@ export const allGames: Game[] = [
   footballBros,
   baseballBros,
   templeRun2,
+  retroBowl,
+  gunSpin,
+  fridayNightFunkin,
+  fnfVsHex,
+  fnfVsGarcello,
+  fnfSarvente,
+  fnfVsWhitty,
+  fnfVsSonicExe,
+  fnfVsImpostorV4,
 ];
