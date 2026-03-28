@@ -90,6 +90,9 @@ import { fnfVsImpostorV4 } from "./fnf-vs-impostor-v4";
 import { shortLife } from "./short-life";
 import { driveMad } from "./drive-mad";
 import { driftBoss } from "./drift-boss";
+import { tenMinutesUntilDawn } from "./10-minutes-until-dawn";
+import { oneVOneLol } from "./1v1-lol";
+import { kartBros } from "./kart-bros";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -185,4 +188,7 @@ export const allGames: Game[] = [
   shortLife,
   driveMad,
   driftBoss,
+  tenMinutesUntilDawn,
+  oneVOneLol,
+  kartBros,
 ];

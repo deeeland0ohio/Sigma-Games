@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <base href="https://rawcdn.githack.com/bubbls/UGS-Assets/f56396b3862859bcbbacd67155b7d44743783156/kart%20bros/">
+  <meta charset="utf-8">
+  <title>KART BROS!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000000;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    .game-section {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+    #unity-canvas {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: block;
+      object-fit: contain;
+    }
+    #unity-loading-bar {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+      color: white;
+      z-index: 10;
+    }
+    .spinning-wheel {
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { 
+      100% { transform: rotate(360deg); } 
+    }
+  </style>
+</head>
+<body>
+  <div class="game-section">
+    <canvas id="unity-canvas" width="960" height="540" tabindex="-1"></canvas>
+    <div id="unity-loading-bar">
+      <img src="TemplateData/kart_wheel.png" class="spinning-wheel" alt="Loading...">
+      <br><img src="TemplateData/loading4.png" alt="Loading game">
+    </div>
+  </div>
+  <script>
+    // Mock functions to prevent Unity from crashing when calling ads/analytics
+    function show_videoad() {
+      console.log("Mock show_videoad called");
+      if (window.aiptag && window.aiptag.adplayer && window.aiptag.adplayer.aipConfig && typeof window.aiptag.adplayer.aipConfig.AIP_COMPLETE === "function") {
+        window.aiptag.adplayer.aipConfig.AIP_COMPLETE("empty");
+      }
+    }
+    
+    // Mock AdinPlay tag object
+    window.aipPlayer = function(config) {
+      this.config = config;
+      console.log("Mock aipPlayer instantiated");
+    };
+    window.aiptag = {
+      cmd: {
+        push: function(fn) { try { fn(); } catch(e) {} },
+        display: { push: function(fn) { try { fn(); } catch(e) {} } },
+        player: { push: function(fn) { try { fn(); } catch(e) {} } }
+      }
+    };
+    window.aiptag.adplayer = {
+      startVideoAd: function() {
+        console.log("Mock startVideoAd called");
+        if (this.aipConfig && typeof this.aipConfig.AIP_COMPLETE === "function") {
+          this.aipConfig.AIP_COMPLETE("empty");
+        }
+      },
+      aipConfig: {
+        AIP_COMPLETE: function(state) {
+          console.log("Mock AIP_COMPLETE called with state:", state);
+        }
+      }
+    };
+
+    function SendEvent(theEvent, theAction, theParms = '') {
+      console.log("Mock SendEvent:", theEvent, theAction, theParms);
+    }
+
+    function GA4_SendEvent(eventName, paramsJson) {
+      console.log("Mock GA4_SendEvent:", eventName, paramsJson);
+    }
+
+    function updateStatus(fromEvent = false) {
+      console.log("Mock updateStatus called");
+    }
+
+    function unityShowBanner(msg, type) {
+      console.log("Unity Banner:", type, msg);
+    }
+
+    // Session ID for tracking (mocked)
+    window.sid = "mock-session-id-12345";
+
+    // BlueWizard standard mock functions (from Football Bros)
+    window.triggerSignIn = function() { console.log("Mock triggerSignIn"); };
+    window.saveGameData = function(data) { localStorage.setItem('kartBrosData', data); };
+    window.loadGameData = function() { return localStorage.getItem('kartBrosData') || ""; };
+    window.loadGameDataAsync = function() { console.log("Mock loadGameDataAsync"); };
+    window.signOut = function() { console.log("Mock signOut"); };
+    window.isUserLoggedIn = function() { return true; };
+    window.EmailSignup = function() {};
+    window.SetCGInviteLink = function() {};
+    window.LoadVideo = function() {};
+    window.SetupMSNotification = function() {};
+    window.right = function(str, chr) { return str.slice(str.length - chr, str.length); };
+    window.refreshTag = function(theTag) {};
+    window.ShowAd1 = window.ShowAd2 = window.ShowAd3 = window.ShowAd4 = window.ShowAd6 = window.ShowAd7 = window.ShowAd8 = window.ShowAd9 = function() {};
+    window.ShowVideo = function() { console.log("Mock ShowVideo"); };
+    window.ShowAdBreak = function() { console.log("Mock ShowAdBreak"); };
+    window.GamePlayStart = function() {};
+    window.GamePlayStop = function() {};
+    window.HappyTime = function() {};
+  </script>
+  <script>
+    var canvas = document.getElementById("unity-canvas");
+    var buildUrl = "Build";
+    var loaderUrl = buildUrl + "/6017c527e1984a3d73b0c56d1a2c6519.loader.js";
+    var config = {
+      dataUrl: buildUrl + "/a0ce5d132edccecbb0d5be585ec1cb9b.data.unityweb",
+      frameworkUrl: buildUrl + "/1a1fc1c709352d3e8cfea1a5ff718893.framework.js.unityweb",
+      codeUrl: buildUrl + "/61e2ebfd69b7e9566aaecd4c7e80e14e.wasm.unityweb",
+      streamingAssetsUrl: "StreamingAssets",
+      companyName: "BlueWizard",
+      productName: "KART BROS!",
+      productVersion: "1.33",
+      showBanner: unityShowBanner,
+    };
+    var script = document.createElement("script");
+    script.src = loaderUrl;
+    script.onload = () => {
+      createUnityInstance(canvas, config, (progress) => {}).then((unityInstance) => {
+        window.unityInstance = unityInstance;
+        document.getElementById("unity-loading-bar").style.display = "none";
+      }).catch((message) => {
+        console.error(message);
+      });
+    };
+    document.body.appendChild(script);
+  </script>
+</body>
+</html>
