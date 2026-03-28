@@ -77,6 +77,7 @@ import { rooftopSnipers } from "./rooftop-snipers";
 import { rooftopSnipers2 } from "./rooftop-snipers-2";
 import { footballBros } from "./football-bros";
 import { baseballBros } from "./baseball-bros";
+import { templeRun2 } from "./temple-run-2";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -159,4 +160,5 @@ export const allGames: Game[] = [
   rooftopSnipers2,
   footballBros,
   baseballBros,
+  templeRun2,
 ];
