@@ -88,6 +88,8 @@ import { fnfVsWhitty } from "./fnf-vs-whitty";
 import { fnfVsSonicExe } from "./fnf-vs-sonic-exe";
 import { fnfVsImpostorV4 } from "./fnf-vs-impostor-v4";
 import { shortLife } from "./short-life";
+import { driveMad } from "./drive-mad";
+import { driftBoss } from "./drift-boss";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -181,4 +183,6 @@ export const allGames: Game[] = [
   fnfVsSonicExe,
   fnfVsImpostorV4,
   shortLife,
+  driveMad,
+  driftBoss,
 ];
