@@ -4,21 +4,20 @@
 <head>
   <base href="https://cdn.jsdelivr.net/gh/genizy/dmad-poki@49b5ab6b987f5f3be58f9dae59c92e8fc1aab9b0/">
   <script>
-  window.assgdd = {
-    "ancestorOrigins": {
-        "0": "https://games.poki.com",
-        "1": "https://poki.com"
-    },
-    "href": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com/cc1bc57a-e355-4696-97c2-097bf6188606/index.html?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
-    "origin": "https://f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "protocol": "https:",
-    "host": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "hostname": "f9564e4e-ef25-4e4b-ba67-cb11a1576bbd.poki-gdn.com",
-    "port": "",
-    "pathname": "/cc1bc57a-e355-4696-97c2-097bf6188606/index.html",
-    "search": "?country=US&url_referrer=https%3A%2F%2Fpoki.com%2F&site_id=3&iso_lang=en&poki_url=https%3A%2F%2Fpoki.com%2Fen%2Fg%2Fdrive-mad&hoist=yes&nonPersonalized=n&cloudsavegames=n&familyFriendly=n&categories=78%2C93%2C96%2C103%2C377%2C390%2C400%2C893%2C929%2C1126%2C1139%2C1140%2C1141%2C1143%2C1147%2C1163%2C1185%2C1190%2C1193%2C1197&special_condition=landing&game_id=f9564e4e-ef25-4e4b-ba67-cb11a1576bbd&game_version_id=cc1bc57a-e355-4696-97c2-097bf6188606&inspector=0",
-    "hash": ""
-}
+    // Poki SDK Stub
+    window.PokiSDK = {
+      init: () => Promise.resolve(),
+      gameLoadingStart: () => {},
+      gameLoadingFinished: () => {},
+      gameplayStart: () => {},
+      gameplayStop: () => {},
+      commercialBreak: () => Promise.resolve(),
+      rewardedBreak: () => Promise.resolve(),
+      shareableURL: () => Promise.resolve(),
+      getLanguage: () => "en",
+      getAvatar: () => Promise.resolve(),
+      isAdBlocked: () => false,
+    };
   </script>
   <meta charset="utf-8">
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
@@ -30,9 +29,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
   <link rel="stylesheet" href="webapp/fancade.css">
   <link rel="icon" href="webapp/favicon.ico">
-
-  <!-- POKI SDK -->
-  <script src="poki-sdk.js" ></script>
 </head>
 
 <body id="body">

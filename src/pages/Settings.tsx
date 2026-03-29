@@ -113,7 +113,7 @@ export default function Settings() {
   const multiplier = isAdvanced ? 3 : 1;
 
   return (
-    <PageLayout title="Settings" showBack={true}>
+    <PageLayout title="Settings" showBack={false}>
       {showWarning && (
         <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
           <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl max-w-sm space-y-4">
