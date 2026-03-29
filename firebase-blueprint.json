@@ -1,0 +1,24 @@
+{
+  "entities": {
+    "Message": {
+      "title": "Message",
+      "description": "A chat message",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string", "description": "The message content" },
+        "senderName": { "type": "string", "description": "The sender's nickname" },
+        "senderId": { "type": "string", "description": "The sender's user ID" },
+        "createdAt": { "type": "number", "description": "Timestamp of the message" },
+        "isDeleted": { "type": "boolean", "description": "Whether the message is deleted" },
+        "isAdminDeleted": { "type": "boolean", "description": "Whether the message was deleted by admin" }
+      },
+      "required": ["text", "senderName", "senderId", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/messages/{messageId}": {
+      "schema": { "$ref": "Message" },
+      "description": "Global chat messages"
+    }
+  }
+}
