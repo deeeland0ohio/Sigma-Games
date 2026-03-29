@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { io, Socket } from 'socket.io-client';
-import { Send, MessageSquare, User as UserIcon, UserPlus, LogOut, Trash2 } from 'lucide-react';
+import { Send, MessageSquare, User as UserIcon, UserPlus, LogOut, Trash2, X } from 'lucide-react';
 import { useThemeColors } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
 
@@ -43,6 +43,46 @@ export default function ChatPage() {
   const lastEnterTime = useRef<number>(0);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useThemeColors();
+  const [banTimeLeft, setBanTimeLeft] = useState<number | null>(null);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const socketRef = useRef<Socket | null>(null);
+
+  useEffect(() => {
+    socketRef.current = socket;
+  }, [socket]);
+
+  const startBanTimer = (end: number) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setBanTimeLeft(Math.floor((end - Date.now()) / 1000));
+    intervalRef.current = setInterval(() => {
+      const timeLeft = Math.floor((end - Date.now()) / 1000);
+      if (timeLeft <= 0) {
+        setBanTimeLeft(null);
+        localStorage.removeItem('kick_end');
+        if (intervalRef.current) clearInterval(intervalRef.current);
+        
+        // Automatically reload the page so they can join back in
+        window.location.reload();
+      } else {
+        setBanTimeLeft(timeLeft);
+      }
+    }, 1000);
+  };
+
+  useEffect(() => {
+    const kickEnd = localStorage.getItem('kick_end');
+    if (kickEnd) {
+      const end = parseInt(kickEnd);
+      if (Date.now() < end) {
+        startBanTimer(end);
+      } else {
+        localStorage.removeItem('kick_end');
+      }
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, []);
 
   // Force re-render every minute to filter out old messages
   useEffect(() => {
@@ -84,6 +124,7 @@ export default function ChatPage() {
       setNickname(finalNickname);
       setIsOwner(ownerStatus);
       localStorage.setItem('chat_nickname', finalNickname);
+      localStorage.setItem('last_nickname', finalNickname);
       setError(null);
     });
 
@@ -96,6 +137,16 @@ export default function ChatPage() {
       setNickname(null);
       setIsOwner(false);
       localStorage.removeItem('chat_nickname');
+      localStorage.removeItem('ban_end');
+    });
+
+    newSocket.on('kicked_5m', ({ message, kickEnd }: { message: string, kickEnd: number }) => {
+      alert(message);
+      setNickname(null);
+      setIsOwner(false);
+      localStorage.removeItem('chat_nickname');
+      localStorage.setItem('kick_end', kickEnd.toString());
+      startBanTimer(kickEnd);
     });
 
     // Handle browser online/offline status
@@ -307,12 +358,17 @@ export default function ChatPage() {
                   )}
                   <button
                     type="submit"
-                    disabled={!tempName.trim()}
+                    disabled={!tempName.trim() || banTimeLeft !== null}
                     className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-lg transition-all ${colors.primaryBg} text-black hover:scale-[1.02] active:scale-95 disabled:opacity-50 uppercase tracking-tighter shadow-lg ${colors.shadow}`}
                   >
                     <UserPlus size={20} />
                     Join Chat!
                   </button>
+                  {banTimeLeft !== null && (
+                    <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center mt-2">
+                      You were kicked for {banTimeLeft} seconds
+                    </p>
+                  )}
                 </form>
               </div>
             </div>
@@ -339,7 +395,7 @@ export default function ChatPage() {
                         >
                           {/* Name above message */}
                           <div className="flex items-center gap-2 mb-1 px-1">
-                            <span className={`text-[10px] font-bold uppercase tracking-widest ${msg.senderName === "Sigma Dev" ? 'animate-rainbow' : 'text-zinc-500'}`}>
+                            <span className={`text-[10px] font-bold tracking-widest ${msg.senderName === "Sigma Dev" ? 'animate-rainbow' : 'text-zinc-500'}`}>
                               {msg.senderName}
                             </span>
                             {msg.senderName === "Sigma Dev" && (
@@ -452,7 +508,7 @@ export default function ChatPage() {
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2">
-                            <p className={`text-xs font-bold truncate uppercase tracking-wider transition-all duration-300 ${user.isTyping ? 'text-white animate-pulse' : user.isOwner ? 'animate-rainbow' : user.nickname === nickname ? colors.primary : 'text-zinc-400'}`}>
+                            <p className={`text-xs font-bold truncate tracking-wider transition-all duration-300 ${user.isTyping ? 'text-white animate-pulse' : user.isOwner ? 'animate-rainbow' : user.nickname === nickname ? colors.primary : 'text-zinc-400'}`}>
                               {user.nickname} {user.nickname === nickname && "(YOU)"}
                             </p>
                             {user.isOwner && (
@@ -488,40 +544,58 @@ export default function ChatPage() {
       <AnimatePresence>
         {contextMenu && (
           <motion.div
+            drag
+            dragMomentum={false}
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             style={{ left: contextMenu.x, top: contextMenu.y }}
-            className="fixed z-[100] w-48 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden py-1"
+            className="fixed z-[100] w-64 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden py-2 cursor-move"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="px-3 py-2 border-b border-zinc-800 bg-zinc-950/50">
-              <p className="text-[8px] font-black text-zinc-500 uppercase tracking-[0.2em]">Admin Controls</p>
-              <p className="text-[10px] font-bold text-white truncate">{contextMenu.nickname}</p>
+            <div className="px-4 py-3 border-b border-zinc-800 bg-zinc-950/50 flex justify-between items-start">
+              <div className="min-w-0 flex-1 pr-2">
+                <p className="text-xs font-black text-zinc-500 uppercase tracking-[0.2em]">Admin Controls</p>
+                <p className="text-base font-bold text-white truncate">{contextMenu.nickname}</p>
+              </div>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setContextMenu(null); }} 
+                className="text-zinc-500 hover:text-white transition-colors p-1 rounded-md hover:bg-zinc-800"
+              >
+                <X size={18} />
+              </button>
             </div>
             <button
               onClick={() => handleDeleteMessage(contextMenu.messageId, false, true)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-orange-400 hover:bg-orange-500/10 transition-all uppercase tracking-wider"
+              className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-orange-400 hover:bg-orange-500/10 transition-all uppercase tracking-wider"
             >
-              <Trash2 size={14} />
+              <Trash2 size={20} />
               Admin Delete
             </button>
             <button
               onClick={() => handleDeleteMessage(contextMenu.messageId, true)}
-              className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-red-400 hover:bg-red-500/10 transition-all uppercase tracking-wider"
+              className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-400 hover:bg-red-500/10 transition-all uppercase tracking-wider"
             >
-              <Trash2 size={14} />
+              <Trash2 size={20} />
               Admin Remove
             </button>
-            {contextMenu.userId !== socket?.id && (
-              <button
-                onClick={() => handleKickUser(contextMenu.userId)}
-                className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold text-red-500 hover:bg-red-500/20 transition-all uppercase tracking-wider"
-              >
-                <LogOut size={14} />
-                Kick User
-              </button>
-            )}
+            <button
+              onClick={() => handleKickUser(contextMenu.userId)}
+              className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-500 hover:bg-red-500/10 transition-all uppercase tracking-wider"
+            >
+              <LogOut size={20} />
+              Kick User
+            </button>
+            <button
+              onClick={() => {
+                if (socket) socket.emit('kick_user_5m', contextMenu.userId);
+                setContextMenu(null);
+              }}
+              className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-600 hover:bg-red-500/10 transition-all uppercase tracking-wider"
+            >
+              <LogOut size={20} />
+              Kick User (5m)
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

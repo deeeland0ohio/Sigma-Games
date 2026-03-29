@@ -22,6 +22,7 @@ async function startServer() {
   // Socket.io logic
   let messages: any[] = [];
   const users = new Map<string, { id: string, nickname: string, lastActive: number, isTyping: boolean, isOwner: boolean }>();
+  const bannedUsers = new Map<string, number>(); // Map of IP address to ban end timestamp
 
   // Cleanup old messages every minute
   setInterval(() => {
@@ -33,6 +34,14 @@ async function startServer() {
         const clientSocket = io.sockets.sockets.get(sid);
         if (clientSocket) sendMessages(clientSocket);
       });
+    }
+    
+    // Cleanup expired bans
+    const now = Date.now();
+    for (const [sid, banEnd] of bannedUsers.entries()) {
+      if (now > banEnd) {
+        bannedUsers.delete(sid);
+      }
     }
   }, 60000);
 
@@ -79,6 +88,13 @@ async function startServer() {
     // Note: sendMessages will be called after join_chat to ensure role is known
 
     socket.on("join_chat", ({ nickname: requestedNickname, password }) => {
+      const ip = socket.handshake.address;
+      const banEnd = bannedUsers.get(ip);
+      if (banEnd && Date.now() < banEnd) {
+        socket.emit("banned", { message: "You are still banned", banEnd });
+        return;
+      }
+
       let finalNickname = requestedNickname;
       let isOwner = false;
 
@@ -176,9 +192,31 @@ async function startServer() {
           console.log("[ADMIN] Prevented Sigma Dev from kicking themselves.");
           return;
         }
-        targetSocket.emit("kicked", "You were kicked from chat, log back in");
+        targetSocket.emit("kicked", "You were kicked by the Owner, you may join back in");
+        console.log(`[ADMIN] User ${targetId} has been kicked.`);
+      } else {
+        console.log(`[ADMIN] Could not find socket for ID: ${targetId}`);
+      }
+    });
+
+    socket.on("kick_user_5m", (targetId) => {
+      const user = users.get(socket.id);
+      if (!user?.isOwner) return;
+
+      console.log(`[ADMIN] Sigma Dev is kicking user with ID: ${targetId} for 5 minutes`);
+      
+      const targetSocket = io.sockets.sockets.get(targetId);
+      if (targetSocket) {
+        if (targetSocket.id === socket.id) {
+          console.log("[ADMIN] Prevented Sigma Dev from kicking themselves.");
+          return;
+        }
+        const kickEnd = Date.now() + 300000; // 5 minutes
+        const ip = targetSocket.handshake.address;
+        bannedUsers.set(ip, kickEnd);
+        targetSocket.emit("kicked_5m", { message: "You were kicked by the Owner for 5 minutes", kickEnd });
         targetSocket.disconnect();
-        console.log(`[ADMIN] User ${targetId} has been disconnected.`);
+        console.log(`[ADMIN] User ${targetId} has been kicked.`);
       } else {
         console.log(`[ADMIN] Could not find socket for ID: ${targetId}`);
       }
