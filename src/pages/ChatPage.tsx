@@ -66,6 +66,10 @@ export default function ChatPage() {
         newSocket.emit('join_chat', savedNickname);
       }
     });
+    newSocket.on('connect_error', (err) => {
+      console.error('Socket connection error:', err);
+      setError('Connection failed: ' + err.message);
+    });
     newSocket.on('disconnect', () => setIsConnected(false));
 
     newSocket.on('initial_messages', (msgs: Message[]) => {
