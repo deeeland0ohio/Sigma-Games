@@ -53,7 +53,7 @@ export default function ChatPage() {
   }, []);
 
   useEffect(() => {
-    const newSocket = io();
+    const newSocket = io(window.location.origin);
     setSocket(newSocket);
 
     newSocket.on('connect', () => {
