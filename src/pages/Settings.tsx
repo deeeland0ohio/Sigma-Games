@@ -284,7 +284,7 @@ export default function Settings() {
                         <span className="text-xs font-mono text-emerald-400">{(backgroundConfig.dots.speed * 1000).toFixed(0)}</span>
                       </div>
                       <input
-                        type="range" min="0.01" max={0.15 * multiplier} step="0.01"
+                        type="range" min="0.002" max={0.15 * multiplier} step="0.001"
                         value={backgroundConfig.dots.speed}
                         onChange={(e) => updateDotsConfig('speed', parseFloat(e.target.value))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
