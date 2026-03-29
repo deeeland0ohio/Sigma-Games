@@ -64,7 +64,6 @@ import { idleBreakout } from "./idle-breakout";
 import { basketRandom } from "./basket-random";
 import { blockBlast } from "./block-blast";
 import { blackJack } from "./black-jack";
-import { bowMasters } from "./bow-masters";
 import { tombOfTheMask } from "./tomb-of-the-mask";
 import { soccerRandom } from "./soccer-random";
 import { granny2 } from "./granny-2";
@@ -166,7 +165,6 @@ export const allGames: Game[] = [
   basketRandom,
   blockBlast,
   blackJack,
-  bowMasters,
   tombOfTheMask,
   soccerRandom,
   granny2,
