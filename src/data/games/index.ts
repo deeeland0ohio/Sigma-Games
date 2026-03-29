@@ -55,6 +55,7 @@ import { crazyCars } from "./crazy-cars";
 import { crazyCattle3d } from "./crazy-cattle-3d";
 import { crazyChickens3d } from "./crazy-chickens-3d";
 import { crazyKitty3d } from "./crazy-kitty-3d";
+import { famiDash } from "./fami-dash";
 import { webfishing } from "./webfishing";
 import { granny } from "./granny";
 import { cuphead } from "./cuphead";
@@ -63,6 +64,7 @@ import { idleBreakout } from "./idle-breakout";
 import { basketRandom } from "./basket-random";
 import { blockBlast } from "./block-blast";
 import { blackJack } from "./black-jack";
+import { bowMasters } from "./bow-masters";
 import { tombOfTheMask } from "./tomb-of-the-mask";
 import { soccerRandom } from "./soccer-random";
 import { granny2 } from "./granny-2";
@@ -79,6 +81,7 @@ import { footballBros } from "./football-bros";
 import { baseballBros } from "./baseball-bros";
 import { templeRun2 } from "./temple-run-2";
 import { retroBowl } from "./retro-bowl";
+import { retroBowlCollege } from "./retro-bowl-college";
 import { gunSpin } from "./gun-spin";
 import { fridayNightFunkin } from "./friday-night-funkin";
 import { fnfVsHex } from "./fnf-vs-hex";
@@ -154,6 +157,7 @@ export const allGames: Game[] = [
   crazyCattle3d,
   crazyChickens3d,
   crazyKitty3d,
+  famiDash,
   webfishing,
   granny,
   cuphead,
@@ -162,6 +166,7 @@ export const allGames: Game[] = [
   basketRandom,
   blockBlast,
   blackJack,
+  bowMasters,
   tombOfTheMask,
   soccerRandom,
   granny2,
@@ -178,6 +183,7 @@ export const allGames: Game[] = [
   baseballBros,
   templeRun2,
   retroBowl,
+  retroBowlCollege,
   gunSpin,
   fridayNightFunkin,
   fnfVsHex,

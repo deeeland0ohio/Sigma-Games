@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
-import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle, MessageSquare } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import SettingsMenu from '../components/SettingsMenu';
 import Credits from '../components/Credits';
@@ -88,6 +88,14 @@ export default function GamePlayer() {
           </div>
 
           <div className="flex items-center gap-2">
+            <Link
+              to="/chat"
+              className={`flex items-center gap-2 px-3 py-2 text-zinc-400 hover:${colors.primary} hover:bg-zinc-800 rounded-lg transition-all font-bold text-xs uppercase tracking-widest`}
+              title="Global Chat"
+            >
+              <MessageSquare size={18} />
+              <span className="hidden lg:inline">Chat</span>
+            </Link>
             <a
               href="https://github.com/deeeland0ohio"
               target="_blank"
@@ -114,7 +122,7 @@ export default function GamePlayer() {
       <main className="flex-1 relative w-full h-full">
         <div 
           id="game-container" 
-          className="absolute inset-0 bg-black flex flex-col items-center justify-center"
+          className="w-full h-full bg-black flex flex-col items-center justify-center overflow-hidden"
         >
           {game.type === 'iframe' && (game.url || game.srcdoc) ? (
             <iframe 
