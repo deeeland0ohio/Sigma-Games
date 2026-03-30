@@ -1,4 +1,4 @@
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
@@ -16,6 +16,8 @@ export default function GamePlayer() {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [reloadKey, setReloadKey] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
+  const [showChatWarning, setShowChatWarning] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const popupGames = ['crazy-cattle-3d', 'basket-random', 'soccer-random', 'boxing-random'];
@@ -88,14 +90,14 @@ export default function GamePlayer() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              to="/chat"
+            <button
+              onClick={() => setShowChatWarning(true)}
               className={`flex items-center gap-2 px-3 py-2 text-zinc-400 hover:${colors.primary} hover:bg-zinc-800 rounded-lg transition-all font-bold text-xs uppercase tracking-widest`}
               title="Global Chat"
             >
               <MessageSquare size={18} />
               <span className="hidden lg:inline">Chat</span>
-            </Link>
+            </button>
             <a
               href="https://github.com/deeeland0ohio"
               target="_blank"
@@ -168,6 +170,35 @@ export default function GamePlayer() {
                 UNDERSTOOD
               </button>
             </motion.div>
+          </div>
+        )}
+
+        {/* Chat Warning Modal */}
+        {showChatWarning && (
+          <div className="absolute inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className={`max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl flex flex-col items-center text-center`}>
+              <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
+              <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
+                If you use the Vercel link chat won't work, you must use <a href="https://ais-pre-sohh6faiwpdjywb75q5qhk-207654894741.us-west2.run.app/" className={`${colors.primary} hover:underline font-bold`} target="_blank" rel="noopener noreferrer">click here</a>
+              </p>
+              <div className="flex gap-4 w-full">
+                <button
+                  onClick={() => setShowChatWarning(false)}
+                  className="flex-1 py-3 rounded-xl font-bold text-white bg-zinc-800 hover:bg-zinc-700 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => {
+                    setShowChatWarning(false);
+                    navigate("/chat");
+                  }}
+                  className={`flex-1 py-3 rounded-xl font-bold text-black transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg`}
+                >
+                  Continue to Chat
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>
