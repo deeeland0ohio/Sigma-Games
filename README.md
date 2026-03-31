@@ -1,2 +1,3 @@
 THIS IS CODED BY GEMINI, ALL IDEA ARE MINE THOUGH. It is very glitchy and some unity and other games won't load yet, this is only v0.2
-see it for yourself! [click here](https://sigma-sigma-rizz.vercel.app/)
+see it for yourself! [click here](https://sigma-sigma-rizz.vercel.app/) [or here]([https://sigma-sigma-rizz.vercel.app/](https://ais-pre-sohh6faiwpdjywb75q5qhk-207654894741.us-west2.run.app/
+))
