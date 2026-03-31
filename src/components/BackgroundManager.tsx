@@ -12,6 +12,10 @@ export default function BackgroundManager() {
   // Scale 1-100 to 0.02-2.0 multiplier
   const powerMultiplier = simulationPower / 50;
 
+  if (background === 'blank') {
+    return <div className="fixed inset-0 bg-black -z-50" />;
+  }
+
   if (background === 'matrix') {
     return <MatrixBackground color={colors.hexMatrix} power={powerMultiplier} config={backgroundConfig.matrix} />;
   }
