@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTheme, useThemeColors, Theme, BackgroundStyle } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
-import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square } from 'lucide-react';
+import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export function SettingsContent() {
@@ -12,7 +12,8 @@ export function SettingsContent() {
     backgroundConfig, setBackgroundConfig,
     settingsViewMode, setSettingsViewMode,
     setIsSettingsOpen,
-    setSettingsBoxSize, setSettingsBoxPosition
+    setSettingsBoxSize, setSettingsBoxPosition,
+    customColors, setCustomColors
   } = useTheme();
   const colors = useThemeColors();
   const navigate = useNavigate();
@@ -58,12 +59,14 @@ export function SettingsContent() {
   } else {
     themes = [...baseThemes, lightspeedTheme, eventHorizonTheme, pointOfNoReturnTheme];
   }
+  themes.push({ id: 'custom', label: 'Custom Theme', colors: [] });
 
   const backgrounds: { id: BackgroundStyle; label: string }[] = [
     { id: 'dots', label: 'Interactive Dots' },
     { id: 'matrix', label: 'Matrix Flow' },
     { id: 'black-hole', label: 'Event Horizon' },
     { id: 'lightspeed', label: 'Light Speed' },
+    { id: 'blank', label: 'Blank (Black)' },
   ];
 
   const updateDotsConfig = (key: keyof typeof backgroundConfig.dots, value: number) => {
@@ -96,6 +99,11 @@ export function SettingsContent() {
 
   const [isAdvanced, setIsAdvanced] = React.useState(false);
   const [showWarning, setShowWarning] = React.useState(false);
+  const [tempColors, setTempColors] = React.useState(customColors);
+
+  React.useEffect(() => {
+    setTempColors(customColors);
+  }, [customColors]);
 
   const toggleAdvanced = () => {
     if (!isAdvanced) {
@@ -179,6 +187,8 @@ export function SettingsContent() {
             setSettingsBoxSize({ width: 1000, height: 700 });
             setSettingsBoxPosition({ x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 });
             setIsAdvanced(false);
+            setCustomColors(['#ffffff', '#ffffff', '#ffffff', '#ffffff']);
+            setTempColors(['#ffffff', '#ffffff', '#ffffff', '#ffffff']);
           }}
           className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all font-medium flex-shrink-0"
         >
@@ -247,222 +257,284 @@ export function SettingsContent() {
                   }`}
                 >
                   <div className="flex gap-1.5">
-                    {t.colors.map((c, i) => (
-                      <div key={i} className={`w-4 h-4 rounded-full ${c} border border-black/20`} />
-                    ))}
+                    {t.id === 'custom' ? (
+                      customColors.map((c, i) => (
+                        <div key={i} className="w-4 h-4 rounded-full border border-black/20" style={{ backgroundColor: c }} />
+                      ))
+                    ) : (
+                      t.colors.map((c, i) => (
+                        <div key={i} className={`w-4 h-4 rounded-full ${c} border border-black/20`} />
+                      ))
+                    )}
                   </div>
                   <span className="text-sm font-medium text-left">{t.label}</span>
                 </button>
               ))}
             </div>
+
+            {theme === 'custom' && (
+              <div className="mt-6 p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-white">Custom Colors</h3>
+                  {tempColors.length < 4 && (
+                    <button
+                      onClick={() => setTempColors([...tempColors, '#ffffff'])}
+                      className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-lg text-sm font-medium transition-colors"
+                    >
+                      <Plus size={14} /> Add Color
+                    </button>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {tempColors.map((color, i) => (
+                    <div key={i} className="space-y-2 relative group">
+                      <label className="text-xs font-medium text-zinc-400">Color {i + 1}</label>
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="color"
+                          value={color}
+                          onChange={(e) => {
+                            const newColors = [...tempColors];
+                            newColors[i] = e.target.value;
+                            setTempColors(newColors);
+                          }}
+                          className="w-10 h-10 rounded cursor-pointer bg-transparent border-0 p-0"
+                        />
+                        <span className="text-sm text-zinc-300 font-mono uppercase">{color}</span>
+                        {tempColors.length > 1 && (
+                          <button
+                            onClick={() => {
+                              const newColors = tempColors.filter((_, index) => index !== i);
+                              setTempColors(newColors);
+                            }}
+                            className="p-1.5 text-zinc-500 hover:text-red-400 hover:bg-red-400/10 rounded-lg opacity-0 group-hover:opacity-100 transition-all ml-auto"
+                            title="Remove color"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setCustomColors(tempColors)}
+                  className="w-full mt-4 px-4 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all"
+                >
+                  Save Custom Colors
+                </button>
+              </div>
+            )}
           </section>
         </div>
 
         {/* Right Column: Precise Controls */}
         <div className="space-y-10">
-          <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
-            <div className="flex items-center justify-between flex-wrap gap-4">
-              <div className="flex items-center gap-3 text-zinc-100">
-                <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
-                  <Sliders size={20} style={{ color: colors.hexPrimary }} />
+          {background !== 'blank' && (
+            <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <div className="flex items-center gap-3 text-zinc-100">
+                  <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
+                    <Sliders size={20} style={{ color: colors.hexPrimary }} />
+                  </div>
+                  <h2 className="text-xl font-bold">Precise Controls</h2>
                 </div>
-                <h2 className="text-xl font-bold">Precise Controls</h2>
+                <button
+                  onClick={toggleAdvanced}
+                  className={`px-4 py-2 rounded-xl font-medium transition-all flex-shrink-0 ${
+                    isAdvanced 
+                      ? 'bg-red-600 text-white' 
+                      : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'
+                  }`}
+                >
+                  {isAdvanced ? 'Advanced (ON)' : 'Advanced'}
+                </button>
               </div>
-              <button
-                onClick={toggleAdvanced}
-                className={`px-4 py-2 rounded-xl font-medium transition-all flex-shrink-0 ${
-                  isAdvanced 
-                    ? 'bg-red-600 text-white' 
-                    : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'
-                }`}
-              >
-                {isAdvanced ? 'Advanced (ON)' : 'Advanced'}
-              </button>
-            </div>
-            
-            <div className="space-y-8">
-              {/* Global Energy */}
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-                    <Zap size={14} /> Global Energy
-                  </label>
-                  <span className="text-xs font-mono text-emerald-400">{simulationPower}%</span>
+              
+              <div className="space-y-8">
+                {/* Global Energy */}
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center">
+                    <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+                      <Zap size={14} /> Global Energy
+                    </label>
+                    <span className="text-xs font-mono text-emerald-400">{simulationPower}%</span>
+                  </div>
+                  <input
+                    type="range" min="0" max={100 * multiplier} step="1"
+                    value={simulationPower}
+                    onChange={(e) => setSimulationPower(parseInt(e.target.value, 10))}
+                    className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                  />
                 </div>
-                <input
-                  type="range" min="0" max={100 * multiplier} step="1"
-                  value={simulationPower}
-                  onChange={(e) => setSimulationPower(parseInt(e.target.value, 10))}
-                  className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                />
+
+                {/* Background Specific Controls */}
+                {background === 'dots' && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Spring Speed</label>
+                        <span className="text-xs font-mono text-emerald-400">{(backgroundConfig.dots.speed * 1000).toFixed(0)}</span>
+                      </div>
+                      <input
+                        type="range" min="0.002" max={0.15 * multiplier} step="0.001"
+                        value={backgroundConfig.dots.speed}
+                        onChange={(e) => updateDotsConfig('speed', parseFloat(e.target.value))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Dot Size</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.dots.size}px</span>
+                      </div>
+                      <input
+                        type="range" min="1" max={8 * multiplier} step="0.5"
+                        value={backgroundConfig.dots.size}
+                        onChange={(e) => updateDotsConfig('size', parseFloat(e.target.value))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Grid Density</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.dots.density}</span>
+                      </div>
+                      <input
+                        type="range" min="20" max={80 * multiplier} step="1"
+                        value={backgroundConfig.dots.density}
+                        onChange={(e) => updateDotsConfig('density', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {background === 'matrix' && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Flow Speed</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.speed}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.matrix.speed}
+                        onChange={(e) => updateMatrixConfig('speed', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Font Size</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.size}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.matrix.size}
+                        onChange={(e) => updateMatrixConfig('size', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Code Density</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.density}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.matrix.density}
+                        onChange={(e) => updateMatrixConfig('density', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {background === 'black-hole' && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Rotation Speed</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.speed}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.blackHole.speed}
+                        onChange={(e) => updateBlackHoleConfig('speed', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Hole Size</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.size}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.blackHole.size}
+                        onChange={(e) => updateBlackHoleConfig('size', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Particle Density</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.density}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.blackHole.density}
+                        onChange={(e) => updateBlackHoleConfig('density', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {background === 'lightspeed' && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Travel Speed</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.speed}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.lightspeed.speed}
+                        onChange={(e) => updateLightspeedConfig('speed', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Star Size</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.size}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.lightspeed.size}
+                        onChange={(e) => updateLightspeedConfig('size', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Star Density</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.density}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.lightspeed.density}
+                        onChange={(e) => updateLightspeedConfig('density', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
-
-              {/* Background Specific Controls */}
-              {background === 'dots' && (
-                <>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Spring Speed</label>
-                      <span className="text-xs font-mono text-emerald-400">{(backgroundConfig.dots.speed * 1000).toFixed(0)}</span>
-                    </div>
-                    <input
-                      type="range" min="0.002" max={0.15 * multiplier} step="0.001"
-                      value={backgroundConfig.dots.speed}
-                      onChange={(e) => updateDotsConfig('speed', parseFloat(e.target.value))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Dot Size</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.dots.size}px</span>
-                    </div>
-                    <input
-                      type="range" min="1" max={8 * multiplier} step="0.5"
-                      value={backgroundConfig.dots.size}
-                      onChange={(e) => updateDotsConfig('size', parseFloat(e.target.value))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Grid Density</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.dots.density}</span>
-                    </div>
-                    <input
-                      type="range" min="20" max={80 * multiplier} step="1"
-                      value={backgroundConfig.dots.density}
-                      onChange={(e) => updateDotsConfig('density', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                </>
-              )}
-
-              {background === 'matrix' && (
-                <>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Flow Speed</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.speed}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.matrix.speed}
-                      onChange={(e) => updateMatrixConfig('speed', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Font Size</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.size}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.matrix.size}
-                      onChange={(e) => updateMatrixConfig('size', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Code Density</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.matrix.density}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.matrix.density}
-                      onChange={(e) => updateMatrixConfig('density', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                </>
-              )}
-
-              {background === 'black-hole' && (
-                <>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Rotation Speed</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.speed}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.blackHole.speed}
-                      onChange={(e) => updateBlackHoleConfig('speed', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Hole Size</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.size}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.blackHole.size}
-                      onChange={(e) => updateBlackHoleConfig('size', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Particle Density</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.blackHole.density}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.blackHole.density}
-                      onChange={(e) => updateBlackHoleConfig('density', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                </>
-              )}
-
-              {background === 'lightspeed' && (
-                <>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Travel Speed</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.speed}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.lightspeed.speed}
-                      onChange={(e) => updateLightspeedConfig('speed', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Star Size</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.size}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.lightspeed.size}
-                      onChange={(e) => updateLightspeedConfig('size', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                  <div className="space-y-4">
-                    <div className="flex justify-between items-center">
-                      <label className="text-sm font-medium text-zinc-400">Star Density</label>
-                      <span className="text-xs font-mono text-emerald-400">{backgroundConfig.lightspeed.density}%</span>
-                    </div>
-                    <input
-                      type="range" min="0" max={100 * multiplier} step="1"
-                      value={backgroundConfig.lightspeed.density}
-                      onChange={(e) => updateLightspeedConfig('density', parseInt(e.target.value, 10))}
-                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                    />
-                  </div>
-                </>
-              )}
-            </div>
-          </section>
+            </section>
+          )}
 
           <section className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-3xl space-y-4 min-w-[300px]">
             <h3 className="font-bold text-white flex items-center gap-2">
@@ -513,6 +585,45 @@ export function SettingsContent() {
                 <span className="font-medium">Box View</span>
               </button>
             </div>
+          </section>
+
+          <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
+            <div className="flex items-center gap-3 text-zinc-100">
+              <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
+                <Lock size={20} style={{ color: colors.hexPrimary }} />
+              </div>
+              <h2 className="text-xl font-bold">Privacy</h2>
+            </div>
+            
+            <div className="space-y-4">
+              <label className="text-sm font-medium text-zinc-400">Tab Title Cloaking</label>
+              <input
+                type="text"
+                defaultValue={document.title}
+                onBlur={(e) => document.title = e.target.value}
+                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-xl text-white"
+                placeholder="Enter new tab title"
+              />
+            </div>
+
+            <button
+              onClick={() => {
+                const win = window.open('about:blank', '_blank');
+                if (win) {
+                  win.document.write(`
+                    <html>
+                      <head><title>${document.title}</title></head>
+                      <body style="margin:0;padding:0;overflow:hidden;">
+                        <iframe src="${window.location.href}" style="width:100vw;height:100vh;border:none;"></iframe>
+                      </body>
+                    </html>
+                  `);
+                }
+              }}
+              className="w-full px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-all"
+            >
+              Launch in about:blank
+            </button>
           </section>
         </div>
       </div>

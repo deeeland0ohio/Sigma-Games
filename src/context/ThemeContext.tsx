@@ -13,9 +13,10 @@ export type Theme =
   | 'hacker'
   | 'lightspeed-special'
   | 'event-horizon-special'
-  | 'event-horizon-blue-orange';
+  | 'event-horizon-blue-orange'
+  | 'custom';
 
-export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole' | 'lightspeed';
+export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole' | 'lightspeed' | 'blank';
 
 export interface BackgroundConfig {
   dots: {
@@ -57,9 +58,16 @@ interface ThemeContextType {
   setSettingsBoxSize: (size: { width: number; height: number }) => void;
   settingsBoxPosition: { x: number; y: number };
   setSettingsBoxPosition: (pos: { x: number; y: number }) => void;
+  customColors: string[];
+  setCustomColors: (colors: string[]) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+
+function hexToRgb(hex: string) {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : '255, 255, 255';
+}
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
@@ -90,6 +98,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       blackHole: { speed: 40, size: 50, density: 50 },
       lightspeed: { speed: 40, size: 50, density: 50 }
     };
+  });
+
+  const [customColors, setCustomColors] = useState<string[]>(() => {
+    const saved = localStorage.getItem('app-custom-colors');
+    return saved ? JSON.parse(saved) : ['#ffffff', '#ffffff', '#ffffff', '#ffffff'];
   });
 
   const [isSettingsOpen, _setIsSettingsOpen] = useState(false);
@@ -135,6 +148,10 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   }, [backgroundConfig]);
 
   useEffect(() => {
+    localStorage.setItem('app-custom-colors', JSON.stringify(customColors));
+  }, [customColors]);
+
+  useEffect(() => {
     localStorage.setItem('app-settings-view-mode', settingsViewMode);
   }, [settingsViewMode]);
 
@@ -155,8 +172,19 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       isSettingsOpen, setIsSettingsOpen,
       settingsViewMode, setSettingsViewMode,
       settingsBoxSize, setSettingsBoxSize,
-      settingsBoxPosition, setSettingsBoxPosition
+      settingsBoxPosition, setSettingsBoxPosition,
+      customColors, setCustomColors
     }}>
+      <style>
+        {`
+          :root {
+            --custom-1: ${hexToRgb(customColors[0] || '#ffffff')};
+            --custom-2: ${hexToRgb(customColors[1] || customColors[0] || '#ffffff')};
+            --custom-3: ${hexToRgb(customColors[2] || customColors[0] || '#ffffff')};
+            --custom-4: ${hexToRgb(customColors[3] || customColors[0] || '#ffffff')};
+          }
+        `}
+      </style>
       {children}
     </ThemeContext.Provider>
   );
@@ -171,7 +199,7 @@ export function useTheme() {
 }
 
 export function useThemeColors() {
-  const { theme } = useTheme();
+  const { theme, customColors } = useTheme();
   
   const themes: Record<Theme, any> = {
     'red-green': {
@@ -489,6 +517,38 @@ export function useThemeColors() {
       hexTertiary: '#22d3ee', // cyan-400
       hexQuaternary: '#fbbf24', // amber-400
       hexMatrix: '#3b82f6' // blue-500
+    },
+    'custom': {
+      primary: 'text-[rgba(var(--custom-1),1)]',
+      secondary: 'text-[rgba(var(--custom-2),1)]',
+      tertiary: 'text-[rgba(var(--custom-3),1)]',
+      quaternary: 'text-[rgba(var(--custom-4),1)]',
+      tertiaryBg: 'bg-[rgba(var(--custom-3),1)]',
+      quaternaryBg: 'bg-[rgba(var(--custom-4),1)]',
+      primaryBg: 'bg-[rgba(var(--custom-1),1)]',
+      secondaryBg: 'bg-[rgba(var(--custom-2),1)]',
+      hoverBorder: 'hover:border-[rgba(var(--custom-1),0.5)]',
+      hoverShadow: 'hover:shadow-[0_0_15px_rgba(var(--custom-1),0.1)]',
+      shadow: 'shadow-[0_0_15px_rgba(var(--custom-1),0.1)]',
+      gradientFrom: 'from-[rgba(var(--custom-1),0.1)]',
+      gradientVia: 'via-[rgba(var(--custom-2),0.1)]',
+      gradientTo: 'to-[rgba(var(--custom-3),0.1)]',
+      textGradient: 'text-transparent bg-clip-text bg-gradient-to-r from-[rgba(var(--custom-1),1)] via-[rgba(var(--custom-2),1)] to-[rgba(var(--custom-3),1)]',
+      groupHoverText: 'group-hover:text-[rgba(var(--custom-1),1)]',
+      groupHoverQuaternary: 'group-hover:text-[rgba(var(--custom-4),1)]',
+      groupHoverBorder: 'group-hover:border-[rgba(var(--custom-1),0.3)]',
+      focusRing: 'focus:ring-[rgba(var(--custom-1),1)]',
+      focusBorder: 'focus:border-[rgba(var(--custom-1),1)]',
+      selection: 'selection:bg-[rgba(var(--custom-1),0.3)]',
+      terminalText: 'text-[rgba(var(--custom-1),1)]',
+      cursor: 'bg-[rgba(var(--custom-1),1)]',
+      popupBg: 'bg-zinc-950/90',
+      popupText: 'text-[rgba(var(--custom-1),1)]',
+      hexPrimary: `rgba(${hexToRgb(customColors[0] || '#ffffff')}, 0.4)`,
+      hexSecondary: `rgba(${hexToRgb(customColors[1] || customColors[0] || '#ffffff')}, 0.4)`,
+      hexTertiary: customColors[2] || customColors[0] || '#ffffff',
+      hexQuaternary: customColors[3] || customColors[0] || '#ffffff',
+      hexMatrix: customColors[0] || '#ffffff'
     }
   };
 

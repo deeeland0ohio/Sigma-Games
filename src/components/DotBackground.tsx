@@ -186,6 +186,20 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
           brightness = 1 + (1 - distance / brightnessRadius) * 2;
         }
 
+        // Shockwave brightness effect
+        for (let j = 0; j < shockwaves.length; j++) {
+          const sw = shockwaves[j];
+          const sdx = dot.x - sw.x;
+          const sdy = dot.y - sw.y;
+          const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+          const ringThickness = 40;
+          if (Math.abs(sdist - sw.radius) < ringThickness) {
+            const brightMult = (ringThickness - Math.abs(sdist - sw.radius)) / ringThickness;
+            const fadeOut = Math.max(0, 1 - (sw.radius / sw.maxRadius));
+            brightness = Math.max(brightness, 1 + brightMult * 2.5 * fadeOut);
+          }
+        }
+
         ctx.beginPath();
         ctx.arc(dot.x, dot.y, size, 0, Math.PI * 2);
         

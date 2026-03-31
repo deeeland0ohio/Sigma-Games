@@ -1,19 +1,14 @@
 <!doctype html>
 <html>
-
 <head>
 	<meta charset="UTF-8">
 	<title>Boxing Random</title>
-	<base href="https://cdn.jsdelivr.net/gh/bubbls/ruffle@1520d90d7b2994737acd8f7a633d018f63c22ca7/">
-	<meta name="viewport"
-		content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
-	<meta name="generator" content="Construct 3">
-	<link rel="stylesheet"
-		href="https://cdn.jsdelivr.net/gh/bubbls/ruffle@1520d90d7b2994737acd8f7a633d018f63c22ca7/style.css"
-		type="text/css">
-	<script>
-		window.addEventListener("keydown", function(e) {  if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) { e.preventDefault(); } }, false); 
-	</script>
+	<base href="https://cdn.jsdelivr.net/gh/bubbls/ruffle@25f6152ab54ec5409c832c904ed3e5e482600d6a/">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
+	<meta name="generator" content="Scirra Construct">
+	<meta name="author" content="TwoPlayerGames">
+
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/bubbls/ruffle@25f6152ab54ec5409c832c904ed3e5e482600d6a/boxstyle.css" type="text/css">
     <style>
         body {
             margin: 0;
@@ -29,8 +24,10 @@
             font-family: sans-serif;
         }
     </style>
+    <script>
+        window.addEventListener("keydown", function(e) {  if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) { e.preventDefault(); } }, false); 
+    </script>
 </head>
-
 <body>
     <div id="loading-text" style="color: white; font-size: 24px; text-align: center; margin-top: 20%; font-family: sans-serif;">Loading Game...</div>
     <script>
@@ -42,26 +39,19 @@
             }, 5000); // Wait 5 seconds after load as a fallback
         });
     </script>
-	<script
-		src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@1520d90d7b2994737acd8f7a633d018f63c22ca7/box2d.js">
-	</script> <noscript>
+
+	<script src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@25f6152ab54ec5409c832c904ed3e5e482600d6a/boxwasm.js"></script>
+	<noscript>
 		<div id="notSupportedWrap">
 			<h2 id="notSupportedTitle">This content requires JavaScript</h2>
 			<p class="notSupportedMessage">JavaScript appears to be disabled. Please enable it to view this content.</p>
 		</div>
 	</noscript>
-	<script
-		src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@1520d90d7b2994737acd8f7a633d018f63c22ca7/suppoortcheck.js">
-	</script>
-	<script
-		src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@1520d90d7b2994737acd8f7a633d018f63c22ca7/offclient.js"
-		type="module"></script>
-	<script
-		src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@1520d90d7b2994737acd8f7a633d018f63c22ca7/main.js"
-		type="module"></script>
-	<script
-		src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@1520d90d7b2994737acd8f7a633d018f63c22ca7/registersw.js"
-		type="module"></script>
+	<script src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@25f6152ab54ec5409c832c904ed3e5e482600d6a/boxcheck.js"></script>
+	<script src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@25f6152ab54ec5409c832c904ed3e5e482600d6a/boxclient.js" type="module"></script>
+	<script src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@25f6152ab54ec5409c832c904ed3e5e482600d6a/boxmain.js" type="module"></script>
+	<script src="https://cdn.jsdelivr.net/gh/bubbls/ruffle@25f6152ab54ec5409c832c904ed3e5e482600d6a/boxsw.js" type="module"></script>
+
     <script>
         // Mock common ad and tracking functions to prevent the game from hanging
         window.adConfig = window.adConfig || function() { return {}; };
@@ -77,5 +67,4 @@
         };
     </script>
 </body>
-
 </html>
