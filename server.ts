@@ -169,7 +169,7 @@ async function startServer() {
         // Sigma Dev soft deletes someone else's message
         messages[msgIdx].isAdminDeleted = true;
         messages[msgIdx].isDeleted = true;
-      } else if (msg.senderId === socket.id) {
+      } else if (msg.senderName === user.nickname) {
         // Regular user (or Sigma Dev) deletes their own message
         messages[msgIdx].isDeleted = true;
       }
@@ -180,32 +180,56 @@ async function startServer() {
       });
     });
 
-    socket.on("kick_user", (targetId) => {
+    socket.on("kick_user", (targetIdOrNickname) => {
       const user = users.get(socket.id);
       if (!user?.isOwner) return;
 
-      console.log(`[ADMIN] Sigma Dev is kicking user with ID: ${targetId}`);
+      console.log(`[ADMIN] Sigma Dev is kicking user: ${targetIdOrNickname}`);
       
-      const targetSocket = io.sockets.sockets.get(targetId);
+      let targetSocketId = targetIdOrNickname;
+      let targetSocket = io.sockets.sockets.get(targetSocketId);
+      
+      if (!targetSocket) {
+        for (const [sid, u] of users.entries()) {
+          if (u.nickname === targetIdOrNickname) {
+            targetSocketId = sid;
+            targetSocket = io.sockets.sockets.get(sid);
+            break;
+          }
+        }
+      }
+
       if (targetSocket) {
         if (targetSocket.id === socket.id) {
           console.log("[ADMIN] Prevented Sigma Dev from kicking themselves.");
           return;
         }
         targetSocket.emit("kicked", "You were kicked by the Owner, you may join back in");
-        console.log(`[ADMIN] User ${targetId} has been kicked.`);
+        console.log(`[ADMIN] User ${targetSocketId} has been kicked.`);
       } else {
-        console.log(`[ADMIN] Could not find socket for ID: ${targetId}`);
+        console.log(`[ADMIN] Could not find socket for: ${targetIdOrNickname}`);
       }
     });
 
-    socket.on("kick_user_5m", (targetId) => {
+    socket.on("kick_user_5m", (targetIdOrNickname) => {
       const user = users.get(socket.id);
       if (!user?.isOwner) return;
 
-      console.log(`[ADMIN] Sigma Dev is kicking user with ID: ${targetId} for 5 minutes`);
+      console.log(`[ADMIN] Sigma Dev is kicking user for 5 minutes: ${targetIdOrNickname}`);
       
-      const targetSocket = io.sockets.sockets.get(targetId);
+      let targetSocketId = targetIdOrNickname;
+      let targetSocket = io.sockets.sockets.get(targetSocketId);
+      
+      if (!targetSocket) {
+        for (const [sid, u] of users.entries()) {
+          if (u.nickname === targetIdOrNickname) {
+            targetSocketId = sid;
+            targetSocket = io.sockets.sockets.get(sid);
+            break;
+          }
+        }
+      }
+
       if (targetSocket) {
         if (targetSocket.id === socket.id) {
           console.log("[ADMIN] Prevented Sigma Dev from kicking themselves.");
@@ -216,9 +240,9 @@ async function startServer() {
         bannedUsers.set(ip, kickEnd);
         targetSocket.emit("kicked_5m", { message: "You were kicked by the Owner for 5 minutes", kickEnd });
         targetSocket.disconnect();
-        console.log(`[ADMIN] User ${targetId} has been kicked.`);
+        console.log(`[ADMIN] User ${targetSocketId} has been kicked.`);
       } else {
-        console.log(`[ADMIN] Could not find socket for ID: ${targetId}`);
+        console.log(`[ADMIN] Could not find socket for: ${targetIdOrNickname}`);
       }
     });
 

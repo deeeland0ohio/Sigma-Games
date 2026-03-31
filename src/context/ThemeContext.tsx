@@ -51,6 +51,12 @@ interface ThemeContextType {
   setBackgroundConfig: (config: BackgroundConfig) => void;
   isSettingsOpen: boolean;
   setIsSettingsOpen: (isOpen: boolean) => void;
+  settingsViewMode: 'page' | 'box';
+  setSettingsViewMode: (mode: 'page' | 'box') => void;
+  settingsBoxSize: { width: number; height: number };
+  setSettingsBoxSize: (size: { width: number; height: number }) => void;
+  settingsBoxPosition: { x: number; y: number };
+  setSettingsBoxPosition: (pos: { x: number; y: number }) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -86,7 +92,31 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     };
   });
 
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isSettingsOpen, _setIsSettingsOpen] = useState(false);
+
+  const setIsSettingsOpen = (isOpen: boolean) => {
+    if (isOpen) {
+      setSettingsBoxPosition({
+        x: window.innerWidth / 2 - settingsBoxSize.width / 2,
+        y: window.innerHeight / 2 - settingsBoxSize.height / 2
+      });
+    }
+    _setIsSettingsOpen(isOpen);
+  };
+
+  const [settingsViewMode, setSettingsViewMode] = useState<'page' | 'box'>(() => {
+    return (localStorage.getItem('app-settings-view-mode') as 'page' | 'box') || 'page';
+  });
+
+  const [settingsBoxSize, setSettingsBoxSize] = useState(() => {
+    const saved = localStorage.getItem('app-settings-box-size');
+    return saved ? JSON.parse(saved) : { width: window.innerWidth * 0.52, height: window.innerHeight * 0.65 };
+  });
+
+  const [settingsBoxPosition, setSettingsBoxPosition] = useState(() => {
+    const saved = localStorage.getItem('app-settings-box-position');
+    return saved ? JSON.parse(saved) : { x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 };
+  });
 
   useEffect(() => {
     localStorage.setItem('app-theme', theme);
@@ -104,13 +134,28 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('app-background-config', JSON.stringify(backgroundConfig));
   }, [backgroundConfig]);
 
+  useEffect(() => {
+    localStorage.setItem('app-settings-view-mode', settingsViewMode);
+  }, [settingsViewMode]);
+
+  useEffect(() => {
+    localStorage.setItem('app-settings-box-size', JSON.stringify(settingsBoxSize));
+  }, [settingsBoxSize]);
+
+  useEffect(() => {
+    localStorage.setItem('app-settings-box-position', JSON.stringify(settingsBoxPosition));
+  }, [settingsBoxPosition]);
+
   return (
     <ThemeContext.Provider value={{ 
       theme, setTheme, 
       background, setBackground, 
       simulationPower, setSimulationPower,
       backgroundConfig, setBackgroundConfig,
-      isSettingsOpen, setIsSettingsOpen
+      isSettingsOpen, setIsSettingsOpen,
+      settingsViewMode, setSettingsViewMode,
+      settingsBoxSize, setSettingsBoxSize,
+      settingsBoxPosition, setSettingsBoxPosition
     }}>
       {children}
     </ThemeContext.Provider>
