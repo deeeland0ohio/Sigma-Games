@@ -580,7 +580,7 @@ export default function ChatPage() {
               Admin Remove
             </button>
             <button
-              onClick={() => handleKickUser(contextMenu.userId)}
+              onClick={() => handleKickUser(contextMenu.nickname)}
               className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-500 hover:bg-red-500/10 transition-all uppercase tracking-wider"
             >
               <LogOut size={20} />
@@ -588,7 +588,7 @@ export default function ChatPage() {
             </button>
             <button
               onClick={() => {
-                if (socket) socket.emit('kick_user_5m', contextMenu.userId);
+                if (socket) socket.emit('kick_user_5m', contextMenu.nickname);
                 setContextMenu(null);
               }}
               className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-600 hover:bg-red-500/10 transition-all uppercase tracking-wider"

@@ -26,7 +26,6 @@ export default function PageLayout({
 }: PageLayoutProps) {
   const colors = useThemeColors();
   const navigate = useNavigate();
-  const [showChatWarning, setShowChatWarning] = useState(false);
 
   const maxWidthClass = {
     '5xl': 'max-w-5xl',
@@ -60,13 +59,13 @@ export default function PageLayout({
           )}
 
           <div className="flex items-center gap-4">
-            <button
-              onClick={() => setShowChatWarning(true)}
+            <Link
+              to="/chat"
               className={`p-2 text-zinc-400 hover:${colors.primary} hover:bg-zinc-800 rounded-lg transition-all`}
               title="Global Chat"
             >
               <MessageSquare size={20} />
-            </button>
+            </Link>
             <a
               href="https://github.com/deeeland0ohio"
               target="_blank"
@@ -93,35 +92,6 @@ export default function PageLayout({
           <p className="mt-1 text-xs uppercase tracking-widest text-zinc-600">Entertainment purposes only.</p>
         </div>
       </footer>
-
-      {/* Chat Warning Modal */}
-      {showChatWarning && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-          <div className={`max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl flex flex-col items-center text-center`}>
-            <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
-            <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
-              If you use the Vercel link chat won't work, you must use <a href="https://ais-pre-sohh6faiwpdjywb75q5qhk-207654894741.us-west2.run.app/" className={`${colors.primary} hover:underline font-bold`} target="_blank" rel="noopener noreferrer">click here</a>
-            </p>
-            <div className="flex gap-4 w-full">
-              <button
-                onClick={() => setShowChatWarning(false)}
-                className="flex-1 py-3 rounded-xl font-bold text-white bg-zinc-800 hover:bg-zinc-700 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  setShowChatWarning(false);
-                  navigate("/chat");
-                }}
-                className={`flex-1 py-3 rounded-xl font-bold text-black transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg`}
-              >
-                Continue to Chat
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
