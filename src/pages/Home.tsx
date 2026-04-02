@@ -19,6 +19,21 @@ export default function Home() {
   const colors = useThemeColors();
 
   useEffect(() => {
+    // Record visit on home page open
+    const recordVisit = async () => {
+      if (!sessionStorage.getItem('has_visited_sigma_games')) {
+        try {
+          const baseUrl = 'https://api.counterapi.dev/v1/sigma-games-global-counter-v1/visits/up';
+          const endpoint = `https://corsproxy.io/?${encodeURIComponent(baseUrl)}`;
+          await fetch(endpoint);
+          sessionStorage.setItem('has_visited_sigma_games', 'true');
+        } catch (e) {
+          console.error('Failed to record visit:', e);
+        }
+      }
+    };
+    recordVisit();
+
     // Pick a random game on mount
     if (allGamesList.length > 0) {
       const randomGame = allGamesList[Math.floor(Math.random() * allGamesList.length)];

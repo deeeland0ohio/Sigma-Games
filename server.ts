@@ -20,21 +20,22 @@ async function startServer() {
   app.use(compression());
 
   // Socket.io logic
-  let messages: any[] = [];
-  const users = new Map<string, { id: string, nickname: string, lastActive: number, isTyping: boolean, isOwner: boolean }>();
+  const messages = new Map<string, any[]>();
+  const users = new Map<string, { id: string, nickname: string, lastActive: number, isTyping: boolean, isOwner: boolean, os: string }>();
   const bannedUsers = new Map<string, number>(); // Map of IP address to ban end timestamp
 
   // Cleanup old messages every minute
   setInterval(() => {
     const oneHourAgo = Date.now() - 3600000;
-    const initialLength = messages.length;
-    messages = messages.filter(msg => msg.createdAt > oneHourAgo);
-    if (messages.length !== initialLength) {
-      users.forEach((u, sid) => {
-        const clientSocket = io.sockets.sockets.get(sid);
-        if (clientSocket) sendMessages(clientSocket);
-      });
-    }
+    messages.forEach((msgs, os) => {
+      const initialLength = msgs.length;
+      const filtered = msgs.filter((msg: any) => msg.createdAt > oneHourAgo);
+      messages.set(os, filtered);
+      
+      if (filtered.length !== initialLength) {
+        io.to(os).sockets.forEach((s: any) => sendMessages(s));
+      }
+    });
     
     // Cleanup expired bans
     const now = Date.now();
@@ -45,16 +46,20 @@ async function startServer() {
     }
   }, 60000);
 
-  const broadcastUserList = () => {
+  const broadcastUserList = (os: string) => {
     const userList = Array.from(users.values())
+      .filter(u => u.os === os)
       .sort((a, b) => b.lastActive - a.lastActive);
-    io.emit("user_list", userList);
+    io.to(os).emit("user_list", userList);
   };
 
   // Function to send filtered messages based on user role
   const sendMessages = (targetSocket: any) => {
     const user = users.get(targetSocket.id);
-    const filtered = messages.map(msg => {
+    if (!user) return;
+    const msgs = messages.get(user.os) || [];
+    
+    const filtered = msgs.map(msg => {
       // If it's permanently removed by Sigma Dev (Hard Delete)
       if (msg.isPermanentlyRemoved) {
         return null; // Hidden for everyone, including the owner
@@ -87,7 +92,7 @@ async function startServer() {
     messages = messages.filter(msg => msg.createdAt > oneHourAgo);
     // Note: sendMessages will be called after join_chat to ensure role is known
 
-    socket.on("join_chat", ({ nickname: requestedNickname, password }) => {
+    socket.on("join_chat", ({ nickname: requestedNickname, password, os }) => {
       const ip = socket.handshake.address;
       const banEnd = bannedUsers.get(ip);
       if (banEnd && Date.now() < banEnd) {
@@ -120,12 +125,14 @@ async function startServer() {
         nickname: finalNickname, 
         lastActive: Date.now(),
         isTyping: false,
-        isOwner
+        isOwner,
+        os
       });
       
+      socket.join(os);
       socket.emit("join_success", { nickname: finalNickname, isOwner });
       sendMessages(socket);
-      broadcastUserList();
+      broadcastUserList(os);
     });
 
     socket.on("send_message", (msg) => {
@@ -140,43 +147,48 @@ async function startServer() {
         createdAt: Date.now()
       };
       
-      messages.push(messageWithId);
+      const msgs = messages.get(user.os) || [];
+      msgs.push(messageWithId);
+      messages.set(user.os, msgs);
+      
       user.lastActive = Date.now();
       user.isTyping = false;
       
-      // Broadcast to everyone, but handle deletion visibility per-client
-      users.forEach((u, sid) => {
-        const clientSocket = io.sockets.sockets.get(sid);
-        if (clientSocket) sendMessages(clientSocket);
-      });
-      broadcastUserList();
+      // Broadcast to everyone in the same room
+      io.to(user.os).emit("new_message", messageWithId);
+      broadcastUserList(user.os);
     });
 
     socket.on("delete_message", ({ messageId, type }) => {
       const user = users.get(socket.id);
       if (!user) return;
 
-      const msgIdx = messages.findIndex(m => m.id === messageId);
+      const msgs = messages.get(user.os) || [];
+      const msgIdx = msgs.findIndex(m => m.id === messageId);
       if (msgIdx === -1) return;
 
-      const msg = messages[msgIdx];
+      const msg = msgs[msgIdx];
       
       if (type === 'permanent' && user.isOwner) {
         // Sigma Dev hard deletes permanently
-        messages[msgIdx].isPermanentlyRemoved = true;
-        messages[msgIdx].isDeleted = true;
+        msgs[msgIdx].isPermanentlyRemoved = true;
+        msgs[msgIdx].isDeleted = true;
       } else if (type === 'admin_soft' && user.isOwner) {
         // Sigma Dev soft deletes someone else's message
-        messages[msgIdx].isAdminDeleted = true;
-        messages[msgIdx].isDeleted = true;
+        msgs[msgIdx].isAdminDeleted = true;
+        msgs[msgIdx].isDeleted = true;
       } else if (msg.senderName === user.nickname) {
         // Regular user (or Sigma Dev) deletes their own message
-        messages[msgIdx].isDeleted = true;
+        msgs[msgIdx].isDeleted = true;
       }
+      messages.set(user.os, msgs);
 
+      // Update everyone in the room
       users.forEach((u, sid) => {
-        const clientSocket = io.sockets.sockets.get(sid);
-        if (clientSocket) sendMessages(clientSocket);
+        if (u.os === user.os) {
+          const clientSocket = io.sockets.sockets.get(sid);
+          if (clientSocket) sendMessages(clientSocket);
+        }
       });
     });
 
@@ -250,14 +262,17 @@ async function startServer() {
       const user = users.get(socket.id);
       if (user) {
         user.isTyping = isTyping;
-        broadcastUserList();
+        socket.to(user.os).emit("user_list", Array.from(users.values()).filter(u => u.os === user.os));
       }
     });
 
     socket.on("disconnect", () => {
       console.log("User disconnected:", socket.id);
-      users.delete(socket.id);
-      broadcastUserList();
+      const user = users.get(socket.id);
+      if (user) {
+        users.delete(socket.id);
+        broadcastUserList(user.os);
+      }
     });
   });
 

@@ -3,6 +3,7 @@ import Home from './pages/Home';
 import GamePlayer from './pages/GamePlayer';
 import AllGames from './pages/AllGames';
 import PopularGames from './pages/PopularGames';
+import TestingGames from './pages/TestingGames';
 import BackgroundManager from './components/BackgroundManager';
 import SettingsOverlay from './components/SettingsOverlay';
 import { ThemeProvider } from './context/ThemeContext';
@@ -25,6 +26,7 @@ export default function App() {
               <Route path="/all-games" element={<AllGames />} />
               <Route path="/popular" element={<PopularGames />} />
               <Route path="/favorites" element={<Favorites />} />
+              <Route path="/testing" element={<TestingGames />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/play/:id" element={<GamePlayer />} />
               <Route path="/chat" element={<ChatPage />} />
