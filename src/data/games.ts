@@ -1,6 +1,7 @@
-import { Folder, Star, Heart, Puzzle, Skull, Zap } from 'lucide-react';
+import { Folder, Star, Heart, Puzzle, Skull, Zap, FlaskConical } from 'lucide-react';
 import { Game } from '../types';
 import { allGames } from './games/index';
+import { vex1 } from './games/vex-1';
 
 export type { Game };
 
@@ -33,6 +34,13 @@ export const games: Game[] = [
     icon: Puzzle,
     type: 'folder',
   },
+  {
+    id: 'testing',
+    title: 'Testing',
+    description: 'Experimental and newly added games.',
+    icon: FlaskConical,
+    type: 'folder',
+  },
 ];
 
 export const allGamesList = [...allGames].sort((a, b) => {
@@ -42,3 +50,7 @@ export const allGamesList = [...allGames].sort((a, b) => {
 export const popularGamesList = [...allGames].sort((a, b) => {
   return (b.popularity || 0) - (a.popularity || 0);
 });
+
+export const testingGamesList: Game[] = [
+  vex1
+];

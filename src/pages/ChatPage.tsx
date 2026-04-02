@@ -172,10 +172,19 @@ export default function ChatPage() {
     }
   }, [messages]);
 
+  const getOS = () => {
+    const userAgent = window.navigator.userAgent;
+    if (userAgent.indexOf("Win") != -1) return "Windows";
+    if (userAgent.indexOf("Mac") != -1) return "Mac";
+    if (userAgent.indexOf("CrOS") != -1) return "Chromebook";
+    if (userAgent.indexOf("Linux") != -1) return "Linux";
+    return "Other";
+  };
+
   const handleJoinChat = (e: React.FormEvent) => {
     e.preventDefault();
     if (!tempName.trim() || !socket) return;
-    socket.emit('join_chat', { nickname: tempName.trim(), password });
+    socket.emit('join_chat', { nickname: tempName.trim(), password, os: getOS() });
   };
 
   useEffect(() => {
