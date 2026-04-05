@@ -1,6 +1,6 @@
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { games, allGamesList, testingGamesList } from '../data/games';
+import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
 import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle, MessageSquare } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
@@ -11,7 +11,7 @@ import { useFavorites } from '../context/FavoritesContext';
 
 export default function GamePlayer() {
   const { id } = useParams<{ id: string }>();
-  const game = games.find(g => g.id === id) || allGamesList.find(g => g.id === id) || testingGamesList.find(g => g.id === id);
+  const game = games.find(g => g.id === id) || allGamesList.find(g => g.id === id);
   const colors = useThemeColors();
   const { toggleFavorite, isFavorite } = useFavorites();
   const [reloadKey, setReloadKey] = useState(0);
