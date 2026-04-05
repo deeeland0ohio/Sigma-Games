@@ -618,7 +618,7 @@ export function SettingsContent() {
                     <html>
                       <head><title>${document.title}</title></head>
                       <body style="margin:0;padding:0;overflow:hidden;">
-                        <iframe src="${window.location.href}" style="width:100vw;height:100vh;border:none;"></iframe>
+                        <iframe src="${window.location.origin}" style="width:100vw;height:100vh;border:none;"></iframe>
                       </body>
                     </html>
                   `);
