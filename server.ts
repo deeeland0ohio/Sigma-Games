@@ -33,7 +33,12 @@ async function startServer() {
       messages.set(os, filtered);
       
       if (filtered.length !== initialLength) {
-        io.to(os).sockets.forEach((s: any) => sendMessages(s));
+        users.forEach((u, sid) => {
+          if (u.os === os) {
+            const clientSocket = io.sockets.sockets.get(sid);
+            if (clientSocket) sendMessages(clientSocket);
+          }
+        });
       }
     });
     
@@ -88,8 +93,6 @@ async function startServer() {
     console.log("User connected:", socket.id);
     
     // Send existing messages to the new user
-    const oneHourAgo = Date.now() - 3600000;
-    messages = messages.filter(msg => msg.createdAt > oneHourAgo);
     // Note: sendMessages will be called after join_chat to ensure role is known
 
     socket.on("join_chat", ({ nickname: requestedNickname, password, os }) => {
