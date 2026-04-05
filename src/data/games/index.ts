@@ -97,6 +97,11 @@ import { oneVOneLol } from "./1v1-lol";
 import { kartBros } from "./kart-bros";
 import { iceDodo } from "./ice-dodo";
 import { abaf } from "./abaf";
+import { mountainBikeRacer } from "./mountain-bike-racer";
+import { needyStreamerOverload } from "./needy-streamer-overload";
+import { bankRobbery } from "./bank-robbery";
+import { bankRobbery2 } from "./bank-robbery-2";
+import { bankRobbery3 } from "./bank-robbery-3";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -199,4 +204,9 @@ export const allGames: Game[] = [
   kartBros,
   iceDodo,
   abaf,
+  mountainBikeRacer,
+  needyStreamerOverload,
+  bankRobbery,
+  bankRobbery2,
+  bankRobbery3,
 ];
