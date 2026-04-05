@@ -44,6 +44,7 @@ export default function ChatPage() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useThemeColors();
   const [banTimeLeft, setBanTimeLeft] = useState<number | null>(null);
+  const [showVercelWarning, setShowVercelWarning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
@@ -79,6 +80,13 @@ export default function ChatPage() {
         localStorage.removeItem('kick_end');
       }
     }
+
+    const hasSeenWarning = sessionStorage.getItem('vercel_warning_seen');
+    if (!hasSeenWarning) {
+      setShowVercelWarning(true);
+      sessionStorage.setItem('vercel_warning_seen', 'true');
+    }
+
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
@@ -606,6 +614,34 @@ export default function ChatPage() {
               Kick User (5m)
             </button>
           </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Vercel Warning Popup */}
+      <AnimatePresence>
+        {showVercelWarning && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className={`max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl ${colors.shadow} flex flex-col items-center text-center`}
+            >
+              <div className={`w-16 h-16 rounded-full ${colors.tertiaryBg || colors.secondaryBg} ${colors.groupHoverQuaternary || colors.groupHoverText || 'text-white'} flex items-center justify-center mb-6`}>
+                <MessageSquare size={32} />
+              </div>
+              <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
+              <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
+                Chat will not work if you are using a .vercel link
+              </p>
+              <button
+                onClick={() => setShowVercelWarning(false)}
+                className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
+              >
+                UNDERSTOOD
+              </button>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
