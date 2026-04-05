@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="utf-8">
+    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+    <meta content="width=device-width, initial-scale=1.0, user-scalable=no" name="viewport">
+    <title>Bank Robbery 2</title>
+    <base href="https://cdn.jsdelivr.net/gh/linkd1/g@e079e474647ea113968cdc140ca97380be6409af/BANKROBBERY2/">
+    <link href="TemplateData/style.css" rel="stylesheet">
+    <style type="text/css">
+        #button { display:none; }
+        .imgb_vis { animation: imgb-animation 7s linear; }
+        @keyframes imgb-animation {
+            10% { transform: translateX(0); }
+            20% { transform: translateX(100px); }
+            90% { transform: translateX(100px); }
+            100% { transform: translateX(0); }
+        }
+    </style>
+</head>
+<body class="dark" dir="ltr">
+    <div class="unity-desktop" id="unity-container">
+        <canvas id="unity-canvas"></canvas>
+    </div>
+    <div id="loading-cover">
+        <div id="unity-loading-bar">
+            <div id="unity-logo"></div>
+            <div id="unity-progress-bar-empty">
+                <div id="unity-progress-bar-full" style="width: 0%;"></div>
+            </div>
+            <div class="spinner"></div>
+        </div>
+    </div>
+    <script>
+        window.ysdk = {
+            features: { LoadingAPI: { ready: () => {} } },
+            getPlayer: () => Promise.resolve({
+                getName: () => "Player",
+                getPhoto: () => "null",
+                getMode: () => "",
+                getUniqueID: () => "12345",
+                setData: () => {},
+                getData: () => Promise.resolve({})
+            }),
+            auth: { openAuthDialog: () => Promise.resolve() },
+            adv: { hideBannerAdv: () => {} },
+            getPayments: () => Promise.resolve({
+                getCatalog: () => Promise.resolve([]),
+                getPurchases: () => Promise.resolve([]),
+                consumePurchase: () => {}
+            }),
+            getLeaderboards: () => Promise.resolve({
+                setLeaderboardScore: () => {},
+                getLeaderboardEntries: () => Promise.resolve({ entries: [] })
+            }),
+            environment: {
+                i18n: { lang: "en", tld: "com" },
+                app: { id: "bankrobbery2" },
+                browser: { lang: "en" },
+                payload: ""
+            },
+            deviceInfo: {
+                type: "desktop",
+                isMobile: () => false,
+                isDesktop: () => true,
+                isTablet: () => false,
+                isTV: () => false
+            },
+            feedback: {
+                canReview: () => Promise.resolve({ value: false, reason: "" }),
+                requestReview: () => Promise.resolve({ feedbackSent: false })
+            },
+            shortcut: {
+                showPrompt: () => Promise.resolve({ outcome: "dismissed" })
+            }
+        };
+
+        var gameState = {
+            isInitialized: false,
+            instance: null,
+            player: null,
+            leaderboard: null,
+            payments: null,
+            promptCanShow: false,
+            reviewCanShow: false,
+            initSDK: false,
+            initGame: false,
+            photoSizeForInit: null,
+            scopesForInit: null,
+            firstAd: true,
+            loadingProgress: {
+                dataFilesProgress: 0,
+                unityProgress: 0
+            }
+        };
+
+        function updateTotalProgress() {
+            const totalProgress = (gameState.loadingProgress.dataFilesProgress * 0.5) + 
+                                (gameState.loadingProgress.unityProgress * 0.5);
+            const progressBarFull = document.querySelector("#unity-progress-bar-full");
+            progressBarFull.style.width = `${totalProgress * 100}%`;
+        }
+
+        async function mergeUnityWebFilesWithProgress(baseUrl, filePrefix, totalParts, extension) {
+            const partUrls = [];
+            for (let i = 1; i <= totalParts; i++) {
+                partUrls.push(`${baseUrl}/${filePrefix}${i}.${extension}`);
+            }
+
+            const buffers = [];
+            let totalDownloaded = 0;
+            let totalSize = 0;
+
+            for (let i = 0; i < totalParts; i++) {
+                const response = await fetch(partUrls[i], { method: "HEAD" });
+                const contentLength = response.headers.get("Content-Length");
+                if (contentLength) {
+                    totalSize += parseInt(contentLength, 10);
+                }
+            }
+
+            for (let i = 0; i < totalParts; i++) {
+                const response = await fetch(partUrls[i]);
+                if (!response.body) {
+                    throw new Error(`Streaming not supported for file: ${partUrls[i]}`);
+                }
+
+                const reader = response.body.getReader();
+                const partBuffer = [];
+
+                while (true) {
+                    const { done, value } = await reader.read();
+                    if (done) break;
+
+                    partBuffer.push(value);
+                    totalDownloaded += value.length;
+
+                    gameState.loadingProgress.dataFilesProgress = totalDownloaded / totalSize;
+                    updateTotalProgress();
+                }
+
+                buffers.push(new Uint8Array(partBuffer.reduce((acc, chunk) => acc + chunk.length, 0)));
+                let offset = 0;
+                for (const chunk of partBuffer) {
+                    buffers[i].set(chunk, offset);
+                    offset += chunk.length;
+                }
+            }
+
+            const totalLength = buffers.reduce((acc, buffer) => acc + buffer.byteLength, 0);
+            const combinedBuffer = new Uint8Array(totalLength);
+            let offset = 0;
+
+            buffers.forEach((buffer) => {
+                combinedBuffer.set(new Uint8Array(buffer), offset);
+                offset += buffer.byteLength;
+            });
+
+            return combinedBuffer;
+        }
+
+        const buildUrl = "https://cdn.jsdelivr.net/gh/bavlin-san7990/react@a2f035b519b99dbc2c69f174cf9788b56cb36c32/src";
+        const loaderUrl = "Build/BankRobbery2.loader.js";
+
+        const container = document.querySelector("#unity-container");
+        const canvas = document.querySelector("#unity-canvas");
+        const loadingCover = document.querySelector("#loading-cover");
+        const progressBarEmpty = document.querySelector("#unity-progress-bar-empty");
+        const spinner = document.querySelector('.spinner');
+
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+            container.className = "unity-mobile";
+        }
+
+        loadingCover.style.display = "";
+        progressBarEmpty.style.display = "";
+
+        canvas.addEventListener("touchstart", () => { window.focus() });
+        canvas.addEventListener("pointerdown", () => { window.focus() });
+
+        async function initializeGame() {
+            try {
+                const dataBuffer = await mergeUnityWebFilesWithProgress(buildUrl, "br", 2, "data.js");
+                const dataBlobUrl = URL.createObjectURL(new Blob([dataBuffer], { type: "application/octet-stream" }));
+
+                const config = {
+                    dataUrl: dataBlobUrl,
+                    frameworkUrl: "Build/BankRobbery2.framework.js.unityweb",
+                    codeUrl: "Build/BankRobbery2.wasm.unityweb",
+                    streamingAssetsUrl: "StreamingAssets",
+                    companyName: "JustAlien",
+                    productName: "BankRobbery2",
+                    productVersion: "1.0",
+                };
+
+                const script = document.createElement("script");
+                script.src = loaderUrl;
+                script.onload = () => {
+                    createUnityInstance(canvas, config, (progress) => {
+                        gameState.loadingProgress.unityProgress = progress;
+                        updateTotalProgress();
+                    }).then((unityInstance) => {
+                        gameState.instance = unityInstance;
+                        window.myGameInstance = unityInstance;
+                        gameState.isInitialized = true;
+                        loadingCover.style.display = "none";
+                    }).catch((message) => {
+                        console.error("Unity initialization error:", message);
+                        alert(message);
+                    });
+                };
+                document.body.appendChild(script);
+            } catch (error) {
+                console.error("Game initialization failed:", error);
+                alert("Failed to initialize game: " + error.message);
+            }
+        }
+
+        function waitForGameInitialization() {
+            return new Promise((resolve) => {
+                const checkInitialization = () => {
+                    if (gameState.isInitialized) {
+                        resolve();
+                    } else {
+                        setTimeout(checkInitialization, 100);
+                    }
+                };
+                checkInitialization();
+            });
+        }
+
+        async function InitSDK(photoSize, scopes) {
+            await waitForGameInitialization();
+            console.log('Init GAME');
+            gameState.initGame = true;
+            gameState.photoSizeForInit = photoSize;
+            gameState.scopesForInit = scopes;
+            InitPlayer(photoSize, scopes);
+        }
+
+        function NotAuthorized() {
+            try {
+                console.log('Authorized failed');
+                let authJson = {
+                    "playerAuth": "rejected",
+                    "playerName": "unauthorized",
+                    "playerId": "unauthorized",
+                    "playerPhoto": "null"
+                };
+                gameState.instance.SendMessage('YandexGame', 'SetInitializationSDK', JSON.stringify(authJson));
+            } catch (e) {
+                console.error('CRASH Not Authorized: ', e.message);
+            }
+        }
+
+        initializeGame().catch(error => {
+            console.error("Failed to start game:", error);
+        });
+
+        function InitPlayer(photoSize, _scopes) {
+            try {
+                let authJson = {
+                    "playerAuth": "resolved",
+                    "playerName": "Player",
+                    "playerId": "12345",
+                    "playerPhoto": "null"
+                };
+                window.myGameInstance.SendMessage('YandexGame', 'SetInitializationSDK', JSON.stringify(authJson));
+                window.focus();
+            } catch (e) {
+                console.error('CRASH init Player: ', e.message);
+                window.focus();
+            }
+        }
+
+        function OpenAuthDialog(photoSize, scopes) {
+            InitPlayer(photoSize, scopes);
+        }
+
+        function FullAdShow() { return; }
+
+        function RewardedShow(id) {
+            console.log('Reward Video Ad. Id: ' + id);
+            window.myGameInstance.SendMessage('YandexGame', 'RewardVideo', id);
+        }
+
+        function StickyAdActivity(show) {}
+
+        function InitPayments() {}
+
+        function BuyPayments(id) {
+            console.log('Purchase Success');
+            window.myGameInstance.SendMessage('YandexGame', 'OnPurchaseSuccess', id);
+            window.focus();
+        }
+        
+        function GetPayments() {}
+        function DeletePurchase(id) {}
+        function DeleteAllPurchases() {}
+
+        function SaveCloud(jsonData, flush) {}
+
+        function LoadCloud() {
+            try {
+                window.myGameInstance.SendMessage('YandexGame', 'SetLoadSaves', "noData");
+            } catch (e) {
+                console.error('CRASH Load saves Cloud: ', e.message);
+            }
+        }
+
+        function InitLeaderboard() {
+            try {
+                window.myGameInstance.SendMessage('YandexGame', 'InitializedLB');
+            } catch (e) {
+                console.error('CRASH Init Leaderboard: ', e.message);
+            }
+        }
+
+        function SetLeaderboardScores(_name, score) {}
+        function GetLeaderboardScores(nameLB, maxPlayers, quantityTop, quantityAround, photoSize, auth) {}
+        function EntriesLB(res, nameLB, maxPlayers, photoSize) {}
+
+        function LanguageRequest() {
+            try {
+                window.myGameInstance.SendMessage('YandexGame', 'SetLanguage', 'en');
+            } catch (e) {
+                console.error('CRASH Language Request: ', e.message);
+            }
+        }
+
+        function RequestingEnvironmentData() {
+            try {
+                let jsonEnvir = {
+                    "language": "en",
+                    "domain": "com",
+                    "deviceType": "desktop",
+                    "isMobile": false,
+                    "isDesktop": true,
+                    "isTablet": false,
+                    "isTV": false,
+                    "appID": "bankrobbery2",
+                    "browserLang": "en",
+                    "payload": "",
+                    "promptCanShow": false,
+                    "reviewCanShow": false
+                };
+                window.myGameInstance.SendMessage('YandexGame', 'SetEnvironmentData', JSON.stringify(jsonEnvir));
+            } catch (e) {
+                console.error('CRASH Requesting Environment Data: ', e.message);
+            }
+        }
+
+        function Review() {}
+        function PromptShow() {}
+        function PaintRBT(rbt) {}
+        function StaticRBTDeactivate() {}
+    </script>
+</body>
+</html>
