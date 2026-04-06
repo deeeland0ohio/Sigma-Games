@@ -111,6 +111,10 @@ import { timeShooter3 } from "./time-shooter-3";
 import { bendyAndTheInkMachine } from "./bendy-and-the-ink-machine";
 import { halfLife } from "./half-life";
 import { halfLifeOpposingForce } from "./half-life-opposing-force";
+import { volleyRandom } from "./volley-random";
+import { slope } from "./slope";
+import { slope2 } from "./slope-2";
+import { tinyFishing } from "./tiny-fishing";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -227,4 +231,8 @@ export const allGames: Game[] = [
   bendyAndTheInkMachine,
   halfLife,
   halfLifeOpposingForce,
+  volleyRandom,
+  slope,
+  slope2,
+  tinyFishing,
 ];
