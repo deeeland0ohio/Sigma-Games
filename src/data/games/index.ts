@@ -120,6 +120,10 @@ import { funnyShooter2 } from "./funny-shooter-2";
 import { funnyBattleSimulator } from "./funny-battle-simulator";
 import { funnyBattleSimulator2 } from "./funny-battle-simulator-2";
 import { wrestleBros } from "./wrestle-bros";
+import { slope3 } from "./slope-3";
+import { snowRider3d } from "./snow-rider-3d";
+import { stickManHook } from "./stick-man-hook";
+import { tunnelRush } from "./tunnel-rush";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -245,4 +249,8 @@ export const allGames: Game[] = [
   funnyBattleSimulator,
   funnyBattleSimulator2,
   wrestleBros,
+  slope3,
+  snowRider3d,
+  stickManHook,
+  tunnelRush,
 ];
