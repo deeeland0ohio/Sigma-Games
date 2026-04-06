@@ -3,7 +3,6 @@ import { useTheme, useThemeColors, Theme, BackgroundStyle } from '../context/The
 import PageLayout from '../components/PageLayout';
 import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import GlobalCounter from '../components/GlobalCounter';
 
 export function SettingsContent() {
   const { 
@@ -172,9 +171,6 @@ export function SettingsContent() {
         <div>
           <h1 className="text-4xl font-bold text-white tracking-tight">SYSTEM SETTINGS</h1>
           <p className="text-zinc-500 mt-2">Customize your visual experience and performance.</p>
-          <div className="inline-block">
-            <GlobalCounter />
-          </div>
         </div>
         <button
           onClick={() => {
