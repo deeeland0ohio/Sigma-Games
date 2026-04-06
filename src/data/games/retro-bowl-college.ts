@@ -3,10 +3,10 @@ import { Game } from '../../types';
 
 export const retroBowlCollege: Game = {
   id: 'retro-bowl-college',
-  title: "Retro Bowl College",
-  description: "Manage your college team to victory in this retro-styled football sim.",
+  title: 'Retro Bowl College',
+  description: 'Take control of your favorite college football team and lead them to victory in this retro-style sports game.',
   icon: Trophy,
   type: 'iframe',
   url: '/games/retro-bowl-college/index.html',
-  popularity: 97,
+  popularity: 90,
 };
