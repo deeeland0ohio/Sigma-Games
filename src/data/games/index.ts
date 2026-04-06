@@ -116,6 +116,10 @@ import { slope } from "./slope";
 import { slope2 } from "./slope-2";
 import { tinyFishing } from "./tiny-fishing";
 import { sandboxels } from "./sandboxels";
+import { funnyShooter2 } from "./funny-shooter-2";
+import { funnyBattleSimulator } from "./funny-battle-simulator";
+import { funnyBattleSimulator2 } from "./funny-battle-simulator-2";
+import { wrestleBros } from "./wrestle-bros";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -237,4 +241,8 @@ export const allGames: Game[] = [
   slope2,
   tinyFishing,
   sandboxels,
+  funnyShooter2,
+  funnyBattleSimulator,
+  funnyBattleSimulator2,
+  wrestleBros,
 ];
