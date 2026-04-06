@@ -102,6 +102,15 @@ import { needyStreamerOverload } from "./needy-streamer-overload";
 import { bankRobbery } from "./bank-robbery";
 import { bankRobbery2 } from "./bank-robbery-2";
 import { bankRobbery3 } from "./bank-robbery-3";
+import { peaksOfYore } from "./peaks-of-yore";
+import { hotlineMiami } from "./hotline-miami";
+import { superhot } from "./superhot";
+import { timeShooter } from "./time-shooter";
+import { timeShooter2 } from "./time-shooter-2";
+import { timeShooter3 } from "./time-shooter-3";
+import { bendyAndTheInkMachine } from "./bendy-and-the-ink-machine";
+import { halfLife } from "./half-life";
+import { halfLifeOpposingForce } from "./half-life-opposing-force";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -209,4 +218,13 @@ export const allGames: Game[] = [
   bankRobbery,
   bankRobbery2,
   bankRobbery3,
+  peaksOfYore,
+  hotlineMiami,
+  superhot,
+  timeShooter,
+  timeShooter2,
+  timeShooter3,
+  bendyAndTheInkMachine,
+  halfLife,
+  halfLifeOpposingForce,
 ];
