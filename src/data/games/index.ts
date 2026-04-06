@@ -115,6 +115,7 @@ import { volleyRandom } from "./volley-random";
 import { slope } from "./slope";
 import { slope2 } from "./slope-2";
 import { tinyFishing } from "./tiny-fishing";
+import { sandboxels } from "./sandboxels";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -235,4 +236,5 @@ export const allGames: Game[] = [
   slope,
   slope2,
   tinyFishing,
+  sandboxels,
 ];
