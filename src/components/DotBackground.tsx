@@ -180,9 +180,9 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
         const dx = mouse.x - dot.x;
         const dy = mouse.y - dot.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const brightnessRadius = 150;
+        const brightnessRadius = 150 * Math.sqrt(powerRef.current);
         let brightness = 1;
-        if (distance < brightnessRadius) {
+        if (distance < brightnessRadius && powerRef.current > 0) {
           brightness = 1 + (1 - distance / brightnessRadius) * 2;
         }
 
