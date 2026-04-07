@@ -19,7 +19,7 @@ export default function GamePlayer() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const popupGames = ['crazy-cattle-3d', 'basket-random', 'soccer-random', 'boxing-random'];
+    const popupGames = ['crazy-cattle-3d', 'basket-random', 'soccer-random', 'boxing-random', 'geometry-dash'];
     if (id && popupGames.includes(id)) {
       setShowPopup(true);
     }
@@ -157,7 +157,9 @@ export default function GamePlayer() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
               <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
-                {id === 'basket-random' || id === 'soccer-random' || id === 'boxing-random'
+                {id === 'geometry-dash'
+                  ? "Some levels in this game may be missing some textures so, some levels may be unplayable :("
+                  : id === 'basket-random' || id === 'soccer-random' || id === 'boxing-random'
                   ? "The ads you see on this game are NOT from this website they are embedded in the code."
                   : "This website is an ad free unblocked games website, don't worry about the 'unofficial port' popup you will see in game. This website would be classified as an 'other ad-free \"unblocked game\" website'."}
               </p>
