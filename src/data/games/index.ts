@@ -55,7 +55,8 @@ import { crazyCars } from "./crazy-cars";
 import { crazyCattle3d } from "./crazy-cattle-3d";
 import { crazyChickens3d } from "./crazy-chickens-3d";
 import { crazyKitty3d } from "./crazy-kitty-3d";
-import { famiDash } from "./fami-dash";
+import { geometryDash } from "./geometry-dash";
+import { geometryDashLite } from "./geometry-dash-lite";
 import { webfishing } from "./webfishing";
 import { granny } from "./granny";
 import { cuphead } from "./cuphead";
@@ -184,7 +185,8 @@ export const allGames: Game[] = [
   crazyCattle3d,
   crazyChickens3d,
   crazyKitty3d,
-  famiDash,
+  geometryDash,
+  geometryDashLite,
   webfishing,
   granny,
   cuphead,
