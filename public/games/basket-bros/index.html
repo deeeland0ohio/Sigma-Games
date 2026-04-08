@@ -67,26 +67,79 @@
     </style>
 
     <script>
-      // Stub out ad functions so the game doesn't freeze waiting for them
-      window.ShowVideo = function() {
-        if (window.Main && window.Main.DoneVideoAd) {
-          window.Main.DoneVideoAd(true);
-        }
-      };
-      window.ShowAdBreak = function() {
-        if (window.Main && window.Main.DoneInterstitialAd) {
-          window.Main.DoneInterstitialAd(true);
-        }
-      };
-      window.ShowAd1 = function() {};
-      window.ShowAd2 = function() {};
-      window.ShowAd3 = function() {};
-      window.ShowAd4 = function() {};
-      window.ShowAd6 = function() {};
-      window.ShowAd7 = function() {};
-      window.SetCGInviteLink = function() {};
-      window.SendEvent = function() {};
-      window.updateStatus = function() {};
+        // Stub WebRTC to prevent crashes if it's not supported or blocked
+        window.RTCPeerConnection = window.RTCPeerConnection || function() {
+            console.warn("RTCPeerConnection stubbed");
+            return {
+                createDataChannel: function() { return { send: function() {}, close: function() {} }; },
+                createOffer: function() { return Promise.resolve({}); },
+                setLocalDescription: function() { return Promise.resolve(); },
+                setRemoteDescription: function() { return Promise.resolve(); },
+                addIceCandidate: function() { return Promise.resolve(); },
+                onicecandidate: null,
+                oniceconnectionstatechange: null,
+                ondatachannel: null
+            };
+        };
+        window.RTCSessionDescription = window.RTCSessionDescription || function() {};
+        window.RTCIceCandidate = window.RTCIceCandidate || function() {};
+
+        // Global error handling to prevent game freezes
+        window.onerror = function(msg, url, line, col, error) {
+            console.error("GAME ERROR:", msg, "at", url, ":", line, ":", col);
+            if (error) console.error(error);
+            // If the game crashes, we try to force a resume if it's ad-related
+            if (msg && (msg.indexOf('ad') !== -1 || msg.indexOf('Ads') !== -1)) {
+                try { window.ShowAdBreak(); } catch(e) {}
+            }
+            return true; 
+        };
+        window.onunhandledrejection = function(event) {
+            console.warn("Unhandled promise rejection:", event.reason);
+        };
+
+        // Stub out ad functions so the game doesn't freeze waiting for them
+        window.ShowVideo = function() {
+            console.log("Video ad requested");
+            setTimeout(function() {
+                try {
+                    if (window.Main && window.Main.DoneVideoAd) window.Main.DoneVideoAd(true);
+                } catch(e) { console.error("Error in DoneVideoAd:", e); }
+            }, 500);
+        };
+        window.ShowAdBreak = function() {
+            console.log("Ad break requested");
+            setTimeout(function() {
+                try {
+                    if (window.Main && window.Main.DoneInterstitialAd) window.Main.DoneInterstitialAd(true);
+                } catch(e) { console.error("Error in DoneInterstitialAd:", e); }
+            }, 500);
+        };
+        window.ShowAd1 = function() {}; window.ShowAd2 = function() {}; window.ShowAd3 = function() {}; window.ShowAd4 = function() {};
+        window.ShowAd6 = function() {}; window.ShowAd7 = function() {}; window.ShowAd8 = function() {}; window.ShowAd9 = function() {};
+        
+        window.SetCGInviteLink = function(link) { 
+            console.log("Invite link generated:", link);
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(link).catch(e => console.warn("Clipboard write failed:", e));
+                }
+            } catch(e) {}
+        };
+        
+        window.SendEvent = function() {}; window.updateStatus = function() {};
+        
+        // Prevent crashes from missing common globals
+        window.cpmstar = window.cpmstar || {};
+        window.googletag = window.googletag || { cmd: [], display: function() {}, pubads: function() { return { enableSingleRequest: function() {}, collapseEmptyDivs: function() {} }; }, enableServices: function() {} };
+        
+        // Stub window.open to prevent iframe security errors
+        const originalOpen = window.open;
+        window.open = function(url, target, features) {
+            console.log("Window.open called with:", url);
+            if (!url) return null;
+            return { close: function() {}, focus: function() {} };
+        };
     </script>
   </head>
   <body style="overflow: hidden;">

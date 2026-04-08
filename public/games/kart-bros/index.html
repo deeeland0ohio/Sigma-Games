@@ -55,6 +55,33 @@
     </div>
   </div>
   <script>
+    // Stub WebRTC to prevent crashes if it's not supported or blocked
+    window.RTCPeerConnection = window.RTCPeerConnection || function() {
+        console.warn("RTCPeerConnection stubbed");
+        return {
+            createDataChannel: function() { return { send: function() {}, close: function() {} }; },
+            createOffer: function() { return Promise.resolve({}); },
+            setLocalDescription: function() { return Promise.resolve(); },
+            setRemoteDescription: function() { return Promise.resolve(); },
+            addIceCandidate: function() { return Promise.resolve(); },
+            onicecandidate: null,
+            oniceconnectionstatechange: null,
+            ondatachannel: null
+        };
+    };
+    window.RTCSessionDescription = window.RTCSessionDescription || function() {};
+    window.RTCIceCandidate = window.RTCIceCandidate || function() {};
+
+    // Global error handling to prevent game freezes
+    window.onerror = function(msg, url, line, col, error) {
+        console.error("GAME ERROR:", msg, "at", url, ":", line, ":", col);
+        if (error) console.error(error);
+        return true; 
+    };
+    window.onunhandledrejection = function(event) {
+        console.warn("Unhandled promise rejection:", event.reason);
+    };
+
     // Mock functions to prevent Unity from crashing when calling ads/analytics
     function show_videoad() {
       console.log("Mock show_videoad called");
@@ -108,15 +135,22 @@
     // Session ID for tracking (mocked)
     window.sid = "mock-session-id-12345";
 
-    // BlueWizard standard mock functions (from Football Bros)
+    // BlueWizard standard mock functions
     window.triggerSignIn = function() { console.log("Mock triggerSignIn"); };
-    window.saveGameData = function(data) { localStorage.setItem('kartBrosData', data); };
-    window.loadGameData = function() { return localStorage.getItem('kartBrosData') || ""; };
+    window.saveGameData = function(data) { try { localStorage.setItem('kartBrosData', data); } catch(e) {} };
+    window.loadGameData = function() { try { return localStorage.getItem('kartBrosData') || ""; } catch(e) { return ""; } };
     window.loadGameDataAsync = function() { console.log("Mock loadGameDataAsync"); };
     window.signOut = function() { console.log("Mock signOut"); };
     window.isUserLoggedIn = function() { return true; };
     window.EmailSignup = function() {};
-    window.SetCGInviteLink = function() {};
+    window.SetCGInviteLink = function(link) { 
+        console.log("Invite link generated:", link);
+        try {
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(link).catch(e => console.warn("Clipboard write failed:", e));
+            }
+        } catch(e) {}
+    };
     window.LoadVideo = function() {};
     window.SetupMSNotification = function() {};
     window.right = function(str, chr) { return str.slice(str.length - chr, str.length); };
@@ -127,6 +161,18 @@
     window.GamePlayStart = function() {};
     window.GamePlayStop = function() {};
     window.HappyTime = function() {};
+    
+    // Prevent crashes from missing common globals
+    window.cpmstar = window.cpmstar || {};
+    window.googletag = window.googletag || { cmd: [], display: function() {}, pubads: function() { return { enableSingleRequest: function() {}, collapseEmptyDivs: function() {} }; }, enableServices: function() {} };
+    
+    // Stub window.open to prevent iframe security errors
+    const originalOpen = window.open;
+    window.open = function(url, target, features) {
+        console.log("Window.open called with:", url);
+        if (!url) return null;
+        return { close: function() {}, focus: function() {} };
+    };
   </script>
   <script>
     var canvas = document.getElementById("unity-canvas");

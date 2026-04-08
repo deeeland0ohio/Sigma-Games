@@ -92,13 +92,79 @@
         lime.embed("FootballBros", "openfl-content", 0, 0, { parameters: {} });
     </script>
     <script>
+        // Stub WebRTC to prevent crashes if it's not supported or blocked
+        window.RTCPeerConnection = window.RTCPeerConnection || function() {
+            console.warn("RTCPeerConnection stubbed");
+            return {
+                createDataChannel: function() { return { send: function() {}, close: function() {} }; },
+                createOffer: function() { return Promise.resolve({}); },
+                setLocalDescription: function() { return Promise.resolve(); },
+                setRemoteDescription: function() { return Promise.resolve(); },
+                addIceCandidate: function() { return Promise.resolve(); },
+                onicecandidate: null,
+                oniceconnectionstatechange: null,
+                ondatachannel: null
+            };
+        };
+        window.RTCSessionDescription = window.RTCSessionDescription || function() {};
+        window.RTCIceCandidate = window.RTCIceCandidate || function() {};
+        
+        // Global error handling to prevent game freezes
+        window.onerror = function(msg, url, line, col, error) {
+            console.error("GAME ERROR:", msg, "at", url, ":", line, ":", col);
+            if (error) console.error(error);
+            // If the game crashes, we try to force a resume if it's ad-related
+            if (msg && (msg.indexOf('ad') !== -1 || msg.indexOf('Ads') !== -1)) {
+                try { window.ShowAdBreak(); } catch(e) {}
+            }
+            return true; 
+        };
+        window.onunhandledrejection = function(event) {
+            console.warn("Unhandled promise rejection:", event.reason);
+        };
+
         // Mock ad functions to prevent game from hanging
         window.ShowAd1 = window.ShowAd2 = window.ShowAd3 = window.ShowAd4 = window.ShowAd6 = window.ShowAd7 = window.ShowAd8 = window.ShowAd9 = function() {};
-        window.ShowVideo = function() { if (typeof Main !== 'undefined') Main.DoneVideoAd(true); };
-        window.ShowAdBreak = function() { if (typeof Main !== 'undefined') Main.DoneInterstitialAd(true); };
+        window.ShowVideo = function() { 
+            console.log("Video ad requested");
+            setTimeout(function() {
+                try {
+                    if (typeof Main !== 'undefined') Main.DoneVideoAd(true);
+                } catch(e) { console.error("Error in DoneVideoAd:", e); }
+            }, 500);
+        };
+        window.ShowAdBreak = function() { 
+            console.log("Ad break requested");
+            setTimeout(function() {
+                try {
+                    if (typeof Main !== 'undefined') Main.DoneInterstitialAd(true);
+                } catch(e) { console.error("Error in DoneInterstitialAd:", e); }
+            }, 500);
+        };
         window.GamePlayStart = function() {};
         window.GamePlayStop = function() {};
         window.HappyTime = function() {};
+        
+        window.SetCGInviteLink = function(link) { 
+            console.log("Invite link generated:", link);
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(link).catch(e => console.warn("Clipboard write failed:", e));
+                }
+            } catch(e) {}
+        };
+        
+        // Prevent crashes from missing common globals
+        window.cpmstar = window.cpmstar || {};
+        window.googletag = window.googletag || { cmd: [], display: function() {}, pubads: function() { return { enableSingleRequest: function() {}, collapseEmptyDivs: function() {} }; }, enableServices: function() {} };
+        
+        // Stub window.open to prevent iframe security errors
+        const originalOpen = window.open;
+        window.open = function(url, target, features) {
+            console.log("Window.open called with:", url);
+            if (!url) return null;
+            return { close: function() {}, focus: function() {} };
+        };
 
         const element = document.getElementById('openfl-content');
         function keepFocus() { element.focus(); }
