@@ -16,10 +16,11 @@ export default function GamePlayer() {
   const { toggleFavorite, isFavorite } = useFavorites();
   const [reloadKey, setReloadKey] = useState(0);
   const [showPopup, setShowPopup] = useState(false);
+  const [iframeUrl, setIframeUrl] = useState<string | undefined>(game?.url);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const popupGames = ['crazy-cattle-3d', 'basket-random', 'soccer-random', 'boxing-random', 'geometry-dash'];
+    const popupGames = ['crazy-cattle-3d', 'basket-random', 'soccer-random', 'boxing-random', 'geometry-dash', 'basket-bros', 'baseball-bros', 'football-bros', 'wrestle-bros', 'kart-bros', 'soccer-bros'];
     if (id && popupGames.includes(id)) {
       setShowPopup(true);
     }
@@ -37,6 +38,23 @@ export default function GamePlayer() {
       </div>
     );
   }
+
+  const handleIframeLaunch = () => {
+    if (id === 'basket-bros') {
+      setIframeUrl('https://basketbros.io/');
+    } else if (id === 'baseball-bros') {
+      setIframeUrl('https://baseballbros.io/');
+    } else if (id === 'football-bros') {
+      setIframeUrl('https://footballbros.io/');
+    } else if (id === 'wrestle-bros') {
+      setIframeUrl('https://wrestlebros.io/');
+    } else if (id === 'kart-bros') {
+      setIframeUrl('https://kartbros.io/');
+    } else if (id === 'soccer-bros') {
+      setIframeUrl('https://soccerbros.gg/og/');
+    }
+    setShowPopup(false);
+  };
 
   const toggleFullscreen = () => {
     const elem = document.getElementById('game-container');
@@ -124,10 +142,10 @@ export default function GamePlayer() {
           id="game-container" 
           className="w-full h-full bg-black flex flex-col items-center justify-center overflow-hidden"
         >
-          {game.type === 'iframe' && (game.url || game.srcdoc) ? (
+          {game.type === 'iframe' && (iframeUrl || game.srcdoc) ? (
             <iframe 
               key={reloadKey}
-              src={game.url ? `${game.url}?v=${Date.now()}_${reloadKey}` : undefined}
+              src={iframeUrl ? `${iframeUrl}${iframeUrl.includes('?') ? '&' : '?'}v=${Date.now()}_${reloadKey}` : undefined}
               srcDoc={game.srcdoc}
               title={game.title}
               className="w-full h-full border-none" 
@@ -157,18 +175,46 @@ export default function GamePlayer() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
               <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
-                {id === 'geometry-dash'
+                {id === 'basket-bros' || id === 'baseball-bros' || id === 'football-bros' || id === 'wrestle-bros' || id === 'kart-bros' || id === 'soccer-bros' ? (
+                  "This code can't support multiplayer, use the iframe launch to play multiplayer. It will also have ads and may be blocked if launched in iframe."
+                ) : id === 'geometry-dash'
                   ? "Some levels in this game may be missing some textures so, some levels may be unplayable :("
                   : id === 'basket-random' || id === 'soccer-random' || id === 'boxing-random'
                   ? "The ads you see on this game are NOT from this website they are embedded in the code."
                   : "This website is an ad free unblocked games website, don't worry about the 'unofficial port' popup you will see in game. This website would be classified as an 'other ad-free \"unblocked game\" website'."}
               </p>
-              <button
-                onClick={() => setShowPopup(false)}
-                className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
-              >
-                UNDERSTOOD
-              </button>
+              
+              {id === 'basket-bros' || id === 'baseball-bros' || id === 'football-bros' || id === 'wrestle-bros' || id === 'kart-bros' || id === 'soccer-bros' ? (
+                <div className="flex flex-col gap-3 w-full">
+                  <button
+                    onClick={() => setShowPopup(false)}
+                    className="w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] bg-zinc-800 hover:bg-zinc-700"
+                  >
+                    Stay on regular {id === 'basket-bros' ? 'basket bros' : id === 'baseball-bros' ? 'baseball bros' : id === 'football-bros' ? 'football bros' : id === 'wrestle-bros' ? 'wrestle bros' : id === 'kart-bros' ? 'kart bros' : 'soccer bros'}
+                  </button>
+                  <button
+                    onClick={handleIframeLaunch}
+                    className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
+                  >
+                    Iframe launch
+                  </button>
+                  {id === 'soccer-bros' && (
+                    <button
+                      onClick={() => { setIframeUrl('https://soccerbros.gg/'); setShowPopup(false); }}
+                      className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
+                    >
+                      Soccer Bros 2 iframe
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowPopup(false)}
+                  className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
+                >
+                  UNDERSTOOD
+                </button>
+              )}
             </motion.div>
           </div>
         )}

@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <base href="https://cdn.jsdelivr.net/gh/bubbls/UGS-Assets@74d476b72d23ea1cebc9af41306baab442fe632c/soccer%20bros/">
+    <title>Soccer Bros</title>
+    <meta id="viewport" name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <link rel="shortcut icon" type="image/png" href="./favicon.png">
+    <script type="text/javascript" src="./SoccerBros.js"></script>
+    <script>
+        window.addEventListener("touchmove", function(event) {
+            event.preventDefault();
+        }, { capture: false, passive: false });
+        /* 
+        // Disabling this as it can cause rendering glitches in iframes on high DPI screens
+        if (typeof window.devicePixelRatio != 'undefined' && window.devicePixelRatio > 2) {
+            var meta = document.getElementById("viewport");
+            meta.setAttribute('content', 'width=device-width, initial-scale=' + (2 / window.devicePixelRatio) + ', user-scalable=no');
+        }
+        */
+        window.addEventListener('keydown', function(e) {
+            if ((e.keyCode == 32 || e.keyCode == 38 || e.keyCode == 40) && e.target == document.body) {
+                e.preventDefault();
+            }
+        });
+        var aCo = 'US';
+    </script>
+    <style>
+        html, body {
+            margin: 0; padding: 0; height: 100%; background: #000000; color: orange;
+            width: 100vw; height: 100vh; overflow: hidden;
+        }
+        #openfl-content { background: #000000; width: 100%; height: 100%; }
+    </style>
+    <script>
+        // Stub WebRTC to prevent crashes if it's not supported or blocked
+        window.RTCPeerConnection = window.RTCPeerConnection || function() {
+            console.warn("RTCPeerConnection stubbed");
+            return {
+                createDataChannel: function() { return { send: function() {}, close: function() {} }; },
+                createOffer: function() { return Promise.resolve({}); },
+                setLocalDescription: function() { return Promise.resolve(); },
+                setRemoteDescription: function() { return Promise.resolve(); },
+                addIceCandidate: function() { return Promise.resolve(); },
+                onicecandidate: null,
+                oniceconnectionstatechange: null,
+                ondatachannel: null
+            };
+        };
+        window.RTCSessionDescription = window.RTCSessionDescription || function() {};
+        window.RTCIceCandidate = window.RTCIceCandidate || function() {};
+        
+        // Global error handling to prevent game freezes
+        window.onerror = function(msg, url, line, col, error) {
+            console.error("GAME ERROR:", msg, "at", url, ":", line, ":", col);
+            if (error) console.error(error);
+            // If the game crashes, we try to force a resume if it's ad-related
+            if (msg && (msg.indexOf('ad') !== -1 || msg.indexOf('Ads') !== -1)) {
+                try { window.ShowAdBreak(); } catch(e) {}
+            }
+            return true; 
+        };
+        window.onunhandledrejection = function(event) {
+            console.warn("Unhandled promise rejection:", event.reason);
+        };
+
+        // Stubs for ads and tracking to prevent game freezes
+        window.ShowAdBreak = function() { 
+            console.log("Ad break requested");
+            setTimeout(function() { 
+                try {
+                    if(typeof window.Main !== 'undefined' && window.Main.DoneInterstitialAd) window.Main.DoneInterstitialAd();
+                    else if(typeof Main !== 'undefined' && Main.DoneInterstitialAd) Main.DoneInterstitialAd();
+                } catch(e) { console.error("Error in DoneInterstitialAd:", e); }
+            }, 500); 
+        }
+        window.ShowVideo = function() { 
+            console.log("Video ad requested");
+            setTimeout(function() { 
+                try {
+                    if(typeof window.Main !== 'undefined' && window.Main.DoneVideoAd) window.Main.DoneVideoAd();
+                    else if(typeof Main !== 'undefined' && Main.DoneVideoAd) Main.DoneVideoAd();
+                } catch(e) { console.error("Error in DoneVideoAd:", e); }
+            }, 500); 
+        }
+        window.adplayer = {};
+        window.ShowAd1 = function() {}; window.ShowAd2 = function() {}; window.ShowAd3 = function() {}; window.ShowAd4 = function() {};
+        window.ShowAd5 = function() {}; window.ShowAd6 = function() {}; window.ShowAd7 = function() {}; window.ShowAd8 = function() {}; window.ShowAd9 = function() {};
+        window.HideAllAds = function() {};
+        
+        window.SetCGInviteLink = function(link) { 
+            console.log("Invite link generated:", link);
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(link).catch(e => console.warn("Clipboard write failed:", e));
+                }
+            } catch(e) {}
+        };
+        
+        window.SendEvent = function() {}; window.updateStatus = function() {};
+        
+        window.saveGameData = function(data) { 
+            try { localStorage.setItem('soccerbros_data', data); } catch(e) {} 
+        }
+        window.loadGameData = function() { 
+            try { return localStorage.getItem('soccerbros_data') || ""; } catch(e) { return ""; } 
+        }
+        
+        window.isUserLoggedIn = function() { return false; }
+        window.triggerSignIn = function() {}
+        window.signOut = function() {}
+        window.GamePlayStart = function() {} 
+        window.GamePlayStop = function() {} 
+        window.HappyTime = function() {}
+        
+        // Additional stubs for common SDKs
+        window.PokiSDK = {
+            init: function() { return Promise.resolve(); },
+            gameplayStart: function() {},
+            gameplayStop: function() {},
+            commercialBreak: function() { return Promise.resolve(); },
+            rewardedBreak: function() { return Promise.resolve(); },
+            shareableURL: function() { return window.location.href; }
+        };
+        window.gamedistribution = {
+            showAd: function() { window.ShowAdBreak(); },
+            on: function() {}
+        };
+        
+        // Prevent crashes from missing common globals
+        window.cpmstar = window.cpmstar || {};
+        window.googletag = window.googletag || { cmd: [], display: function() {}, pubads: function() { return { enableSingleRequest: function() {}, collapseEmptyDivs: function() {} }; }, enableServices: function() {} };
+        
+        // Stub window.open to prevent iframe security errors
+        const originalOpen = window.open;
+        window.open = function(url, target, features) {
+            console.log("Window.open called with:", url);
+            if (!url) return null;
+            return { close: function() {}, focus: function() {} };
+        };
+    </script>
+</head>
+<body style="overflow:hidden;">
+    <noscript>Enable JavaScript bro!</noscript>
+    <div id="loading" style="position: absolute; z-index: 15; top: 60%; left: 50%; transform: translate(-50%, 0); background: black;">
+        <center>
+            <img src="assets/loading4.png"><br />
+            <img src="assets/fbro.png">
+            <img src="assets/sbro.png">
+            <img src="assets/wbro.png">
+            <img src="assets/bbro.png">
+        </center>
+    </div>
+    <div id="game2" style="width: 100%; height: 100%;">
+        <div id="openfl-content" style="width: 100%; height: 100%;">
+            <script type="text/javascript">
+                lime.embed("SoccerBros", "openfl-content", 0, 0, { parameters: {} });
+            </script>
+        </div>
+    </div>
+    <div id="preroll" style="display:none;"></div>
+    <div id="soccerbros-gg_160x600" style="display:none;"></div>
+    <div id="soccerbros-gg_160x600_2" style="display:none;"></div>
+    <div id="signup" style="display:none;"></div>
+    <div id="deleteme" style="display:none;"></div>
+</body>
+</html>

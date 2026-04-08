@@ -68,20 +68,16 @@
   </div>
 
   <script>
-    // Stub out ad and tracking functions called by the game
-    var Main = {
-      DoneVideoAd: function() {},
-      DoneInterstitialAd: function() {}
-    };
-    function ShowVideo() { Main.DoneVideoAd(); }
-    function ShowAdBreak() { Main.DoneInterstitialAd(false); }
-    function ShowAd1() {} function ShowAd2() {} function ShowAd3() {}
-    function ShowAd4() {} function ShowAd6() {} function ShowAd7() {}
-    function ShowAd8() {} function ShowAd9() {}
-    function SendEvent() {}
-    function GamePlayStart() {}
-    function GamePlayStop() {}
-    function HappyTime() {}
+    // Stubs for ads and tracking to prevent game freezes
+    window.ShowAdBreak = function() { setTimeout(function() { if(typeof window.Main !== 'undefined' && window.Main.DoneInterstitialAd) window.Main.DoneInterstitialAd(false); }, 100); }
+    window.ShowVideo = function() { setTimeout(function() { if(typeof window.Main !== 'undefined' && window.Main.DoneVideoAd) window.Main.DoneVideoAd(); }, 100); }
+    window.adplayer = {};
+    window.ShowAd1 = function() {}; window.ShowAd2 = function() {}; window.ShowAd3 = function() {}; window.ShowAd4 = function() {};
+    window.ShowAd6 = function() {}; window.ShowAd7 = function() {}; window.ShowAd8 = function() {}; window.ShowAd9 = function() {};
+    window.SendEvent = function() {};
+    window.GamePlayStart = function() {}
+    window.GamePlayStop = function() {}
+    window.HappyTime = function() {}
   </script>
 </body>
 </html>
