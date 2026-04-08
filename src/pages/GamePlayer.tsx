@@ -196,14 +196,14 @@ export default function GamePlayer() {
                     onClick={handleIframeLaunch}
                     className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
                   >
-                    Iframe launch
+                    Iframe launch (Highly Recommended)
                   </button>
                   {id === 'soccer-bros' && (
                     <button
                       onClick={() => { setIframeUrl('https://soccerbros.gg/'); setShowPopup(false); }}
                       className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
                     >
-                      Soccer Bros 2 iframe
+                      Soccer Bros 2 iframe (Highly Recommended)
                     </button>
                   )}
                 </div>
