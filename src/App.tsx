@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import GamePlayer from './pages/GamePlayer';
 import AllGames from './pages/AllGames';
@@ -17,7 +17,7 @@ export default function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <FavoritesProvider>
-          <BrowserRouter>
+          <HashRouter>
             <BackgroundManager />
             <SettingsOverlay />
             <Routes>
@@ -29,7 +29,7 @@ export default function App() {
               <Route path="/play/:id" element={<GamePlayer />} />
               <Route path="/chat" element={<ChatPage />} />
             </Routes>
-          </BrowserRouter>
+          </HashRouter>
         </FavoritesProvider>
       </ThemeProvider>
     </ErrorBoundary>
