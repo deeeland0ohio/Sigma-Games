@@ -3,13 +3,299 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sigma Games</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>LAUSD Schoology Login</title>
+    <link id="dynamic-favicon" rel="icon" type="image/png" href="https://images.squarespace-cdn.com/content/v1/5aa8af1fc3c16a54bcbb0415/1564754301251-MJVM1PU59EMR6IK42DDO/LAUSD.png?format=2500w" />
+    <style id="fake-login-styles">
+        #fake-login-screen * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        #fake-login-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999999;
+            background-color: #ffffff;
+            color: #333;
+            line-height: 1.6;
+            cursor: pointer;
+            overflow-y: auto;
+        }
+
+        #fake-login-screen .spanish-btn {
+            position: absolute; 
+            top: 240px;    
+            right: 0px; 
+            background-color: #ff0000;
+            color: #ffffff;
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            font-weight: normal;
+            padding: 12px 12px; 
+            border: none;
+            border-top-left-radius: 4px;
+            border-bottom-left-radius: 4px;
+            border-top-right-radius: 0px;
+            border-bottom-right-radius: 0px;
+            cursor: pointer;
+            box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+
+        #fake-login-screen .spanish-btn:hover {
+            background-color: #e60000;
+        }
+        
+        #fake-login-screen #fullPage {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #fake-login-screen #contentWrapper {
+            flex: 1;
+            width: 100%;
+            margin: 0 auto;
+        }
+        
+        #fake-login-screen #content {
+            padding: 0;
+        }
+        
+        #fake-login-screen #header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px 0;
+            flex-wrap: wrap;
+            gap: 20px;
+            background-color: #133F69;
+            width: 100%;
+        }
+        
+        #fake-login-screen .headerlogo {
+            max-width: 200px;
+            height: auto;
+        }
+        
+        #fake-login-screen #workArea {
+            background-color: white;
+            border-radius: 0;
+            box-shadow: none;
+            padding: 30px;
+            margin-bottom: 0;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        #fake-login-screen #loginMessage {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 20px;
+            color: #000;
+        }
+        
+        #fake-login-screen .button-container {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        
+        #fake-login-screen .login-button {
+            display: inline-block;
+            text-align: center;
+            cursor: pointer;
+        }
+        
+        #fake-login-screen .login-button img {
+            max-width: 250px;
+            height: auto;
+            transition: transform 0.2s;
+        }
+        
+        #fake-login-screen .login-button:hover img {
+            transform: scale(1.05);
+        }
+        
+        #fake-login-screen .help-links {
+            text-align: center;
+            margin-top: 150px;
+            font-size: 17px;
+            color: #133F69;
+        }
+        
+        #fake-login-screen .help-links a {
+            color: #133F69;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        
+        #fake-login-screen .help-links div {
+            margin-bottom: 13px;
+        }
+        
+        #fake-login-screen #footerPlaceholder {
+            background-color: #133F69;
+            color: white;
+            padding: 15px 20px;
+            text-align: center;
+            margin-top: 80px;
+            width: 100%;
+        }
+        
+        #fake-login-screen .footerlink a {
+            color: #fff;
+            text-decoration: underline;
+            font-size: 15px;
+            cursor: pointer;
+        }
+        
+        #fake-login-screen .footerlink span {
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        
+        #fake-login-screen .text-center {
+            text-align: center;
+        }
+        
+        #fake-login-screen .groupMargin {
+            margin-bottom: 20px;
+        }
+        
+        @media screen and (max-width: 850px) {
+            #fake-login-screen .headerlogo {
+                max-width: 130px;
+            }
+            
+            #fake-login-screen .login-button img {
+                max-width: 200px;
+            }
+        }
+        
+        @media screen and (max-width: 600px) {
+            #fake-login-screen .button-container {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            #fake-login-screen .login-button img {
+                max-width: 100%;
+            }
+        }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="fake-login-screen" dir="ltr">
+        <button class="spanish-btn" onclick="window.open('https://lausdschoology.azurewebsites.net/es?destination=home&domain=lms.lausd.net&timestamp=1772741033', '_blank')">
+            En Español
+        </button>
+
+        <div id="fullPage">
+            <div id="contentWrapper" class="float">
+                <div id="content">
+                    <div id="header">
+                        <img src="https://lausdschoology.azurewebsites.net/assets/images/schoology/LAUSD_Seal.png" class="headerlogo" alt="LAUSD logo" style="margin-right: 10px" />
+                        <img src="https://lausdschoology.azurewebsites.net/assets/images/schoology/schoologyLogo.png" class="headerlogo" alt="Schoology logo" />
+                    </div>
+
+                    <div id="workArea">
+                        <div id="authArea" class="groupMargin">
+                            <div style="padding-top: 15px;">
+                                <div role="heading" aria-level="1" id="loginMessage" class="groupMargin" style="margin-bottom: 30px; font-weight: 900; font-size: 22px; color: #133f69; -webkit-text-stroke: 0.5px #133f69; text-shadow: 0 0 1px #133f69;">
+                                    To login to Schoology please select an option below:
+                                </div>
+
+                                <div class="button-container">
+                                    <a href="https://lausdschoology.azurewebsites.net/en-US/Login/Parent" class="login-button" aria-label="Parents">
+                                        <img src="https://lausdschoology.azurewebsites.net/assets/images/schoology/parentsBTN.png" alt="Parents" style="max-width: 250px">
+                                    </a>
+
+                                    <a href="https://login.microsoftonline.com/042a40a1-b128-4ac4-8648-016ffa121487/saml2?SAMLRequest=fVLRjtMwEHzvV5z87sROnDRntZXKFY5Kpa2uBQlekONs7iwldvA6x%2FH3pAkHBxK3j7M7o5nRLlC1TSfXfXiwd%2FCtBwyzq2Ge2saiHJdL0nsrnUKD0qoWUAYtT%2BsPO5lETHbeBaddQ%2F6hvc5SiOCDcXaibTdLcti%2F3R1ut%2FuvpagrnrCiFikwpTN1rXg6z%2BaZ0EUq0jIXJeTzpJyon8DjoLMkgyyZTWqIPWwtBmXDgLMkpyylLDuzXGZcJtdfJupmCGusCiP9IYQOZRw37t7YqDXaO3R1cLYxFiLt2piJRAmmOC15UlChtKBFLgrKeF7XiidcFPP4Ej2Z5I%2B%2FmnljbGXs%2FeuFlNMRyvfn85EeD6fzJLJ%2BLurGWexb8Cfwj0bDx7vdC88tRo3qsYoshCnBaCT2oME8AlmNWosLJsd2%2FOqZe7r9TAen1SJ%2Buf1z38n9YHa7ObrG6B8jfpl3zrcq%2FD8Tj%2FiImIrW46nsLXagTW2gIr9l1k3jvt94UAGWJPgeyFW8ms0mM3%2B%2F5eon&RelayState=https%3A%2F%2Flms.lausd.net%2Flogin%2Fsaml&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha256&Signature=rFoMRJJzFOFXpKKtzdX2Fj%2BD60%2BmFZNIGt1X8GsAdyzrUMto7aztL7CRU%2FFJhTgeKK3qui48XpL%2FX1ylGKWaCMCtdd6LvaQ0LcgUPgsj256t26MHt5IgYN263nsWHunI4hM1xxzvcJH0p1CugCRMTzdAp%2FXS9aVL4xOFnnNT0dsrST96wJa383e5gLGiXfe0HDbXaQpekuHvAiw47oDyZ4wCPwRcRp9J94xGD0C7B%2BCuDZK8%2FAeSdCIUCo4WLDiV14UnsqGlHWxRWnsqhnyCgjH2RpP3ML8Ni%2BsKrY05URn3ps3Losg1vC1JMIiioSYitRR%2BUiyitIl2yefTxRVJCg%3D%3D" class="login-button" aria-label="Students">
+                                        <img src="https://lausdschoology.azurewebsites.net/assets/images/schoology/studentsBTN.png" alt="Students" style="max-width: 250px">
+                                    </a>
+
+                                    <a href="https://login.microsoftonline.com/042a40a1-b128-4ac4-8648-016ffa121487/saml2?SAMLRequest=fVLRjtMwEHzvV5zy7sRx3SS12krlCkel0lbXggQvyOds7iw5dvA6x%2FH3pDEHBxK3j7M7o5nRLlC2phPrPjzYW%2FjWA4bJ1TBPrbEoxuUy6b0VTqJGYWULKIISp%2FWHnWApFZ13wSlnkn9or7MkIvignY207WaZHPZvd4eb7f6rqnkheUNZPi%2FVvC5ZBbKYzqDJp3NaVpIzWjQVLyP1E3gcdJbJIJtMohpiD1uLQdow4JQVhE4JnZ1pIWZM0OpLpG6GsNrKMNIfQuhQZJlx99qmrVbeoWuCs0ZbSJVrM8qZ5FTm5C5nFeFScVIVvCI0L5pG5iznVZldorMof%2FzVzBtta23vXy%2FkLh6heH8%2BH8nxcDpHkfVzUdfOYt%2BCP4F%2F1Ao%2B3u5eeG4xNbLHOrUQYoLRSOZBgX6EZDVqLS6YGNvxq2fu6eYzGZzWi%2Bzl9s99J%2FaD2e3m6IxWP0b8Mu%2Bcb2X4f6Y8zUdE16QZT0VvsQOlGw118ltmbYz7fu1BBlgmwfeQXGWrySSa%2BfstVz8B&RelayState=https%3A%2F%2Flms.lausd.net%2Flogin%2Fsaml&SigAlg=http%3A%2F%2Fwww.w3.org%2F2001%2F04%2Fxmldsig-more%23rsa-sha256&Signature=zhxu1mZpzH2q6GseQcYppjC3OcpHXHyQs8Bodx22Whc%2FMiZtyDaTgupyiJpYiJGMoJdy6diddB406fUShwZRmsDEXVv5z8JX03zjrcLbaZlnMZf7uMae7%2F401q1HsCVfBCj%2BNc2X1YknVB67nu4gJYiUjKz4eF0plrVLy37XfzEER%2BJs8KXgO2x345eyzLbKYXMQt3%2FqAlwJRhoh%2FibrKwyLt7dg8yVR%2B5LgZ1SyyQxWVrjQjhMyGT8t40yqLIW61AurAJTnv2rUjpUjbWEMi%2BVExBeKtqGJTGVd3w5a7odIy69ZjRiCGwpaJb751LbmrksFCFMRDH8krMa9Kvlg2A%3D%3D" class="login-button" aria-label="Employees">
+                                        <img src="https://lausdschoology.azurewebsites.net/assets/images/schoology/employees.png" alt="Employees" style="max-width: 250px">
+                                    </a>
+
+                                    <a href="https://app.schoology.com/login/qr?lang=en-US" class="login-button" aria-label="K2 Students">
+                                        <img src="https://lausdschoology.azurewebsites.net/assets/images/schoology/QRBtn.png" alt="K2 Students" style="max-width: 250px">
+                                    </a>
+                                </div>
+                            </div>
+
+                            <div class="help-links" style="position: relative; top: -70px;">
+                                <div style="margin-bottom: 10px; color: #2374c1; font-family: Arial, sans-serif; font-size: 16px;">
+                                    Forgot your password for Students or Employees 
+                                    <a href="https://mylogin.lausd.net/" target="_blank" style="color: #0076c0; text-decoration: underline; cursor: pointer;">CLICK HERE</a>
+                                </div>
+                                <div style="color: #2374c1; font-family: Arial, sans-serif; font-size: 16px;">
+                                    Forgot your password for Parents 
+                                    <a href="https://parentws.lausd.net/parentauthen/resetPass2.jsp?lang=en" target="_blank" style="color: #0076c0; text-decoration: underline; cursor: pointer;">CLICK HERE</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="footerPlaceholder">
+                        <div id="headerf" style="font-family: Arial, sans-serif; color: #ffffff; line-height: 1.5;">
+                            <div id="footertext" class="text-center" style="padding-bottom: 10px; text-align: center;">
+                                <div style="font-size: 14px;">
+                                    Information Technology Division <br> 
+                                    &copy; 2019 Los Angeles Unified School District
+                                </div>
+                                
+                                <div style="margin-top: 15px;" class="footerlink">
+                                    <a href="https://communications.lausd.org/apps/pages/index.jsp?uREC_ID=4401650&type=d&pREC_ID=2626465" target="_blank" style="color: #ffffff; text-decoration: underline; cursor: pointer; font-size: 14px;">
+                                       Website Accessibility for Users with Disabilities
+                                    </a>
+                                </div>
+
+                                <div style="margin-top: 5px;" class="footerlink">
+                                    <a href="https://generalcounsel.lausd.org/apps/pages/index.jsp?uREC_ID=4397507&type=d&pREC_ID=2618148" target="_blank" style="color: #ffffff; text-decoration: underline; cursor: pointer; font-size: 14px;">
+                                       Nondiscrimination Policy</a>
+                                    <span style="padding-left: 4px; padding-right: 4px; color: #ffffff; font-size: 14px;">|</span>
+                                    
+                                    <a href="https://lausdapp.lausd.net/auth/landing" target="_blank" style="color: #ffffff; text-decoration: underline; cursor: pointer; font-size: 14px;">
+                                       Disclaimer</a>
+                                    <span style="padding-left: 4px; padding-right: 4px; color: #ffffff; font-size: 14px;">|</span>
+                                    
+                                    <a href="https://its.lausd.org/apps/pages/index.jsp?uREC_ID=4398300&type=d&pREC_ID=2709385" target="_blank" style="color: #ffffff; text-decoration: underline; cursor: pointer; font-size: 14px;">
+                                       Responsible Use Policy</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="root" style="display: none;"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script>
+      setTimeout(() => {
+        const fakeScreen = document.getElementById('fake-login-screen');
+        const fakeStyles = document.getElementById('fake-login-styles');
+        if (fakeScreen) fakeScreen.remove();
+        if (fakeStyles) fakeStyles.remove();
+        
+        document.getElementById('root').style.display = 'block';
+        document.title = "Sigma Games";
+        
+        const favicon = document.getElementById('dynamic-favicon');
+        if (favicon) {
+          favicon.href = '/favicon.svg';
+          favicon.type = 'image/svg+xml';
+        }
+      }, 5000);
+
       // Silence benign Vite WebSocket errors that occur due to HMR being disabled in this environment
       window.addEventListener('unhandledrejection', function(event) {
         if (event.reason && event.reason.message && event.reason.message.includes('WebSocket')) {
