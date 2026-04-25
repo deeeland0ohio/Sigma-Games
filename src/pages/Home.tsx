@@ -82,6 +82,8 @@ export default function Home() {
                   game.id === 'gn-math' ? '/gn-math' :
                   game.id === 'ugs' ? '/ugs' :
                   game.id === 'seraph' ? '/seraph' :
+                  game.id === '3kh0' ? '/3kh0' :
+                  game.id === 'noah' ? '/noah' :
                   undefined
                 }
               />

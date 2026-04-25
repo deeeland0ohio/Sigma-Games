@@ -22,7 +22,7 @@ export default function GameCard({ game, to }: GameCardProps) {
   const favorited = isFavorite(game.id);
 
   const handleClick = (e: React.MouseEvent) => {
-    if ((game.id === 'hollow-knight-silksong' || game.id === 'repo' || game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph') && !showWarning) {
+    if ((game.id === 'hollow-knight-silksong' || game.id === 'repo' || game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah') && !showWarning) {
       e.preventDefault();
       setShowWarning(true);
     }
@@ -44,17 +44,19 @@ export default function GameCard({ game, to }: GameCardProps) {
   const isRed = game.id === 'gn-math';
   const isBlue = game.id === 'ugs';
   const isPurple = game.id === 'seraph';
+  const isTeal = game.id === '3kh0';
+  const isOrange = game.id === 'noah';
 
-  const cardHoverBorder = isRed ? 'hover:border-red-500' : isBlue ? 'hover:border-blue-500' : isPurple ? 'hover:border-purple-500' : colors.hoverBorder;
-  const cardHoverShadow = isRed ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' : isBlue ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]' : isPurple ? 'hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]' : colors.hoverShadow;
-  const cardGradientFrom = isRed ? 'from-red-500/10' : isBlue ? 'from-blue-500/10' : isPurple ? 'from-purple-500/10' : colors.gradientFrom;
-  const cardGradientVia = (isRed || isBlue || isPurple) ? '' : (colors.gradientVia || '');
-  const cardGradientTo = (isRed || isBlue || isPurple) ? 'to-transparent' : colors.gradientTo;
-  const cardTertiary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : (colors.tertiary || colors.secondary);
-  const cardGroupHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : (colors.groupHoverQuaternary || colors.groupHoverText);
-  const cardGroupHoverBorder = isRed ? 'group-hover:border-red-500/50' : isBlue ? 'group-hover:border-blue-500/50' : isPurple ? 'group-hover:border-purple-500/50' : colors.groupHoverBorder;
-  const titleHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : colors.groupHoverText;
-  const cardQuaternary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : (colors.quaternary || colors.secondary);
+  const cardHoverBorder = isRed ? 'hover:border-red-500' : isBlue ? 'hover:border-blue-500' : isPurple ? 'hover:border-purple-500' : isTeal ? 'hover:border-teal-500' : isOrange ? 'hover:border-orange-500' : colors.hoverBorder;
+  const cardHoverShadow = isRed ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' : isBlue ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]' : isPurple ? 'hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]' : isTeal ? 'hover:shadow-[0_0_15px_rgba(20,184,166,0.2)]' : isOrange ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.2)]' : colors.hoverShadow;
+  const cardGradientFrom = isRed ? 'from-red-500/10' : isBlue ? 'from-blue-500/10' : isPurple ? 'from-purple-500/10' : isTeal ? 'from-teal-500/10' : isOrange ? 'from-orange-500/10' : colors.gradientFrom;
+  const cardGradientVia = (isRed || isBlue || isPurple || isTeal || isOrange) ? '' : (colors.gradientVia || '');
+  const cardGradientTo = (isRed || isBlue || isPurple || isTeal || isOrange) ? 'to-transparent' : colors.gradientTo;
+  const cardTertiary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : (colors.tertiary || colors.secondary);
+  const cardGroupHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : (colors.groupHoverQuaternary || colors.groupHoverText);
+  const cardGroupHoverBorder = isRed ? 'group-hover:border-red-500/50' : isBlue ? 'group-hover:border-blue-500/50' : isPurple ? 'group-hover:border-purple-500/50' : isTeal ? 'group-hover:border-teal-500/50' : isOrange ? 'group-hover:border-orange-500/50' : colors.groupHoverBorder;
+  const titleHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : colors.groupHoverText;
+  const cardQuaternary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : (colors.quaternary || colors.secondary);
 
   return (
     <>
@@ -70,13 +72,13 @@ export default function GameCard({ game, to }: GameCardProps) {
             </div>
             <h2 className="text-xl font-bold text-white mb-2">
               {game.id === 'repo' ? 'Loading' : 
-               (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph') ? 'Notice' : 'Warning!'}
+               (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah') ? 'Notice' : 'Warning!'}
             </h2>
             <p className="text-zinc-400 mb-6">
               {game.id === 'repo' 
                 ? "If you see a black screen for a long time, don't worry it's just loading." 
-                : (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph')
-                ? "These aren't hosted on my site, some games here might not work."
+                : (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah')
+                ? "These aren't hosted on my site, some games here might not work. And there might be ads."
                 : "This Game needs at least  4GB of ram to play! Your school Chromebook probably doesn't have that."}
             </p>
             <div className="flex gap-3 w-full">
@@ -110,10 +112,16 @@ export default function GameCard({ game, to }: GameCardProps) {
         </div>
       )}
 
-      <div className={`p-3 bg-zinc-950 rounded-xl border border-zinc-800 ${cardTertiary} group-hover:scale-110 ${cardGroupHoverText} ${cardGroupHoverBorder} transition-all`}>
-        <Icon size={24} />
-      </div>
-      <div className="relative z-10">
+      {game.image ? (
+        <div className={`w-full aspect-video rounded-xl overflow-hidden mb-2 border border-zinc-800`}>
+          <img src={game.image} alt={game.title} className="w-full h-full object-cover" />
+        </div>
+      ) : (
+        <div className={`p-3 bg-zinc-950 rounded-xl border border-zinc-800 ${cardTertiary} group-hover:scale-110 ${cardGroupHoverText} ${cardGroupHoverBorder} transition-all`}>
+          <Icon size={24} />
+        </div>
+      )}
+      <div className="relative z-10 w-full">
         <h3 className={`text-lg font-semibold text-zinc-100 ${titleHoverText} transition-colors`}>{game.title}</h3>
         <p className="text-sm text-zinc-500 mt-1 line-clamp-2">{game.description}</p>
       </div>

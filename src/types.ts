@@ -12,4 +12,6 @@ export type Game = {
   series?: string;
   seriesOrder?: number;
   keywords?: string[];
+  image?: string;
+  isExternal?: boolean;
 };

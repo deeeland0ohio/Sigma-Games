@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Search, X, Maximize, Box } from 'lucide-react';
+import { Loader2, Search, X, Maximize, Box, Heart } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import { useFavorites } from '../context/FavoritesContext';
 
 const COVER_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
 const HTML_BASE = "https://rawcdn.githack.com/freebuisness/html/main";
@@ -20,6 +21,8 @@ export default function GnMath() {
   const [selectedTag, setSelectedTag] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
+  
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   const loadZones = async () => {
     setLoading(true);
@@ -97,27 +100,44 @@ export default function GnMath() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {filteredZones.map((z, index) => (
+            {filteredZones.map((z, index) => {
+              const gameId = `gnmath:${z.name}`;
+              return (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ delay: index * 0.02 }}
                 key={`${z.name}-${index}`}
-                onClick={() => openZone(z)}
-                className="group relative aspect-square overflow-hidden cursor-pointer rounded-xl bg-zinc-900 border border-zinc-800"
+                className="group relative aspect-square overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800"
               >
+                <div onClick={() => openZone(z)} className="absolute inset-0 cursor-pointer z-10" />
                 <img 
                   src={z.cover} 
                   alt={z.name} 
                   className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
                   loading="lazy"
                 />
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleFavorite({
+                      id: gameId,
+                      title: z.name,
+                      url: z.url,
+                      image: z.cover,
+                      source: 'external'
+                    });
+                  }}
+                  className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500' : ''} />
+                </button>
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                 <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
                   <p className="text-white font-medium text-xs sm:text-sm text-center leading-tight truncate">{z.name}</p>
                 </div>
               </motion.div>
-            ))}
+            )})}
             {filteredZones.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-20 text-zinc-500">
                 <Box className="w-12 h-12 mb-4 opacity-20" />
@@ -140,6 +160,22 @@ export default function GnMath() {
             <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedZone.name}</h3>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const gameId = `gnmath:${selectedZone.name}`;
+                    toggleFavorite({
+                      id: gameId,
+                      title: selectedZone.name,
+                      url: selectedZone.url,
+                      image: selectedZone.cover,
+                      source: 'external'
+                    });
+                  }}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                  title={isFavorite(`gnmath:${selectedZone.name}`) ? "Remove from Favorites" : "Add to Favorites"}
+                >
+                  <Heart className={`w-5 h-5 ${isFavorite(`gnmath:${selectedZone.name}`) ? 'fill-red-500 text-red-500' : ''}`} />
+                </button>
                 <button
                   onClick={() => {
                      const btn = document.getElementById('game-iframe') as HTMLIFrameElement;

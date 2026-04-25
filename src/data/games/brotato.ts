@@ -3,7 +3,7 @@ import { Game } from '../../types';
 
 export const brotato: Game = {
   id: 'brotato',
-  title: 'Brotato',
+  title: 'Brotato: New Dawn',
   description: 'A top-down arena shooter roguelite where you play a potato wielding up to 6 weapons at a time to fight off hordes of aliens.',
   icon: Gamepad2,
   type: 'iframe',
