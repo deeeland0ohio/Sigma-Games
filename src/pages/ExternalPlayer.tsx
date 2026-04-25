@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Maximize, X, Heart } from 'lucide-react';
-import PageLayout from '../components/PageLayout';
 import { useFavorites } from '../context/FavoritesContext';
 
 export default function ExternalPlayer() {
@@ -26,9 +25,8 @@ export default function ExternalPlayer() {
   if (!url) return null;
 
   return (
-    <PageLayout title={title} showBack>
-      <div className="w-full h-full flex flex-col bg-black rounded-xl overflow-hidden border border-zinc-800" style={{ height: 'calc(100vh - 120px)' }}>
-        <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
+    <div className="h-[100dvh] w-screen flex flex-col bg-black overflow-hidden">
+        <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800 shrink-0">
           <h3 className="text-white font-medium pl-2 truncate flex-1">{title}</h3>
           <div className="flex items-center gap-2">
             <button
@@ -67,17 +65,16 @@ export default function ExternalPlayer() {
           </div>
         </div>
         
-        <div className="flex-1 w-full relative">
+        <div className="flex-1 w-full bg-black relative overflow-hidden">
           <iframe
             id="external-iframe"
             src={url}
-            className="w-full h-full border-none bg-black"
+            className="w-full h-full border-none bg-black block"
             allow="autoplay; fullscreen; pointer-lock; keyboard-map"
             allowFullScreen
             title={title}
           />
         </div>
-      </div>
-    </PageLayout>
+    </div>
   );
 }
