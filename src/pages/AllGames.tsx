@@ -19,13 +19,13 @@ export default function AllGames() {
 
   return (
     <PageLayout 
-      title="All Games" 
+      title="Our Games" 
       showBack={true} 
       maxWidth="7xl"
     >
       <div className="mb-8 border-b border-zinc-800 pb-4">
-        <h1 className="text-3xl font-bold text-white tracking-tight">ALL GAMES</h1>
-        <p className="text-zinc-500 mt-2">Browse the complete collection of {allGamesList.length} games.</p>
+        <h1 className="text-3xl font-bold text-white tracking-tight">OUR GAMES</h1>
+        <p className="text-zinc-500 mt-2">Browse our selection of {allGamesList.length} games!</p>
       </div>
 
       <SearchBar value={searchQuery} onChange={setSearchQuery} />

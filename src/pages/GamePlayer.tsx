@@ -78,7 +78,7 @@ export default function GamePlayer() {
         <div className="w-full px-4 h-16 flex items-center justify-between">
           <Link to="/all-games" className={`flex items-center gap-2 text-zinc-400 hover:${colors.primary} hover:bg-zinc-800 p-2 rounded-lg transition-all font-medium`}>
             <ArrowLeft size={20} />
-            <span className="hidden sm:inline">Back to All Games</span>
+            <span className="hidden sm:inline">Back to Our Games</span>
           </Link>
           
           <div className="flex items-center gap-3">

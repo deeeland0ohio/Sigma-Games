@@ -15,15 +15,9 @@ const BOOT_LINES = [
 
 export default function Home() {
   const [bootSequence, setBootSequence] = useState<string[]>([]);
-  const [randomGameId, setRandomGameId] = useState<string | null>(null);
   const colors = useThemeColors();
 
   useEffect(() => {
-    // Pick a random game on mount
-    if (allGamesList.length > 0) {
-      const randomGame = allGamesList[Math.floor(Math.random() * allGamesList.length)];
-      setRandomGameId(randomGame.id);
-    }
 
     let currentLine = 0;
     const interval = setInterval(() => {
@@ -73,7 +67,7 @@ export default function Home() {
         {/* Games Grid */}
         <section id="games" className="space-y-8">
           <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-            <h2 className="text-2xl font-bold text-white tracking-tight">GAMES</h2>
+            <h2 className="text-2xl font-bold text-white tracking-tight">OPTIONS</h2>
           </div>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -85,7 +79,9 @@ export default function Home() {
                   game.id === 'all-games' ? '/all-games' : 
                   game.id === 'popular' ? '/popular' : 
                   game.id === 'favorites' ? '/favorites' : 
-                  game.id === 'random' && randomGameId ? `/play/${randomGameId}` :
+                  game.id === 'gn-math' ? '/gn-math' :
+                  game.id === 'ugs' ? '/ugs' :
+                  game.id === 'seraph' ? '/seraph' :
                   undefined
                 }
               />
