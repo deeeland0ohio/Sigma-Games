@@ -11,6 +11,9 @@ import Favorites from './pages/Favorites';
 import Settings from './pages/Settings';
 import ChatPage from './pages/ChatPage';
 import ErrorBoundary from './components/ErrorBoundary';
+import GnMath from './pages/GnMath';
+import UgsFiles from './pages/UgsFiles';
+import SeraphGames from './pages/SeraphGames';
 
 export default function App() {
   return (
@@ -28,6 +31,9 @@ export default function App() {
               <Route path="/settings" element={<Settings />} />
               <Route path="/play/:id" element={<GamePlayer />} />
               <Route path="/chat" element={<ChatPage />} />
+              <Route path="/gn-math" element={<GnMath />} />
+              <Route path="/ugs" element={<UgsFiles />} />
+              <Route path="/seraph" element={<SeraphGames />} />
             </Routes>
           </HashRouter>
         </FavoritesProvider>

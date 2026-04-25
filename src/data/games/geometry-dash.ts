@@ -3,7 +3,7 @@ import { Game } from '../../types';
 
 export const geometryDash: Game = {
   id: 'geometry-dash',
-  title: "Geometry Dash [29 Levels]",
+  title: "GDWeb+",
   description: "Jump and fly your way through danger in this rhythm-based action platformer! Features 29 levels.",
   icon: Gamepad2,
   type: 'iframe',

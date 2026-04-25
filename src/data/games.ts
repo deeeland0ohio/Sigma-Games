@@ -1,4 +1,4 @@
-import { Folder, Star, Heart, Puzzle, Skull, Zap, FlaskConical } from 'lucide-react';
+import { Folder, Star, Heart, Puzzle, Skull, Zap, FlaskConical, Box } from 'lucide-react';
 import { Game } from '../types';
 import { allGames } from './games/index';
 
@@ -7,8 +7,8 @@ export type { Game };
 export const games: Game[] = [
   {
     id: 'all-games',
-    title: 'All Games',
-    description: 'Browse the complete collection of games.',
+    title: 'Our Games',
+    description: 'Browse our selection of Games!',
     icon: Folder,
     type: 'folder',
   },
@@ -27,10 +27,24 @@ export const games: Game[] = [
     type: 'folder',
   },
   {
-    id: 'random',
-    title: 'Random Game',
-    description: 'Feeling lucky? Play a random game from our collection.',
-    icon: Puzzle,
+    id: 'gn-math',
+    title: 'GN-Math',
+    description: "Browse the Gn-Math game collection.",
+    icon: Box,
+    type: 'folder',
+  },
+  {
+    id: 'ugs',
+    title: 'UGS Games',
+    description: "Browse the Ultimate Game Stash collection of 2600+ games.",
+    icon: Box,
+    type: 'folder',
+  },
+  {
+    id: 'seraph',
+    title: 'Seraph Games',
+    description: "Browse the Seraph collection of nearly 500 games.",
+    icon: Box,
     type: 'folder',
   },
 ];
