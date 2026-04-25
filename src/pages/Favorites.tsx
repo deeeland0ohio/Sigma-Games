@@ -3,8 +3,8 @@ import { allGamesList } from '../data/games';
 import PageLayout from '../components/PageLayout';
 import GameCard from '../components/GameCard';
 import SearchBar from '../components/SearchBar';
-import { useFavorites } from '../context/FavoritesContext';
-import { Heart } from 'lucide-react';
+import { useFavorites, FavoriteItem } from '../context/FavoritesContext';
+import { Heart, Gamepad2 } from 'lucide-react';
 import { useThemeColors } from '../context/ThemeContext';
 
 export default function Favorites() {
@@ -12,7 +12,24 @@ export default function Favorites() {
   const colors = useThemeColors();
   const [searchQuery, setSearchQuery] = useState('');
   
-  const favoriteGames = allGamesList.filter(game => favorites.includes(game.id));
+  const favoriteGames = favorites.map((f: string | FavoriteItem) => {
+    if (typeof f === 'string') return allGamesList.find(g => g.id === f);
+    if (f.source === 'local') return allGamesList.find(g => g.id === f.id);
+    
+    // For external games, construct a compatible object
+    return {
+      id: f.id,
+      title: f.title || 'Unknown Game',
+      description: f.description || `Play ${f.title} from ${f.source}.`,
+      type: 'iframe',
+      url: f.url,
+      icon: Gamepad2, // Fallback icon
+      image: f.image,
+      source: f.source,
+      isExternal: true
+    };
+  }).filter(Boolean) as any[];
+
   const filteredGames = favoriteGames.filter(game => {
     const query = searchQuery.toLowerCase();
     return (
@@ -44,7 +61,11 @@ export default function Favorites() {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {filteredGames.length > 0 ? (
             filteredGames.map((game) => (
-              <GameCard key={game.id} game={game} />
+              <GameCard 
+                key={game.id} 
+                game={game} 
+                to={game.isExternal ? `/external-player?url=${encodeURIComponent(game.url || '')}&title=${encodeURIComponent(game.title)}&id=${encodeURIComponent(game.id)}&source=${encodeURIComponent(game.source || 'external')}&image=${encodeURIComponent(game.image || '')}&description=${encodeURIComponent(game.description || '')}` : undefined}
+              />
             ))
           ) : (
             <div className="col-span-full text-center py-12 text-zinc-500">

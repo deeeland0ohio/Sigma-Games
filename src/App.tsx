@@ -14,6 +14,9 @@ import ErrorBoundary from './components/ErrorBoundary';
 import GnMath from './pages/GnMath';
 import UgsFiles from './pages/UgsFiles';
 import SeraphGames from './pages/SeraphGames';
+import Threekh0Games from './pages/Threekh0Games';
+import NoahGames from './pages/NoahGames';
+import ExternalPlayer from './pages/ExternalPlayer';
 
 export default function App() {
   return (
@@ -34,6 +37,9 @@ export default function App() {
               <Route path="/gn-math" element={<GnMath />} />
               <Route path="/ugs" element={<UgsFiles />} />
               <Route path="/seraph" element={<SeraphGames />} />
+              <Route path="/3kh0" element={<Threekh0Games />} />
+              <Route path="/noah" element={<NoahGames />} />
+              <Route path="/external-player" element={<ExternalPlayer />} />
             </Routes>
           </HashRouter>
         </FavoritesProvider>

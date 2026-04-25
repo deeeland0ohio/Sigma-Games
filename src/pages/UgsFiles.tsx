@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Search, X, Maximize, Box } from 'lucide-react';
+import { Loader2, Search, X, Maximize, Box, Heart } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import { useFavorites } from '../context/FavoritesContext';
 
 export default function UgsFiles() {
   const [files, setFiles] = useState<string[]>([]);
@@ -9,6 +10,7 @@ export default function UgsFiles() {
   const [search, setSearch] = useState('');
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(100);
+  const { toggleFavorite, isFavorite } = useFavorites();
 
   const loadFiles = async () => {
     setLoading(true);
@@ -90,6 +92,7 @@ export default function UgsFiles() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {displayedFiles.map((f, index) => {
               const displayName = formatFileName(f);
+              const gameId = `ugs:${displayName}`;
               
               return (
                 <motion.div
@@ -97,9 +100,24 @@ export default function UgsFiles() {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: (index % 50) * 0.01 }}
                   key={`${f}-${index}`}
-                  onClick={() => openFile(f)}
-                  className="group flex flex-col justify-center items-center h-24 p-4 cursor-pointer rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 transition-all text-center"
+                  className="group relative flex flex-col justify-center items-center h-24 p-4 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 transition-all text-center"
                 >
+                  <div onClick={() => openFile(f)} className="absolute inset-0 cursor-pointer z-10" />
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      toggleFavorite({
+                        id: gameId,
+                        title: displayName || f,
+                        url: getUrl(f),
+                        source: 'external',
+                        description: `Play ${displayName || f} from UGS.`
+                      });
+                    }}
+                    className="absolute top-2 right-2 z-20 p-2 text-zinc-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                  >
+                    <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500 opacity-100' : ''} />
+                  </button>
                   <p className="text-white font-medium text-sm break-all line-clamp-3 group-hover:text-zinc-300">
                     {displayName || f}
                   </p>
@@ -140,6 +158,23 @@ export default function UgsFiles() {
             <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedFile.replace(/^cl/i, '')}</h3>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const displayName = formatFileName(selectedFile);
+                    const gameId = `ugs:${displayName}`;
+                    toggleFavorite({
+                      id: gameId,
+                      title: displayName || selectedFile,
+                      url: getUrl(selectedFile),
+                      source: 'external',
+                      description: `Play ${displayName || selectedFile} from UGS.`
+                    });
+                  }}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                  title={isFavorite(`ugs:${formatFileName(selectedFile)}`) ? "Remove from Favorites" : "Add to Favorites"}
+                >
+                  <Heart className={`w-5 h-5 ${isFavorite(`ugs:${formatFileName(selectedFile)}`) ? 'fill-red-500 text-red-500' : ''}`} />
+                </button>
                 <button
                   onClick={() => {
                      const btn = document.getElementById('ugs-iframe') as HTMLIFrameElement;
