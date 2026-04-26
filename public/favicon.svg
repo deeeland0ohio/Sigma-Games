@@ -1,11 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-  <defs>
-    <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#3b82f6" />
-      <stop offset="100%" stop-color="#93c5fd" />
-    </linearGradient>
-  </defs>
-  <g transform="translate(50, 58)">
+  <g transform="translate(50, 50)">
     <circle cx="0" cy="0" r="32" fill="#000000"/>
     <circle cx="0" cy="0" r="32" fill="none" stroke="#ef4444" stroke-width="1.5"/>
     <ellipse cx="0" cy="0" rx="32" ry="10" fill="none" stroke="#10b981" stroke-width="1.5"/>

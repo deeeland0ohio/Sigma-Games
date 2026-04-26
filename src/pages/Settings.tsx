@@ -192,7 +192,7 @@ export function SettingsContent() {
             setCustomColors(['#ffffff', '#ffffff', '#ffffff', '#ffffff']);
             setTempColors(['#ffffff', '#ffffff', '#ffffff', '#ffffff']);
             setCloakingTitle('Sigma Games');
-            setCloakingIcon('/favicon.svg');
+            setCloakingIcon('/favicon.svg?v=2');
           }}
           className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all font-medium flex-shrink-0"
         >
@@ -604,7 +604,7 @@ export function SettingsContent() {
                 <label className="text-sm font-medium text-zinc-400">Cloaking Presets</label>
                 <div className="grid grid-cols-1 gap-2">
                   {[
-                    { id: 'default', label: 'Default', title: 'Sigma Games', icon: '/favicon.svg' },
+                    { id: 'default', label: 'Default', title: 'Sigma Games', icon: '/favicon.svg?v=2' },
                     { id: 'google', label: 'Google', title: 'Google', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/500px-Google_%22G%22_logo.svg.png' },
                     { id: 'classroom', label: 'Google Classroom', title: 'Home - Classroom', icon: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Google_Classroom_Logo.svg' },
                     { id: 'ixl', label: 'IXL Learning', title: 'IXL | Dashboard', icon: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/IXL_Learning.png' },
