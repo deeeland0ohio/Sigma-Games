@@ -136,11 +136,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   });
 
   const [cloakingTitle, setCloakingTitle] = useState(() => {
-    return localStorage.getItem('app-cloaking-title') || 'Nebula';
+    return localStorage.getItem('app-cloaking-title') || 'Sigma Games';
   });
 
   const [cloakingIcon, setCloakingIcon] = useState(() => {
-    return localStorage.getItem('app-cloaking-icon') || '/favicon.ico';
+    return localStorage.getItem('app-cloaking-icon') || '/favicon.svg';
   });
 
   useEffect(() => {
