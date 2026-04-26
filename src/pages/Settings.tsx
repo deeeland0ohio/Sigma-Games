@@ -602,12 +602,12 @@ export function SettingsContent() {
                 <label className="text-sm font-medium text-zinc-400">Cloaking Presets</label>
                 <div className="grid grid-cols-1 gap-2">
                   {[
-                    { id: 'default', label: 'Default', title: 'Nebula', icon: '/favicon.ico' },
+                    { id: 'default', label: 'Default', title: 'Sigma Games', icon: '/favicon.svg' },
                     { id: 'google', label: 'Google', title: 'Google', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/500px-Google_%22G%22_logo.svg.png' },
                     { id: 'classroom', label: 'Google Classroom', title: 'Home - Classroom', icon: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Google_Classroom_Logo.svg' },
                     { id: 'ixl', label: 'IXL Learning', title: 'IXL | Dashboard', icon: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/IXL_Learning.png' },
                     { id: 'powerschool', label: 'Schoology (PowerSchool)', title: 'Home | Schoology', icon: 'https://resources.finalsite.net/images/f_auto,q_auto/v1626100427/k12albemarleorg/uj41eppe27bunrvhwnep/PowerSchoolLogos_Vertical-01.png' },
-                    { id: 'iready', label: 'i-Ready', title: 'Choose a subject, i-Ready', icon: 'https://static.wikia.nocookie.net/i-ready/images/2/2e/Bdc3eb203ecb48be4bdcc9abcc0d7977.jpg/revision/latest?cb=20210325170011' },
+                    { id: 'iready', label: 'i-Ready', title: 'Choose a subject, i-Ready', icon: 'https://1000logos.net/wp-content/uploads/2023/09/i-Ready-Emblem.png' },
                     { id: 'khan', label: 'Khan Academy', title: 'Khan Academy | Free Online Courses, Lessons & Practice', icon: 'https://www.svgrepo.com/show/353965/khan-academy-icon.svg' },
                   ].map((option) => (
                     <button

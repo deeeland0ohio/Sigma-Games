@@ -292,11 +292,11 @@
         if (fakeStyles) fakeStyles.remove();
         
         document.getElementById('root').style.display = 'block';
-        document.title = "Sigma Games";
+        document.title = localStorage.getItem('app-cloaking-title') || "Sigma Games";
         
         const favicon = document.getElementById('dynamic-favicon');
         if (favicon) {
-          favicon.href = '/favicon.svg';
+          favicon.href = localStorage.getItem('app-cloaking-icon') || '/favicon.svg';
           favicon.type = 'image/svg+xml';
         }
       }, 5000);
