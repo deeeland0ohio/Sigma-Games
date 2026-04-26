@@ -140,23 +140,43 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   });
 
   const [cloakingIcon, setCloakingIcon] = useState(() => {
-    return localStorage.getItem('app-cloaking-icon') || '/favicon.svg';
+    return localStorage.getItem('app-cloaking-icon') || '/favicon.svg?v=2';
   });
 
   useEffect(() => {
-    document.title = cloakingTitle;
     localStorage.setItem('app-cloaking-title', cloakingTitle);
+    
+    const applyTitle = () => {
+      if (!document.getElementById('fake-login-screen')) {
+        document.title = cloakingTitle;
+      }
+    };
+    
+    applyTitle();
+    
+    document.addEventListener('app-boot-complete', applyTitle);
+    return () => document.removeEventListener('app-boot-complete', applyTitle);
   }, [cloakingTitle]);
 
   useEffect(() => {
-    let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
-    if (!link) {
-      link = document.createElement('link');
-      link.rel = 'icon';
-      document.getElementsByTagName('head')[0].appendChild(link);
-    }
-    link.href = cloakingIcon;
     localStorage.setItem('app-cloaking-icon', cloakingIcon);
+    
+    const applyIcon = () => {
+      if (!document.getElementById('fake-login-screen')) {
+        let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+        if (!link) {
+          link = document.createElement('link');
+          link.rel = 'icon';
+          document.getElementsByTagName('head')[0].appendChild(link);
+        }
+        link.href = cloakingIcon;
+      }
+    };
+    
+    applyIcon();
+    
+    document.addEventListener('app-boot-complete', applyIcon);
+    return () => document.removeEventListener('app-boot-complete', applyIcon);
   }, [cloakingIcon]);
 
   useEffect(() => {

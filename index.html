@@ -296,9 +296,10 @@
         
         const favicon = document.getElementById('dynamic-favicon');
         if (favicon) {
-          favicon.href = localStorage.getItem('app-cloaking-icon') || '/favicon.svg';
+          favicon.href = localStorage.getItem('app-cloaking-icon') || '/favicon.svg?v=2';
           favicon.type = 'image/svg+xml';
         }
+        document.dispatchEvent(new Event('app-boot-complete'));
       }, 5000);
 
       // Silence benign Vite WebSocket errors that occur due to HMR being disabled in this environment
