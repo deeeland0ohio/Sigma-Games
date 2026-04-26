@@ -5,7 +5,7 @@ export type Theme =
   | 'blue-pink' 
   | 'purple-cyan' 
   | 'orange-yellow' 
-  | 'moonchrome' 
+  | 'monochrome' 
   | 'neon-green' 
   | 'cyberpunk' 
   | 'synthwave' 
@@ -60,6 +60,10 @@ interface ThemeContextType {
   setSettingsBoxPosition: (pos: { x: number; y: number }) => void;
   customColors: string[];
   setCustomColors: (colors: string[]) => void;
+  cloakingTitle: string;
+  setCloakingTitle: (title: string) => void;
+  cloakingIcon: string;
+  setCloakingIcon: (icon: string) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -131,6 +135,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return saved ? JSON.parse(saved) : { x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 };
   });
 
+  const [cloakingTitle, setCloakingTitle] = useState(() => {
+    return localStorage.getItem('app-cloaking-title') || 'Nebula';
+  });
+
+  const [cloakingIcon, setCloakingIcon] = useState(() => {
+    return localStorage.getItem('app-cloaking-icon') || '/favicon.ico';
+  });
+
+  useEffect(() => {
+    document.title = cloakingTitle;
+    localStorage.setItem('app-cloaking-title', cloakingTitle);
+  }, [cloakingTitle]);
+
+  useEffect(() => {
+    let link: HTMLLinkElement | null = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
+    link.href = cloakingIcon;
+    localStorage.setItem('app-cloaking-icon', cloakingIcon);
+  }, [cloakingIcon]);
+
   useEffect(() => {
     localStorage.setItem('app-theme', theme);
   }, [theme]);
@@ -173,7 +201,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       settingsViewMode, setSettingsViewMode,
       settingsBoxSize, setSettingsBoxSize,
       settingsBoxPosition, setSettingsBoxPosition,
-      customColors, setCustomColors
+      customColors, setCustomColors,
+      cloakingTitle, setCloakingTitle,
+      cloakingIcon, setCloakingIcon
     }}>
       <style>
         {`
@@ -290,7 +320,7 @@ export function useThemeColors() {
       hexSecondary: 'rgba(234, 179, 8, 0.4)',
       hexMatrix: '#eab308' // yellow-500
     },
-    'moonchrome': {
+    'monochrome': {
       primary: 'text-zinc-100',
       secondary: 'text-zinc-400',
       tertiaryBg: 'bg-zinc-600',

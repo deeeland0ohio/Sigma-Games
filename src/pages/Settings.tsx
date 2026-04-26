@@ -13,7 +13,9 @@ export function SettingsContent() {
     settingsViewMode, setSettingsViewMode,
     setIsSettingsOpen,
     setSettingsBoxSize, setSettingsBoxPosition,
-    customColors, setCustomColors
+    customColors, setCustomColors,
+    cloakingTitle, setCloakingTitle,
+    cloakingIcon, setCloakingIcon
   } = useTheme();
   const colors = useThemeColors();
   const navigate = useNavigate();
@@ -39,7 +41,7 @@ export function SettingsContent() {
     { id: 'blue-pink', label: 'Blue & Pink', colors: ['bg-blue-500', 'bg-pink-500'] },
     { id: 'purple-cyan', label: 'Purple & Cyan', colors: ['bg-purple-500', 'bg-cyan-500'] },
     { id: 'orange-yellow', label: 'Orange & Yellow', colors: ['bg-orange-500', 'bg-yellow-500'] },
-    { id: 'moonchrome', label: 'Moonchrome', colors: ['bg-zinc-100', 'bg-zinc-400'] },
+    { id: 'monochrome', label: 'Monochrome', colors: ['bg-zinc-100', 'bg-zinc-400'] },
     { id: 'neon-green', label: 'Neon Green', colors: ['bg-lime-400', 'bg-emerald-500'] },
     { id: 'cyberpunk', label: 'Cyberpunk', colors: ['bg-yellow-400', 'bg-fuchsia-500'] },
     { id: 'synthwave', label: 'Synthwave', colors: ['bg-indigo-500', 'bg-fuchsia-500'] },
@@ -592,38 +594,82 @@ export function SettingsContent() {
               <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
                 <Lock size={20} style={{ color: colors.hexPrimary }} />
               </div>
-              <h2 className="text-xl font-bold">Privacy</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <label className="text-sm font-medium text-zinc-400">Tab Title Cloaking</label>
-              <input
-                type="text"
-                defaultValue={document.title}
-                onBlur={(e) => document.title = e.target.value}
-                className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-xl text-white"
-                placeholder="Enter new tab title"
-              />
+              <h2 className="text-xl font-bold">Cloaking</h2>
             </div>
 
-            <button
-              onClick={() => {
-                const win = window.open('about:blank', '_blank');
-                if (win) {
-                  win.document.write(`
-                    <html>
-                      <head><title>${document.title}</title></head>
-                      <body style="margin:0;padding:0;overflow:hidden;">
-                        <iframe src="${window.location.origin}" style="width:100vw;height:100vh;border:none;"></iframe>
-                      </body>
-                    </html>
-                  `);
-                }
-              }}
-              className="w-full px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-all"
-            >
-              Launch in about:blank
-            </button>
+            <div className="space-y-6">
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-zinc-400">Cloaking Presets</label>
+                <div className="grid grid-cols-1 gap-2">
+                  {[
+                    { id: 'default', label: 'Default', title: 'Nebula', icon: '/favicon.ico' },
+                    { id: 'google', label: 'Google', title: 'Google', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/500px-Google_%22G%22_logo.svg.png' },
+                    { id: 'classroom', label: 'Google Classroom', title: 'Home - Classroom', icon: 'https://upload.wikimedia.org/wikipedia/commons/1/19/Google_Classroom_Logo.svg' },
+                    { id: 'ixl', label: 'IXL Learning', title: 'IXL | Dashboard', icon: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/IXL_Learning.png' },
+                    { id: 'powerschool', label: 'Schoology (PowerSchool)', title: 'Home | Schoology', icon: 'https://resources.finalsite.net/images/f_auto,q_auto/v1626100427/k12albemarleorg/uj41eppe27bunrvhwnep/PowerSchoolLogos_Vertical-01.png' },
+                    { id: 'iready', label: 'i-Ready', title: 'Choose a subject, i-Ready', icon: 'https://static.wikia.nocookie.net/i-ready/images/2/2e/Bdc3eb203ecb48be4bdcc9abcc0d7977.jpg/revision/latest?cb=20210325170011' },
+                    { id: 'khan', label: 'Khan Academy', title: 'Khan Academy | Free Online Courses, Lessons & Practice', icon: 'https://www.svgrepo.com/show/353965/khan-academy-icon.svg' },
+                  ].map((option) => (
+                    <button
+                      key={option.id}
+                      onClick={() => {
+                        setCloakingTitle(option.title);
+                        setCloakingIcon(option.icon);
+                      }}
+                      className={`flex items-center gap-4 p-3 rounded-xl border transition-all ${
+                        cloakingIcon === option.icon
+                          ? 'bg-zinc-800 border-zinc-600'
+                          : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-700'
+                      }`}
+                    >
+                      <div className="w-8 h-8 rounded overflow-hidden bg-white flex items-center justify-center p-1">
+                        <img src={option.icon} alt={option.label} className="w-full h-full object-contain" referrerPolicy="no-referrer" />
+                      </div>
+                      <span className={`text-sm font-medium ${cloakingIcon === option.icon ? 'text-white' : 'text-zinc-400'}`}>
+                        {option.label}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            
+              <div className="space-y-3">
+                <label className="text-sm font-medium text-zinc-400">Custom Tab Title</label>
+                <input
+                  type="text"
+                  value={cloakingTitle}
+                  onChange={(e) => setCloakingTitle(e.target.value)}
+                  className="w-full px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-xl text-white focus:outline-none focus:border-zinc-500"
+                  placeholder="Enter new tab title"
+                />
+              </div>
+
+              <div className="space-y-3 pt-2">
+                <label className="text-sm font-medium text-zinc-400">Advanced Cloaking</label>
+                <button
+                  onClick={() => {
+                    const win = window.open('about:blank', '_blank');
+                    if (win) {
+                      win.document.write(`
+                        <html>
+                          <head>
+                            <title>${cloakingTitle}</title>
+                            <link rel="icon" href="${cloakingIcon}">
+                          </head>
+                          <body style="margin:0;padding:0;overflow:hidden;">
+                            <iframe src="${window.location.origin}" style="width:100vw;height:100vh;border:none;"></iframe>
+                          </body>
+                        </html>
+                      `);
+                    }
+                  }}
+                  className="w-full px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+                >
+                  <Maximize2 size={18} />
+                  Launch in about:blank
+                </button>
+              </div>
+            </div>
           </section>
         </div>
       </div>
