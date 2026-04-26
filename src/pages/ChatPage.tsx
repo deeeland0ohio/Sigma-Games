@@ -81,11 +81,7 @@ export default function ChatPage() {
       }
     }
 
-    const hasSeenWarning = sessionStorage.getItem('vercel_warning_seen');
-    if (!hasSeenWarning) {
-      setShowVercelWarning(true);
-      sessionStorage.setItem('vercel_warning_seen', 'true');
-    }
+    setShowVercelWarning(true);
 
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
