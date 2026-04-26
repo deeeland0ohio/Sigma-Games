@@ -14,8 +14,4 @@
     <ellipse cx="0" cy="0" rx="32" ry="10" fill="none" stroke="#ef4444" stroke-width="1.5" transform="rotate(-45)"/>
     <ellipse cx="0" cy="0" rx="32" ry="10" fill="none" stroke="#10b981" stroke-width="1.5" transform="rotate(90)"/>
   </g>
-  <path id="textPath" d="M 12 48 A 38 38 0 0 1 88 48" fill="none" />
-  <text fill="url(#blueGrad)" font-family="Arial, sans-serif" font-weight="900" font-size="15" letter-spacing="1">
-    <textPath href="#textPath" startOffset="50%" text-anchor="middle">SIGMA GAMES</textPath>
-  </text>
 </svg>
