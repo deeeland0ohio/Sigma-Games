@@ -670,6 +670,28 @@ export function SettingsContent() {
                   <Maximize2 size={18} />
                   Launch in about:blank
                 </button>
+                <button
+                  onClick={() => {
+                    const html = `
+                      <html>
+                        <head>
+                          <title>${cloakingTitle}</title>
+                          <link rel="icon" href="${cloakingIcon}">
+                        </head>
+                        <body style="margin:0;padding:0;overflow:hidden;">
+                          <iframe src="${window.location.origin}" style="width:100vw;height:100vh;border:none;"></iframe>
+                        </body>
+                      </html>
+                    `;
+                    const blob = new Blob([html], { type: 'text/html' });
+                    const url = URL.createObjectURL(blob);
+                    window.open(url, '_blank');
+                  }}
+                  className="w-full px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+                >
+                  <Maximize2 size={18} />
+                  Launch in blob: URL
+                </button>
               </div>
             </div>
           </section>

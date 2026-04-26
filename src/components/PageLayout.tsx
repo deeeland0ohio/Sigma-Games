@@ -88,8 +88,7 @@ export default function PageLayout({
       {/* Footer */}
       <footer className="border-t border-zinc-800 py-8 text-sm text-zinc-500 bg-zinc-950/50 backdrop-blur-sm">
         <div className={`${maxWidthClass} mx-auto px-6 text-center`}>
-          <p>© 2026 Sigma Games. All rights reserved.</p>
-          <p className="mt-1 text-xs uppercase tracking-widest text-zinc-600">Entertainment purposes only.</p>
+          <p>© 2026 Sigma Games.</p>
         </div>
       </footer>
     </div>
