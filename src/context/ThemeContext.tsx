@@ -88,8 +88,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   });
 
   const [simulationPower, setSimulationPower] = useState<number>(() => {
-    const saved = localStorage.getItem('app-energy-level');
-    if (saved) return parseInt(saved, 10);
+    try {
+      const saved = localStorage.getItem('app-energy-level');
+      if (saved) {
+        const parsedValue = parseInt(saved, 10);
+        if (!isNaN(parsedValue)) return parsedValue;
+      }
+    } catch (e) {
+      console.warn("Could not load simulation power from localStorage", e);
+    }
     const bg = (localStorage.getItem('app-background') as BackgroundStyle) || 'dots';
     return bg === 'vanta-dots' ? 36 : 40;
   });
