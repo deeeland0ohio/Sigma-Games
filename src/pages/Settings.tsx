@@ -65,6 +65,7 @@ export function SettingsContent() {
 
   const backgrounds: { id: BackgroundStyle; label: string }[] = [
     { id: 'dots', label: 'Interactive Dots' },
+    { id: 'vanta-dots', label: '3D Dots (Vantajs)' },
     { id: 'matrix', label: 'Matrix Flow' },
     { id: 'black-hole', label: 'Event Horizon' },
     { id: 'lightspeed', label: 'Light Speed' },
@@ -75,6 +76,13 @@ export function SettingsContent() {
     setBackgroundConfig({
       ...backgroundConfig,
       dots: { ...backgroundConfig.dots, [key]: value }
+    });
+  };
+
+  const updateVantaDotsConfig = (key: keyof typeof backgroundConfig.vantaDots, value: number) => {
+    setBackgroundConfig({
+      ...backgroundConfig,
+      vantaDots: { ...backgroundConfig.vantaDots, [key]: value }
     });
   };
 
@@ -115,9 +123,14 @@ export function SettingsContent() {
       setBackgroundConfig({
         ...backgroundConfig,
         dots: {
-          speed: Math.min(backgroundConfig.dots.speed, 0.15),
+          speed: Math.min(backgroundConfig.dots.speed, 150),
           size: Math.min(backgroundConfig.dots.size, 8),
           density: Math.min(backgroundConfig.dots.density, 80),
+        },
+        vantaDots: {
+          springSpeed: Math.min(backgroundConfig.vantaDots.springSpeed, 100),
+          dotSize: Math.min(backgroundConfig.vantaDots.dotSize, 20),
+          splash: Math.min(backgroundConfig.vantaDots.splash, 100),
         },
         matrix: {
           speed: Math.min(backgroundConfig.matrix.speed, 100),
@@ -180,10 +193,11 @@ export function SettingsContent() {
             setBackground('dots');
             setSimulationPower(40);
             setBackgroundConfig({
-              dots: { speed: 0.04, size: 2, density: 35 },
-              matrix: { speed: 40, size: 25, density: 50 },
-              blackHole: { speed: 40, size: 50, density: 50 },
-              lightspeed: { speed: 40, size: 50, density: 50 }
+              dots: { speed: 40, size: 2, density: 35 },
+              vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
+              matrix: { speed: 40, size: 40, density: 40 },
+              blackHole: { speed: 40, size: 40, density: 40 },
+              lightspeed: { speed: 40, size: 40, density: 40 }
             });
             setSettingsViewMode('page');
             setSettingsBoxSize({ width: 1000, height: 700 });
@@ -378,10 +392,10 @@ export function SettingsContent() {
                     <div className="space-y-4">
                       <div className="flex justify-between items-center">
                         <label className="text-sm font-medium text-zinc-400">Spring Speed</label>
-                        <span className="text-xs font-mono text-emerald-400">{(backgroundConfig.dots.speed * 1000).toFixed(0)}</span>
+                        <span className="text-xs font-mono text-emerald-400">{(backgroundConfig.dots.speed).toFixed(0)}%</span>
                       </div>
                       <input
-                        type="range" min="0.002" max={0.15 * multiplier} step="0.001"
+                        type="range" min="1" max={150 * multiplier} step="1"
                         value={backgroundConfig.dots.speed}
                         onChange={(e) => updateDotsConfig('speed', parseFloat(e.target.value))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
@@ -408,6 +422,47 @@ export function SettingsContent() {
                         type="range" min="20" max={80 * multiplier} step="1"
                         value={backgroundConfig.dots.density}
                         onChange={(e) => updateDotsConfig('density', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {background === 'vanta-dots' && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Spring Speed</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.vantaDots.springSpeed}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.vantaDots.springSpeed}
+                        onChange={(e) => updateVantaDotsConfig('springSpeed', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Dot Size</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.vantaDots.dotSize}px</span>
+                      </div>
+                      <input
+                        type="range" min="1" max={20 * multiplier} step="1"
+                        value={backgroundConfig.vantaDots.dotSize}
+                        onChange={(e) => updateVantaDotsConfig('dotSize', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Splash</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.vantaDots.splash}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.vantaDots.splash}
+                        onChange={(e) => updateVantaDotsConfig('splash', parseInt(e.target.value, 10))}
                         className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
                       />
                     </div>
