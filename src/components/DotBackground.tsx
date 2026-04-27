@@ -93,7 +93,8 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
     let animationFrameId: number;
 
     const animate = () => {
-      const { speed, size, density: gridSpacing } = configRef.current;
+      const { speed: speedPercentage, size, density: gridSpacing } = configRef.current;
+      const speed = speedPercentage / 1000;
       
       ctx.clearRect(0, 0, width, height);
       

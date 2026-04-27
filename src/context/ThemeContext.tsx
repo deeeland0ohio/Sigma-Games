@@ -16,13 +16,18 @@ export type Theme =
   | 'event-horizon-blue-orange'
   | 'custom';
 
-export type BackgroundStyle = 'dots' | 'matrix' | 'black-hole' | 'lightspeed' | 'blank';
+export type BackgroundStyle = 'dots' | 'vanta-dots' | 'matrix' | 'black-hole' | 'lightspeed' | 'blank';
 
 export interface BackgroundConfig {
   dots: {
     speed: number;
     size: number;
     density: number;
+  };
+  vantaDots: {
+    springSpeed: number;
+    dotSize: number;
+    splash: number;
   };
   matrix: {
     speed: number;
@@ -84,7 +89,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const [simulationPower, setSimulationPower] = useState<number>(() => {
     const saved = localStorage.getItem('app-energy-level');
-    return saved ? parseInt(saved, 10) : 40;
+    if (saved) return parseInt(saved, 10);
+    const bg = (localStorage.getItem('app-background') as BackgroundStyle) || 'dots';
+    return bg === 'vanta-dots' ? 36 : 40;
   });
 
   const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>(() => {
@@ -97,10 +104,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
     }
     return {
-      dots: { speed: 0.04, size: 2, density: 35 },
-      matrix: { speed: 40, size: 25, density: 50 },
-      blackHole: { speed: 40, size: 50, density: 50 },
-      lightspeed: { speed: 40, size: 50, density: 50 }
+      dots: { speed: 40, size: 2, density: 35 },
+      vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
+      matrix: { speed: 40, size: 40, density: 40 },
+      blackHole: { speed: 40, size: 40, density: 40 },
+      lightspeed: { speed: 40, size: 40, density: 40 }
     };
   });
 
@@ -185,6 +193,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     localStorage.setItem('app-background', background);
+    // Automatically adjust simulation power based on background type
+    if (background === 'vanta-dots') {
+      setSimulationPower(36);
+    } else if (background !== 'blank') {
+      setSimulationPower(40);
+    }
   }, [background]);
 
   useEffect(() => {

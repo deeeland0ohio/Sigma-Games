@@ -4,6 +4,7 @@ import DotBackground from './DotBackground';
 import MatrixBackground from './MatrixBackground';
 import BlackHoleBackground from './BlackHoleBackground';
 import LightspeedBackground from './LightspeedBackground';
+import { VantaDotsBackground } from './VantaDotsBackground';
 
 export default function BackgroundManager() {
   const { background, simulationPower, backgroundConfig } = useTheme();
@@ -14,6 +15,10 @@ export default function BackgroundManager() {
 
   if (background === 'blank') {
     return <div className="fixed inset-0 bg-black -z-50" />;
+  }
+
+  if (background === 'vanta-dots') {
+    return <VantaDotsBackground color={colors.hexMatrix} backgroundColor="#09090b" config={backgroundConfig.vantaDots} power={powerMultiplier} />;
   }
 
   if (background === 'matrix') {
