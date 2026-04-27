@@ -116,7 +116,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       for (let j = shockwaves.length - 1; j >= 0; j--) {
         const sw = shockwaves[j];
         sw.radius += sw.speed;
-        if (sw.radius > sw.maxRadius) {
+        if (sw.radius >= sw.maxRadius) {
           shockwaves.splice(j, 1);
         }
       }
