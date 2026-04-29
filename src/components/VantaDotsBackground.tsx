@@ -120,6 +120,9 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
     };
     
     const handleClick = (event: MouseEvent) => {
+        if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select')) {
+            return;
+        }
         // Calculate where the user clicked on the "floor" plane
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;

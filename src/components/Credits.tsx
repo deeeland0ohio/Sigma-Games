@@ -43,13 +43,20 @@ export default function Credits() {
                   <h3 className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-2">Development</h3>
                   <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
                     <p className="text-zinc-300">
-                      <span className="text-zinc-500">Games:</span> <span className={colors.textGradient || colors.primary}>GN-Math, UGS, Seraph, Truffled, 3kh0, and Noah's Hub</span>
+                      <span className="text-zinc-500">Games:</span> <span className={colors.textGradient || colors.primary}>
+                        <a href="https://www.gn-math.dev/" target="_blank" rel="noopener noreferrer" className="hover:underline">GN-Math</a>,{' '}
+                        <a href="https://docs.google.com/document/d/1_FmH3BlSBQI7FGgAQL59-ZPe8eCxs35wel6JUyVaG8Q/edit?tab=t.0" target="_blank" rel="noopener noreferrer" className="hover:underline">UGS</a>,{' '}
+                        <a href="https://github.com/a456pur/seraph" target="_blank" rel="noopener noreferrer" className="hover:underline">Seraph</a>,{' '}
+                        <a href="https://truffled.lol/" target="_blank" rel="noopener noreferrer" className="hover:underline">Truffled</a>,{' '}
+                        <a href="https://3kh0.net/" target="_blank" rel="noopener noreferrer" className="hover:underline">3kh0</a>, and{' '}
+                        <a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" className="hover:underline">Noah's Hub</a>
+                      </span>
                     </p>
                     <p className="text-zinc-300 mt-2">
                       <span className="text-zinc-500">Website:</span> <span className={colors.tertiary || colors.secondary}>All aspects of the website are my ideas, although it is coded by Gemini</span>
                     </p>
                     <p className="text-zinc-300 mt-2">
-                      <span className="text-zinc-500">Inspiration:</span> <span className={colors.quaternary || 'text-orange-500'}>Noah's Tutoring Hub</span>
+                      <span className="text-zinc-500">Inspiration:</span> <span className={colors.quaternary || 'text-orange-500'}><a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" className="hover:underline">Noah's Tutoring Hub</a></span>
                     </p>
                   </div>
                 </div>

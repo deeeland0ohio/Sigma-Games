@@ -47,8 +47,13 @@ export default function BlackHoleBackground({
 
     let width = window.innerWidth;
     let height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
+    let dpr = window.devicePixelRatio || 1;
+    
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    ctx.scale(dpr, dpr);
 
     let mouse = { x: -1000, y: -1000 };
     const handleMouseMove = (e: MouseEvent) => {
@@ -156,8 +161,14 @@ export default function BlackHoleBackground({
     const handleResize = () => {
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
+      dpr = window.devicePixelRatio || 1;
+      
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.scale(dpr, dpr);
+      
       initDashes();
     };
     window.addEventListener('resize', handleResize);

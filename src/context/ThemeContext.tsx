@@ -46,6 +46,8 @@ export interface BackgroundConfig {
   };
 }
 
+export type RunnerMode = 'none' | 'html' | 'javascript' | 'python';
+
 interface ThemeContextType {
   theme: Theme;
   setTheme: (theme: Theme) => void;
@@ -69,6 +71,8 @@ interface ThemeContextType {
   setCloakingTitle: (title: string) => void;
   cloakingIcon: string;
   setCloakingIcon: (icon: string) => void;
+  runnerMode: RunnerMode;
+  setRunnerMode: (mode: RunnerMode) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -158,6 +162,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return localStorage.getItem('app-cloaking-icon') || '/favicon.svg?v=2';
   });
 
+  const [runnerMode, setRunnerMode] = useState<RunnerMode>(() => {
+    return (localStorage.getItem('app-runner-mode') as RunnerMode) || 'none';
+  });
+
   useEffect(() => {
     localStorage.setItem('app-cloaking-title', cloakingTitle);
     
@@ -232,6 +240,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('app-settings-box-position', JSON.stringify(settingsBoxPosition));
   }, [settingsBoxPosition]);
 
+  useEffect(() => {
+    localStorage.setItem('app-runner-mode', runnerMode);
+  }, [runnerMode]);
+
   return (
     <ThemeContext.Provider value={{ 
       theme, setTheme, 
@@ -244,7 +256,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       settingsBoxPosition, setSettingsBoxPosition,
       customColors, setCustomColors,
       cloakingTitle, setCloakingTitle,
-      cloakingIcon, setCloakingIcon
+      cloakingIcon, setCloakingIcon,
+      runnerMode, setRunnerMode
     }}>
       <style>
         {`
