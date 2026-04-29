@@ -47,8 +47,13 @@ export default function LightspeedBackground({
 
     let width = window.innerWidth;
     let height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
+    let dpr = window.devicePixelRatio || 1;
+    
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    ctx.scale(dpr, dpr);
 
     let isMouseDown = false;
     let warpFactor = 0;
@@ -83,8 +88,13 @@ export default function LightspeedBackground({
       stars.length = 0;
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
+      dpr = window.devicePixelRatio || 1;
+      
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.scale(dpr, dpr);
       
       for (let i = 0; i < numStars; i++) {
         const star = { x: 0, y: 0, z: 0, color: pickColor(), warpStartZ: 0 };
@@ -99,7 +109,10 @@ export default function LightspeedBackground({
     initStars();
     window.addEventListener('resize', initStars);
 
-    const handlePointerDown = () => {
+    const handlePointerDown = (e: MouseEvent | TouchEvent) => {
+      if (e.target instanceof Element && e.target.closest('button, a, input, textarea, select')) {
+        return;
+      }
       isMouseDown = true;
       // Anchor the start of the tail to current position when clicking
       stars.forEach(star => {

@@ -27,8 +27,18 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
 
     let width = window.innerWidth;
     let height = window.innerHeight;
-    canvas.width = width;
-    canvas.height = height;
+    let dpr = window.devicePixelRatio || 1;
+    
+    // Set display size (css pixels)
+    canvas.style.width = width + 'px';
+    canvas.style.height = height + 'px';
+    
+    // Set actual size in memory (scaled to account for extra pixel density)
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    
+    // Normalize coordinate system to use css pixels
+    ctx.scale(dpr, dpr);
 
     let mouse = { x: -1000, y: -1000 };
     const shockwaves: { x: number, y: number, radius: number, maxRadius: number, speed: number, force: number }[] = [];
@@ -44,6 +54,10 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
     };
 
     const handleClick = (e: MouseEvent) => {
+      if (e.target instanceof Element && e.target.closest('button, a, input, textarea, select')) {
+        return;
+      }
+      
       shockwaves.push({
         x: e.clientX,
         y: e.clientY,
@@ -64,8 +78,13 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       dots.length = 0;
       width = window.innerWidth;
       height = window.innerHeight;
-      canvas.width = width;
-      canvas.height = height;
+      dpr = window.devicePixelRatio || 1;
+      
+      canvas.style.width = width + 'px';
+      canvas.style.height = height + 'px';
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.scale(dpr, dpr);
       
       const spacing = configRef.current.density;
       
