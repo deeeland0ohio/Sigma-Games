@@ -54,7 +54,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
     };
 
     const handleClick = (e: MouseEvent) => {
-      if (e.target instanceof Element && e.target.closest('button, a, input, textarea, select')) {
+      if (e.target instanceof Element && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="switch"]')) {
         return;
       }
       

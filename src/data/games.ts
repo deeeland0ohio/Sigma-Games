@@ -1,4 +1,4 @@
-import { Folder, Star, Heart, Puzzle, Skull, Zap, FlaskConical, Box } from 'lucide-react';
+import { Folder, Heart, Puzzle, Skull, Zap, FlaskConical, Box } from 'lucide-react';
 import { Game } from '../types';
 import { allGames } from './games/index';
 
@@ -10,13 +10,6 @@ export const games: Game[] = [
     title: 'Our Games',
     description: 'Browse our selection of Games!',
     icon: Folder,
-    type: 'folder',
-  },
-  {
-    id: 'popular',
-    title: 'Popular',
-    description: 'The most played games right now.',
-    icon: Star,
     type: 'folder',
   },
   {
@@ -61,12 +54,15 @@ export const games: Game[] = [
     icon: Box,
     type: 'folder',
   },
+  {
+    id: 'lumin',
+    title: 'LuminSKD',
+    description: "Browse the Lumin SDK collection with about 1k games.",
+    icon: Box,
+    type: 'folder',
+  },
 ];
 
 export const allGamesList = [...allGames].sort((a, b) => {
   return a.title.localeCompare(b.title);
-});
-
-export const popularGamesList = [...allGames].sort((a, b) => {
-  return (b.popularity || 0) - (a.popularity || 0);
 });

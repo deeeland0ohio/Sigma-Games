@@ -1,15 +1,57 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Maximize, Box, Heart } from 'lucide-react';
+import { Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
-import { threekh0Games } from '../data/3kh0';
+import { threekh0Games as initialThreekh0Games } from '../data/3kh0';
 import { useFavorites } from '../context/FavoritesContext';
 
 export default function Threekh0Games() {
+  const [games, setGames] = useState(initialThreekh0Games);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
-  const [selectedGame, setSelectedGame] = useState<{ link: string, title?: string } | null>(null);
+  const [selectedGame, setSelectedGame] = useState<{ link: string, title?: string, imgSrc?: string } | null>(null);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
+
+  const loadGames = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('https://api.github.com/repos/3kh0/3kh0-lite/git/trees/main?recursive=1');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.tree) {
+          const gameFolders = data.tree
+            .filter((node: any) => node.path.startsWith('projects/') && node.path.split('/').length === 2 && node.type === 'tree')
+            .map((node: any) => {
+              const id = node.path.replace('projects/', '');
+              // Try to find an image in the tree for this project
+              const imageNode = data.tree.find((n: any) => 
+                n.path.startsWith(`projects/${id}/`) && 
+                (n.path.endsWith('.png') || n.path.endsWith('.jpg'))
+              );
+              
+              return { 
+                link: `projects/${id}/index.html`,
+                imgSrc: imageNode ? imageNode.path : `projects/${id}/meta/apple-touch-icon.png`,
+                title: id.replace(/-/g, ' ')
+              };
+            });
+          
+          if (gameFolders.length > 0) {
+            setGames(gameFolders);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to update 3kh0 games list", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGames();
+  }, []);
 
   const formatFileName = (raw: string) => {
     let name = raw.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/([0-9])([a-zA-Z])/g, '$1 $2');
@@ -27,7 +69,7 @@ export default function Threekh0Games() {
     return `https://raw.githack.com/3kh0/3kh0-lite/main/${link}`;
   };
 
-  const filteredGames = threekh0Games.filter(g => 
+  const filteredGames = games.filter(g => 
     (g.title || g.link).toLowerCase().includes(search.toLowerCase())
   );
   const displayedGames = filteredGames.slice(0, visibleCount);
@@ -46,6 +88,14 @@ export default function Threekh0Games() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700 focus:border-transparent transition-all"
             />
           </div>
+          <button
+            onClick={loadGames}
+            disabled={loading}
+            className="w-full sm:w-auto px-4 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700 flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -71,7 +121,7 @@ export default function Threekh0Games() {
                       title: displayName,
                       url: getUrl(g.link),
                       image: imageSrc || '',
-                      source: 'external',
+                      source: '3kh0',
                       description: `Play ${displayName} from 3kh0.`
                     });
                   }}
@@ -145,7 +195,7 @@ export default function Threekh0Games() {
                       title: displayName,
                       url: getUrl(selectedGame.link),
                       image: imageSrc || '',
-                      source: 'external',
+                      source: '3kh0',
                       description: `Play ${displayName} from 3kh0.`
                     });
                   }}

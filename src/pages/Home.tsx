@@ -299,6 +299,7 @@ builtins.input = custom_input
                   game.id === 'seraph' ? '/seraph' :
                   game.id === '3kh0' ? '/3kh0' :
                   game.id === 'noah' ? '/noah' :
+                  game.id === 'lumin' ? '/lumin' :
                   undefined
                 }
               />

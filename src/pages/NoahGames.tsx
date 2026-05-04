@@ -1,15 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Maximize, Box, Heart } from 'lucide-react';
+import { Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
-import { noahGames } from '../data/noah';
+import { noahGames as initialNoahGames } from '../data/noah';
 import { useFavorites } from '../context/FavoritesContext';
 
 export default function NoahGames() {
   const [search, setSearch] = useState('');
+  const [games, setGames] = useState(initialNoahGames);
+  const [loading, setLoading] = useState(false);
   const [selectedGame, setSelectedGame] = useState<{ url: string, title: string, desc: string, image: string } | null>(null);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
+
+  const loadGames = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('https://raw.githubusercontent.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor/master/games.js');
+      if (res.ok) {
+        const text = await res.text();
+        const match = text.match(/const games = (\[.*?\]);/s);
+        if (match) {
+          const str = match[1];
+          const fetchedGames: any[] = [];
+          const regex = /{ title: "(.*?)", desc: "(.*?)", url: "(.*?)", image: "(.*?)" }/g;
+          let m;
+          while ((m = regex.exec(str)) !== null) {
+            const title = m[1].replace(/\\"/g, '"');
+            const desc = m[2].replace(/\\"/g, '"');
+            fetchedGames.push({ title, desc, url: m[3], image: m[4] });
+          }
+          if (fetchedGames.length > 0) {
+            setGames(fetchedGames);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to update games list", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGames();
+  }, []);
 
   const formatFileName = (raw: string) => {
     if (!raw) return '';
@@ -24,7 +59,7 @@ export default function NoahGames() {
     setSelectedGame(game);
   };
 
-  const filteredGames = noahGames.filter(g => 
+  const filteredGames = games.filter(g => 
     (g.title || g.url).toLowerCase().includes(search.toLowerCase())
   );
   const displayedGames = filteredGames.slice(0, visibleCount);
@@ -43,6 +78,14 @@ export default function NoahGames() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700 focus:border-transparent transition-all"
             />
           </div>
+          <button
+            onClick={loadGames}
+            disabled={loading}
+            className="w-full sm:w-auto px-4 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700 flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -68,7 +111,7 @@ export default function NoahGames() {
                       title: displayName,
                       url: g.url.replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com'),
                       image: imageSrc || '',
-                      source: 'external',
+                      source: "Noah's Hub",
                       description: g.desc
                     });
                   }}
@@ -141,7 +184,7 @@ export default function NoahGames() {
                       title: displayName,
                       url: selectedGame.url.replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com'),
                       image: selectedGame.image || '',
-                      source: 'external',
+                      source: "Noah's Hub",
                       description: selectedGame.desc
                     });
                   }}

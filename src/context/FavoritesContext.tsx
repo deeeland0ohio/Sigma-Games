@@ -2,7 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from 'react
 
 export interface FavoriteItem {
   id: string;
-  source: 'local' | 'external';
+  source: string;
   title?: string;
   url?: string;
   image?: string;

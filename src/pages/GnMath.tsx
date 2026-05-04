@@ -125,7 +125,7 @@ export default function GnMath() {
                       title: z.name,
                       url: z.url,
                       image: z.cover,
-                      source: 'external'
+                      source: 'gn-math'
                     });
                   }}
                   className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100"
@@ -168,7 +168,7 @@ export default function GnMath() {
                       title: selectedZone.name,
                       url: selectedZone.url,
                       image: selectedZone.cover,
-                      source: 'external'
+                      source: 'gn-math'
                     });
                   }}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"

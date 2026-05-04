@@ -110,7 +110,7 @@ export default function UgsFiles() {
                         id: gameId,
                         title: displayName || f,
                         url: getUrl(f),
-                        source: 'external',
+                        source: 'UGS',
                         description: `Play ${displayName || f} from UGS.`
                       });
                     }}
@@ -166,7 +166,7 @@ export default function UgsFiles() {
                       id: gameId,
                       title: displayName || selectedFile,
                       url: getUrl(selectedFile),
-                      source: 'external',
+                      source: 'UGS',
                       description: `Play ${displayName || selectedFile} from UGS.`
                     });
                   }}

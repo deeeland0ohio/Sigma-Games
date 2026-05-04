@@ -1,15 +1,50 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Maximize, Box, Heart } from 'lucide-react';
+import { Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
-import { seraphGames } from '../data/seraph';
+import { seraphGames as initialSeraphGames } from '../data/seraph';
 import { useFavorites } from '../context/FavoritesContext';
 
 export default function SeraphGames() {
+  const [games, setGames] = useState(initialSeraphGames);
+  const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
+
+  const loadGames = async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('https://api.github.com/repos/a456pur/seraph/git/trees/main?recursive=1');
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.tree) {
+          const gameFolders = data.tree
+            .filter((node: any) => node.path.startsWith('games/') && node.path.split('/').length === 2 && node.type === 'tree')
+            .map((node: any) => {
+              const id = node.path.replace('games/', '');
+              return { 
+                id, 
+                image: `https://raw.githubusercontent.com/a456pur/seraph/main/images/thumbnails/${id}.jpg`
+              };
+            });
+          
+          if (gameFolders.length > 0) {
+            setGames(gameFolders);
+          }
+        }
+      }
+    } catch (e) {
+      console.error("Failed to update Seraph games list", e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadGames();
+  }, []);
 
   const formatFileName = (raw: string) => {
     let name = raw.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/([0-9])([a-zA-Z])/g, '$1 $2');
@@ -27,7 +62,7 @@ export default function SeraphGames() {
     return `https://raw.githack.com/a456pur/seraph/main/games/${file}/index.html`;
   };
 
-  const filteredFiles = seraphGames.filter(f => f.id.toLowerCase().includes(search.toLowerCase()));
+  const filteredFiles = games.filter(f => f.id.toLowerCase().includes(search.toLowerCase()));
   const displayedFiles = filteredFiles.slice(0, visibleCount);
 
   return (
@@ -44,6 +79,14 @@ export default function SeraphGames() {
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700 focus:border-transparent transition-all"
             />
           </div>
+          <button
+            onClick={loadGames}
+            disabled={loading}
+            className="w-full sm:w-auto px-4 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700 flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
         </div>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
@@ -68,7 +111,7 @@ export default function SeraphGames() {
                       title: displayName || f.id,
                       url: getUrl(f.id),
                       image: f.image || '',
-                      source: 'external',
+                      source: 'Seraph',
                       description: `Play ${displayName || f.id} from Seraph.`
                     });
                   }}
@@ -136,13 +179,13 @@ export default function SeraphGames() {
                   onClick={() => {
                     const displayName = formatFileName(selectedFile);
                     const gameId = `seraph:${displayName}`;
-                    const f = seraphGames.find(g => g.id === selectedFile);
+                    const f = games.find(g => g.id === selectedFile);
                     toggleFavorite({
                       id: gameId,
                       title: displayName || selectedFile,
                       url: getUrl(selectedFile),
                       image: f?.image || '',
-                      source: 'external',
+                      source: 'Seraph',
                       description: `Play ${displayName || selectedFile} from Seraph.`
                     });
                   }}
