@@ -2,7 +2,6 @@ import { HashRouter, Routes, Route } from 'react-router-dom';
 import Home from './pages/Home';
 import GamePlayer from './pages/GamePlayer';
 import AllGames from './pages/AllGames';
-import PopularGames from './pages/PopularGames';
 import BackgroundManager from './components/BackgroundManager';
 import SettingsOverlay from './components/SettingsOverlay';
 import { ThemeProvider } from './context/ThemeContext';
@@ -16,7 +15,9 @@ import UgsFiles from './pages/UgsFiles';
 import SeraphGames from './pages/SeraphGames';
 import Threekh0Games from './pages/Threekh0Games';
 import NoahGames from './pages/NoahGames';
+import LuminGames from './pages/LuminGames';
 import ExternalPlayer from './pages/ExternalPlayer';
+import NotFound from './pages/NotFound';
 
 export default function App() {
   return (
@@ -29,7 +30,6 @@ export default function App() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/all-games" element={<AllGames />} />
-              <Route path="/popular" element={<PopularGames />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/settings" element={<Settings />} />
               <Route path="/play/:id" element={<GamePlayer />} />
@@ -39,7 +39,9 @@ export default function App() {
               <Route path="/seraph" element={<SeraphGames />} />
               <Route path="/3kh0" element={<Threekh0Games />} />
               <Route path="/noah" element={<NoahGames />} />
+              <Route path="/lumin" element={<LuminGames />} />
               <Route path="/external-player" element={<ExternalPlayer />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </HashRouter>
         </FavoritesProvider>

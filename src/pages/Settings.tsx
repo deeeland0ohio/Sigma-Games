@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useEffect } from 'react';
 import { useTheme, useThemeColors, Theme, BackgroundStyle } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
 import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus, Terminal } from 'lucide-react';
@@ -108,11 +108,11 @@ export function SettingsContent() {
     });
   };
 
-  const [isAdvanced, setIsAdvanced] = React.useState(false);
-  const [showWarning, setShowWarning] = React.useState(false);
-  const [tempColors, setTempColors] = React.useState(customColors);
+  const [isAdvanced, setIsAdvanced] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
+  const [tempColors, setTempColors] = useState(customColors);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setTempColors(customColors);
   }, [customColors]);
 
@@ -345,6 +345,66 @@ export function SettingsContent() {
                 </button>
               </div>
             )}
+          </section>
+
+          {/* Terminal Features */}
+          <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
+            <div className="flex items-center gap-3 text-zinc-100">
+              <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
+                <Terminal size={20} style={{ color: colors.hexPrimary }} />
+              </div>
+              <h2 className="text-xl font-bold">Terminal Features</h2>
+            </div>
+            
+            <div className="space-y-4">
+              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
+                <div>
+                  <span className="font-medium text-white block">HTML Runner</span>
+                  <span className="text-sm text-zinc-500">Enable HTML code execution in the home terminal</span>
+                </div>
+                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'html' ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'html' ? 'translate-x-6' : 'translate-x-1'}`} />
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={runnerMode === 'html'}
+                    onChange={(e) => setRunnerMode(e.target.checked ? 'html' : 'none')}
+                  />
+                </div>
+              </label>
+
+              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
+                <div>
+                  <span className="font-medium text-white block">JavaScript Runner</span>
+                  <span className="text-sm text-zinc-500">Enable JavaScript code execution in the home terminal</span>
+                </div>
+                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'javascript' ? 'bg-blue-500' : 'bg-zinc-700'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'javascript' ? 'translate-x-6' : 'translate-x-1'}`} />
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={runnerMode === 'javascript'}
+                    onChange={(e) => setRunnerMode(e.target.checked ? 'javascript' : 'none')}
+                  />
+                </div>
+              </label>
+
+              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
+                <div>
+                  <span className="font-medium text-white block">Python Runner</span>
+                  <span className="text-sm text-zinc-500">Enable Python code execution in the home terminal</span>
+                </div>
+                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'python' ? 'bg-yellow-500' : 'bg-zinc-700'}`}>
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'python' ? 'translate-x-6' : 'translate-x-1'}`} />
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={runnerMode === 'python'}
+                    onChange={(e) => setRunnerMode(e.target.checked ? 'python' : 'none')}
+                  />
+                </div>
+              </label>
+            </div>
           </section>
         </div>
 
@@ -750,65 +810,6 @@ export function SettingsContent() {
                   Launch in blob: URL
                 </button>
               </div>
-            </div>
-          </section>
-
-          <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
-            <div className="flex items-center gap-3 text-zinc-100">
-              <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
-                <Terminal size={20} style={{ color: colors.hexPrimary }} />
-              </div>
-              <h2 className="text-xl font-bold">Terminal Features</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
-                <div>
-                  <span className="font-medium text-white block">HTML Runner</span>
-                  <span className="text-sm text-zinc-500">Enable HTML code execution in the home terminal</span>
-                </div>
-                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'html' ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'html' ? 'translate-x-6' : 'translate-x-1'}`} />
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={runnerMode === 'html'}
-                    onChange={(e) => setRunnerMode(e.target.checked ? 'html' : 'none')}
-                  />
-                </div>
-              </label>
-
-              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
-                <div>
-                  <span className="font-medium text-white block">JavaScript Runner</span>
-                  <span className="text-sm text-zinc-500">Enable JavaScript code execution in the home terminal</span>
-                </div>
-                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'javascript' ? 'bg-blue-500' : 'bg-zinc-700'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'javascript' ? 'translate-x-6' : 'translate-x-1'}`} />
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={runnerMode === 'javascript'}
-                    onChange={(e) => setRunnerMode(e.target.checked ? 'javascript' : 'none')}
-                  />
-                </div>
-              </label>
-
-              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
-                <div>
-                  <span className="font-medium text-white block">Python Runner</span>
-                  <span className="text-sm text-zinc-500">Enable Python code execution in the home terminal</span>
-                </div>
-                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'python' ? 'bg-yellow-500' : 'bg-zinc-700'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'python' ? 'translate-x-6' : 'translate-x-1'}`} />
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={runnerMode === 'python'}
-                    onChange={(e) => setRunnerMode(e.target.checked ? 'python' : 'none')}
-                  />
-                </div>
-              </label>
             </div>
           </section>
         </div>

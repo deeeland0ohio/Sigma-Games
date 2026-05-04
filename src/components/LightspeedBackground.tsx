@@ -110,7 +110,7 @@ export default function LightspeedBackground({
     window.addEventListener('resize', initStars);
 
     const handlePointerDown = (e: MouseEvent | TouchEvent) => {
-      if (e.target instanceof Element && e.target.closest('button, a, input, textarea, select')) {
+      if (e.target instanceof Element && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="switch"]')) {
         return;
       }
       isMouseDown = true;
