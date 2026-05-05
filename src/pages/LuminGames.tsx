@@ -4,81 +4,121 @@ import { Loader2 } from 'lucide-react';
 
 export default function LuminGames() {
   const [loading, setLoading] = useState(true);
-  const [luminError, setLuminError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   useEffect(() => {
     // We add the script dynamically
     const scriptId = 'lumin-sdk-script';
     
-    // Check if script already exists (might happen in dev with HMR or fast navigation)
     let script = document.getElementById(scriptId) as HTMLScriptElement | null;
     
+    const handleScriptLoad = () => {
+      initLumin();
+      setLoading(false);
+    };
+
+    const handleScriptError = () => {
+      console.error("Failed to load Lumin SDK");
+      setLoading(false);
+    };
+
     if (!script) {
       script = document.createElement('script');
       script.id = scriptId;
       script.src = 'https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js';
       script.async = true;
+      script.addEventListener('load', handleScriptLoad);
+      script.addEventListener('error', handleScriptError);
       document.body.appendChild(script);
     } else {
-      // If script is already there, it might have loaded already
       if ((window as any).Lumin) {
          initLumin();
          setLoading(false);
-         return;
+      } else {
+        script.addEventListener('load', handleScriptLoad);
+        script.addEventListener('error', handleScriptError);
       }
     }
-
-    script.addEventListener('load', () => {
-      initLumin();
-      setLoading(false);
-    });
     
-    script.addEventListener('error', () => {
-      console.error("Failed to load Lumin SDK");
-      setLoading(false);
-    });
-
-    function initLumin() {
-      if ((window as any).Lumin) {
-        try {
-          // ensure the container exists
-          const container = document.querySelector('#games');
-          if (container) {
-            container.innerHTML = ''; // clear previous instances
-          }
-          
-          // Intercept console.error to catch Lumin domain fetch failures
-          const originalConsoleError = console.error;
-          console.error = (...args) => {
-            if (args[0] && typeof args[0] === 'string' && args[0].includes('Worker connection failed')) {
-              setLoading(false);
-              setLuminError("Lumin SDK is restricted to registered domains.");
-            }
-            originalConsoleError.apply(console, args);
-          };
-
-          (window as any).Lumin.init({
-            container: '#games',
-            theme: 'dark' // We also apply global overrides to ensure it matches our theme perfectly
-          });
-          
-          // Restore console error after a few seconds assuming initialization finished
-          setTimeout(() => {
-            console.error = originalConsoleError;
-          }, 5000);
-          
-        } catch(e) {
-          console.error("Error initializing Lumin", e);
-          setLuminError("An error occurred while initializing the Lumin SDK.");
-        }
-      }
-    }
-
     return () => {
-      // We don't remove the script so we don't redownload it, 
-      // but if there are specific cleanups Lumin supports, do them here.
+      if (script) {
+        script.removeEventListener('load', handleScriptLoad);
+        script.removeEventListener('error', handleScriptError);
+      }
     };
   }, []);
+
+  useEffect(() => {
+    if (refreshKey > 0 && (window as any).Lumin) {
+      setTimeout(() => {
+        initLumin();
+        setLoading(false);
+      }, 50);
+    }
+  }, [refreshKey]);
+
+  const hideRandomButton = () => {
+    const container = document.querySelector('#games');
+    if (!container) return;
+    
+    const root = container.shadowRoot || container;
+    const buttons = root.querySelectorAll('button, div[role="button"]');
+    
+    buttons.forEach(btn => {
+      const text = (btn.textContent || '').toLowerCase();
+      const title = (btn.getAttribute('title') || '').toLowerCase();
+      const ariaLabel = (btn.getAttribute('aria-label') || '').toLowerCase();
+      const className = (typeof btn.className === 'string' ? btn.className : '').toLowerCase();
+      
+      if (
+        text.includes('random') || 
+        title.includes('random') || 
+        ariaLabel.includes('random') ||
+        className.includes('random')
+      ) {
+        (btn as HTMLElement).style.setProperty('display', 'none', 'important');
+      }
+    });
+
+    // Also try injecting a style tag into the shadow root for good measure
+    if (container.shadowRoot && !container.shadowRoot.querySelector('#lumin-custom-fixes')) {
+      const style = document.createElement('style');
+      style.id = 'lumin-custom-fixes';
+      style.textContent = `
+        button[title*="Random" i], 
+        button[aria-label*="Random" i],
+        button[class*="random" i] { display: none !important; }
+      `;
+      container.shadowRoot.appendChild(style);
+    }
+  };
+
+  const initLumin = () => {
+    if ((window as any).Lumin) {
+      try {
+        (window as any).Lumin.init({
+          container: '#games',
+          theme: 'dark'
+        });
+        
+        // Poll for a few seconds to hide the random button once it renders
+        let attempts = 0;
+        const interval = setInterval(() => {
+          hideRandomButton();
+          attempts++;
+          if (attempts > 30) clearInterval(interval);
+        }, 100);
+        
+      } catch(e) {
+        console.error("Error initializing Lumin", e);
+      }
+    }
+  };
+
+  const handleRefreshLumin = () => {
+    setLoading(true);
+    setRefreshKey(prev => prev + 1);
+  };
 
   return (
     <PageLayout title="LuminSKD">
@@ -98,6 +138,7 @@ export default function LuminGames() {
           --lumin-skeleton: #27272a !important;
           --lumin-skeleton-shine: #3f3f46 !important;
         }
+        
         @media (min-width: 1024px) {
           #games {
              --lumin-columns: 5 !important;
@@ -110,28 +151,30 @@ export default function LuminGames() {
         }
       `}</style>
       <div className="flex flex-col flex-1 w-full relative">
-        {luminError ? (
-          <div className="flex flex-col items-center justify-center p-8 text-center bg-zinc-900/50 border border-zinc-800 rounded-xl min-h-[400px]">
-            <div className="w-16 h-16 mb-4 rounded-full bg-red-500/10 flex items-center justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            </div>
-            <h3 className="text-xl font-bold text-white mb-2">SDK Connection Failed</h3>
-            <p className="text-zinc-400 max-w-md">{luminError}</p>
+        <div className="w-full flex justify-end mb-4 px-4 sm:px-0 mt-4 sm:mt-0">
+          <button 
+            onClick={handleRefreshLumin} 
+            className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg transition-colors border border-zinc-700"
+            disabled={loading}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={loading ? "animate-spin" : ""}>
+              <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+              <path d="M3 3v5h5" />
+              <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+              <path d="M16 16h5v5" />
+            </svg>
+            Refresh Games
+          </button>
+        </div>
+        {loading && (
+          <div className="absolute inset-0 flex items-center justify-center p-8 text-zinc-500 z-10 min-h-[400px]">
+            <Loader2 className="w-8 h-8 animate-spin" />
+            <span className="ml-3 font-medium">Loading LuminSKD...</span>
           </div>
-        ) : (
-          <>
-            {loading && (
-              <div className="absolute inset-0 flex items-center justify-center p-8 text-zinc-500 z-10 min-h-[400px]">
-                <Loader2 className="w-8 h-8 animate-spin" />
-                <span className="ml-3 font-medium">Loading LuminSKD...</span>
-              </div>
-            )}
-            <div id="games" className="w-full min-h-[500px] text-white"></div>
-          </>
         )}
+        <div id="games" key={refreshKey} className="w-full min-h-[500px] text-white"></div>
       </div>
     </PageLayout>
   );
 }
+
