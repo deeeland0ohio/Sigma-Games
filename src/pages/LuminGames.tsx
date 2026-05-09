@@ -58,7 +58,7 @@ export default function LuminGames() {
   }, [refreshKey]);
 
   const hideRandomButton = () => {
-    const container = document.querySelector('#games');
+    const container = document.querySelector(`#games-${refreshKey}`);
     if (!container) return;
     
     const root = container.shadowRoot || container;
@@ -97,7 +97,7 @@ export default function LuminGames() {
     if ((window as any).Lumin) {
       try {
         (window as any).Lumin.init({
-          container: '#games',
+          container: `#games-${refreshKey}`,
           theme: 'dark'
         });
         
@@ -123,7 +123,7 @@ export default function LuminGames() {
   return (
     <PageLayout title="LuminSKD">
       <style>{`
-        #games {
+        .games-wrapper {
           --lumin-bg: transparent !important;
           --lumin-surface: #18181b !important;
           --lumin-surface-hover: #27272a !important;
@@ -140,12 +140,12 @@ export default function LuminGames() {
         }
         
         @media (min-width: 1024px) {
-          #games {
+          .games-wrapper {
              --lumin-columns: 5 !important;
           }
         }
         @media (min-width: 1280px) {
-          #games {
+          .games-wrapper {
              --lumin-columns: 6 !important;
           }
         }
@@ -172,7 +172,7 @@ export default function LuminGames() {
             <span className="ml-3 font-medium">Loading LuminSKD...</span>
           </div>
         )}
-        <div id="games" key={refreshKey} className="w-full min-h-[500px] text-white"></div>
+        <div key={refreshKey} id={`games-${refreshKey}`} className="games-wrapper w-full min-h-[500px] text-white"></div>
       </div>
     </PageLayout>
   );

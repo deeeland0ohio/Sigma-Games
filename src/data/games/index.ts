@@ -11,7 +11,6 @@ import { fnaf3 } from "./fnaf-3";
 import { fnaf4 } from "./fnaf-4";
 import { fnaf4Halloween } from "./fnaf-4-halloween";
 import { fnafSl } from "./fnaf-sl";
-import { fnafEpsteins } from "./fnaf-epsteins";
 import { fnafWorld } from "./fnaf-world";
 import { fnafWorldRefreshed } from "./fnaf-world-refreshed";
 import { fnafPizzaSimulator } from "./fnaf-pizza-simulator";
@@ -29,7 +28,6 @@ import { ragdollHit } from "./ragdoll-hit";
 import { baldisBasics } from "./baldis-basics";
 import { baldisBasicsClassicRemastered } from "./baldis-basics-classic-remastered";
 import { baldisBasicsPlus } from "./baldis-basics-plus";
-import { jeffreyEpsteinsBasics } from "./jeffrey-epsteins-basics";
 import { vex4 } from "./vex-4";
 import { vex5 } from "./vex-5";
 import { vex6 } from "./vex-6";
@@ -142,7 +140,6 @@ export const allGames: Game[] = [
   fnaf4,
   fnaf4Halloween,
   fnafSl,
-  fnafEpsteins,
   fnafWorld,
   fnafWorldRefreshed,
   fnafPizzaSimulator,
@@ -160,7 +157,6 @@ export const allGames: Game[] = [
   baldisBasics,
   baldisBasicsClassicRemastered,
   baldisBasicsPlus,
-  jeffreyEpsteinsBasics,
   vex4,
   vex5,
   vex6,
