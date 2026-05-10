@@ -4,6 +4,7 @@ import GamePlayer from './pages/GamePlayer';
 import AllGames from './pages/AllGames';
 import BackgroundManager from './components/BackgroundManager';
 import SettingsOverlay from './components/SettingsOverlay';
+import PrankOverlay from './components/PrankOverlay';
 import { ThemeProvider } from './context/ThemeContext';
 import { FavoritesProvider } from './context/FavoritesContext';
 import Favorites from './pages/Favorites';
@@ -27,10 +28,12 @@ export default function App() {
           <HashRouter>
             <BackgroundManager />
             <SettingsOverlay />
+            <PrankOverlay />
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/all-games" element={<AllGames />} />
               <Route path="/favorites" element={<Favorites />} />
+
               <Route path="/settings" element={<Settings />} />
               <Route path="/play/:id" element={<GamePlayer />} />
               <Route path="/chat" element={<ChatPage />} />

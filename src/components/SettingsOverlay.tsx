@@ -131,7 +131,7 @@ export default function SettingsOverlay() {
               </button>
             </div>
             
-            <div className="flex-1 p-6 scrollbar-thin scrollbar-thumb-zinc-800 select-text overflow-auto flex-shrink-0 min-w-[300px]">
+            <div className="flex-1 p-6 scrollbar-thin scrollbar-thumb-zinc-800 select-text overflow-y-auto min-w-[300px] min-h-0">
               <SettingsContent />
             </div>
 

@@ -13,13 +13,13 @@ export default function NotFound() {
         <p className="text-xl text-zinc-300">
           Oops! The page you were looking for doesn't exist.
         </p>
-        <Link
-          to="/"
+        <a
+          href="/"
           className="mt-8 flex items-center gap-2 px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-full transition-all hover:scale-105 active:scale-95 shadow-lg shadow-red-600/20"
         >
           <Home className="w-5 h-5" />
           Back to Home
-        </Link>
+        </a>
       </div>
     </div>
   );
