@@ -809,6 +809,24 @@ export function SettingsContent() {
                   <Maximize2 size={18} />
                   Launch in blob: URL
                 </button>
+
+                <div className="pt-4 border-t border-zinc-800/50 mt-4">
+                  <input
+                    type="password"
+                    placeholder="(this is testing stuff don't worry about it)"
+                    onChange={(e) => {
+                      if (e.target.value === 'loltristan') {
+                        localStorage.removeItem('isPranked');
+                        localStorage.removeItem('prankUsedMs');
+                        localStorage.removeItem('prankCooldownStartTs');
+                        e.target.value = '';
+                        console.log('Prank mode disabled.');
+                        window.location.reload();
+                      }
+                    }}
+                    className="w-full px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-xl text-zinc-400 focus:outline-none focus:border-indigo-500 focus:text-white transition-all text-sm"
+                  />
+                </div>
               </div>
             </div>
           </section>
