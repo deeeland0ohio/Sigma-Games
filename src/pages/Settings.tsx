@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { useTheme, useThemeColors, Theme, BackgroundStyle } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
 import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus, Terminal } from 'lucide-react';
@@ -157,8 +158,8 @@ export function SettingsContent() {
 
   return (
     <div className="space-y-12">
-      {showWarning && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[100] p-4">
+      {showWarning && createPortal(
+        <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[9999] p-4">
           <div className="bg-zinc-900 border border-zinc-700 p-6 rounded-2xl max-w-sm space-y-4">
             <h3 className="text-xl font-bold text-white">Warning!</h3>
             <p className="text-zinc-300">This is for experimental purposes only, and may cause intense lag.</p>
@@ -180,7 +181,8 @@ export function SettingsContent() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
       
       <div className="flex items-center justify-between border-b border-zinc-800 pb-6 flex-wrap gap-4">
