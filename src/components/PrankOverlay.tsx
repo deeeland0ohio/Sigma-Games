@@ -3,6 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 export default function PrankOverlay() {
   const [isPranked, setIsPranked] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(3 * 60 * 60);
   const [cooldownLeft, setCooldownLeft] = useState(0);
   const location = useLocation();
@@ -120,7 +121,10 @@ export default function PrankOverlay() {
   return (
     <>
       {!isPlay && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-4 py-1.5 bg-black/90 backdrop-blur-md text-white font-mono rounded-lg border border-zinc-800 shadow-xl pointer-events-none flex items-center gap-2">
+        <div 
+          onClick={() => setShowWarning(true)}
+          className="fixed top-6 left-1/2 -translate-x-1/2 z-[60] px-4 py-1.5 bg-black/90 backdrop-blur-md text-white font-mono rounded-lg border border-zinc-800 shadow-xl pointer-events-auto cursor-pointer flex items-center gap-2 hover:bg-black transition-colors"
+        >
            <span className="text-zinc-400 text-xs uppercase tracking-widest font-bold hidden sm:inline">Screen Time{outOfTime ? ' over' : ''}:</span>
            <span className={`font-bold ${timeLeft <= 60 && !outOfTime ? 'text-red-500 animate-pulse' : 'text-zinc-100'}`}>
              {formatTime(timeLeft)}
@@ -133,6 +137,22 @@ export default function PrankOverlay() {
                </span>
              </>
            )}
+        </div>
+      )}
+
+      {showWarning && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setShowWarning(false)}>
+          <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 shadow-2xl max-w-sm w-full animate-in zoom-in-95 duration-200" onClick={(e) => e.stopPropagation()}>
+            <p className="text-zinc-200 mb-6 text-center text-lg leading-relaxed">
+              If ur not Tristan Torres, than email me dylandukerusso@gmail.com and i will fix it.
+            </p>
+            <button 
+              onClick={() => setShowWarning(false)}
+              className="w-full bg-zinc-100 text-zinc-900 hover:bg-white font-semibold py-2 px-4 rounded-lg transition-colors"
+            >
+              OK
+            </button>
+          </div>
         </div>
       )}
       
