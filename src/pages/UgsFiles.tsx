@@ -22,7 +22,7 @@ export default function UgsFiles() {
       if (match) {
         const arrayText = `[${match[1]}]`;
         const stringMatches = [...arrayText.matchAll(/"([^"]+)"|'([^']+)'/g)];
-        const parsedFiles = stringMatches.map(m => m[1] || m[2]);
+        const parsedFiles = stringMatches.map(m => m[1] || m[2]).filter(f => f !== '?');
         setFiles(parsedFiles);
       }
     } catch (e) {
