@@ -19,6 +19,7 @@ import NoahGames from './pages/NoahGames';
 import LuminGames from './pages/LuminGames';
 import ExternalPlayer from './pages/ExternalPlayer';
 import NotFound from './pages/NotFound';
+import Movies from './pages/Movies';
 
 export default function App() {
   return (
@@ -43,6 +44,7 @@ export default function App() {
               <Route path="/3kh0" element={<Threekh0Games />} />
               <Route path="/noah" element={<NoahGames />} />
               <Route path="/lumin" element={<LuminGames />} />
+              <Route path="/movies" element={<Movies />} />
               <Route path="/external-player" element={<ExternalPlayer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
