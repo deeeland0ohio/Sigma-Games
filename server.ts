@@ -283,6 +283,30 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  app.get("/api/tmdb-proxy", async (req, res) => {
+    try {
+      const { url } = req.query;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ error: "No URL provided" });
+      }
+      
+      const response = await fetch(decodeURIComponent(url), {
+        headers: {
+          'Accept': 'application/json',
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        }
+      });
+      if (!response.ok) {
+        return res.status(response.status).json({ error: `Failed to fetch: ${response.statusText}` });
+      }
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (err: any) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   // Serve public directory directly for maximum speed on local games
   // This bypasses Vite's processing for large static HTML files
   app.use(express.static(path.join(process.cwd(), 'public')));
