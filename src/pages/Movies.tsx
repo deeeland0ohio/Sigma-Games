@@ -9,6 +9,8 @@ export default function Movies() {
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
   const [error, setError] = useState('');
   
   const [showWarning, setShowWarning] = useState(true);
@@ -24,10 +26,15 @@ export default function Movies() {
     fetchResults();
   }, [type]);
 
-  const fetchResults = async (query?: string) => {
-    setIsLoading(true);
+  const fetchResults = async (query?: string, pageToFetch: number = 1) => {
+    if (pageToFetch === 1) {
+      setIsLoading(true);
+      setResults([]);
+    } else {
+      setIsLoadingMore(true);
+    }
     setError('');
-    setResults([]);
+    
     try {
       const isSearch = query && query.trim().length > 0;
       const API_KEY = 'f1e91ad0cfd485271785971f8117ec74';
@@ -35,12 +42,12 @@ export default function Movies() {
       let url = '';
       if (type === 'movie') {
         url = isSearch 
-          ? `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=1`
-          : `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=1`;
+          ? `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=${pageToFetch}`
+          : `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${pageToFetch}`;
       } else {
         url = isSearch 
-          ? `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=1`
-          : `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=1`;
+          ? `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=${pageToFetch}`
+          : `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${pageToFetch}`;
       }
 
       // Try fetching via direct API first
@@ -61,7 +68,12 @@ export default function Movies() {
         items = data.data;
       }
       
-      setResults(items);
+      if (pageToFetch === 1) {
+        setResults(items);
+      } else {
+        setResults(prev => [...prev, ...items]);
+      }
+      setPage(pageToFetch);
     } catch (err: any) {
       console.error("API error:", err);
       // Fallback: If CORS or 403 fails, maybe the API structure is slightly different.
@@ -69,14 +81,19 @@ export default function Movies() {
       setError("We are having trouble contacting the database API. You can still manually enter an ID below.");
     } finally {
       setIsLoading(false);
+      setIsLoadingMore(false);
     }
   };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    fetchResults(searchQuery);
+    fetchResults(searchQuery, 1);
     setSelectedMedia(null);
     setEmbedUrl('');
+  };
+
+  const loadMore = () => {
+    fetchResults(searchQuery, page + 1);
   };
 
   const getImageUrl = (item: any) => {
@@ -347,6 +364,19 @@ export default function Movies() {
                                 </button>
                             ))}
                         </div>
+
+                        {!error && results.length > 0 && !isLoading && (
+                            <div className="flex justify-center mt-12 pb-12">
+                                <button 
+                                    onClick={loadMore}
+                                    disabled={isLoadingMore}
+                                    className={`px-8 py-3 rounded-xl font-bold text-white ${colors.primaryBg} hover:opacity-90 transition-opacity flex items-center justify-center min-w-[200px]`}
+                                >
+                                    {isLoadingMore ? <Loader2 className="w-5 h-5 animate-spin" /> : "Load More Titles"}
+                                </button>
+                            </div>
+                        )}
+
                         {!error && results.length === 0 && !isLoading && (
                             <div className="text-center py-20 text-zinc-500">
                                 No {type === 'movie' ? 'movies' : 'TV shows'} found.

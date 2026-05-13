@@ -15,7 +15,7 @@ export const games: Game[] = [
   {
     id: 'movies',
     title: 'Movies & TV',
-    description: 'Watch movies and TV shows for free.',
+    description: 'Watch movies and TV shows.',
     icon: Zap,
     type: 'folder',
   },
