@@ -3,7 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sigma Games Static</title>
+    <title>Sigma G*mes Static</title>
+    <link id="dynamic-favicon" rel="icon" type="image/svg+xml" href="https://sigma-sigma-rizz.vercel.app/favicon.svg" />
+    <script>
+      const savedIcon = localStorage.getItem('app-cloaking-icon');
+      if (savedIcon) {
+        document.getElementById('dynamic-favicon').href = savedIcon;
+        document.getElementById('dynamic-favicon').type = 'image/png';
+      }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
@@ -71,13 +79,13 @@
             <div>
                 <h1 class="text-3xl font-bold text-white tracking-tight flex items-center gap-3">
                     <i data-lucide="globe" class="text-zinc-400"></i>
-                    Sigma Games Static
+                    Sigma G*mes Static
                 </h1>
-                <p class="text-zinc-500 mt-1 text-sm">Play games from GN-Math, UGS, Seraph, Noah's, Lumin, and 3kh0 all in one place.</p>
+                <p class="text-zinc-500 mt-1 text-sm">Play g*mes from GN-Math, UGS, Seraph, Noah's, Lumin, and 3kh0 all in one place.</p>
             </div>
             <div class="mt-4 sm:mt-0 flex gap-2">
                 <button onclick="window.location.href='https://ais-pre-sohh6faiwpdjywb75q5qhk-207654894741.us-west2.run.app'" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Sigma Games
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Sigma G*mes
                 </button>
             </div>
         </header>
@@ -86,7 +94,7 @@
         <div class="flex flex-col md:flex-row gap-4 mb-8">
             <div class="relative flex-1">
                 <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500"></i>
-                <input type="text" id="searchInput" placeholder="Search 4.5k+ Games!" class="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors">
+                <input type="text" id="searchInput" placeholder="Search 4.5k+ G*mes!" class="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors">
             </div>
             <select id="sourceFilter" class="bg-zinc-900/80 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-zinc-600 transition-colors">
                 <option value="all">All Sources</option>
@@ -101,7 +109,7 @@
 
         <div id="loading" class="flex flex-col items-center justify-center py-20 text-zinc-500">
             <i data-lucide="loader-2" class="w-8 h-8 animate-spin mb-4"></i>
-            <p>Fetching games from CDNs...</p>
+            <p>Fetching g*mes from CDNs...</p>
         </div>
 
         <!-- Unified Games Grid -->
@@ -114,7 +122,7 @@
         <!-- Lumin Container -->
         <div id="luminSection" class="hidden mt-8 border-t border-zinc-800 pt-8">
             <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <i data-lucide="zap" class="text-yellow-500"></i> LuminSDK Games
+                <i data-lucide="zap" class="text-yellow-500"></i> LuminSDK G*mes
             </h2>
             <div id="lumin-container" class="w-full min-h-[500px]"></div>
         </div>
@@ -342,7 +350,7 @@
             }
             
             if(filteredGames.length === 0) {
-               grid.innerHTML = `<div class="col-span-full py-20 text-zinc-500 text-center">No games found.</div>`;
+               grid.innerHTML = `<div class="col-span-full py-20 text-zinc-500 text-center">No g*mes found.</div>`;
             }
         }
 
