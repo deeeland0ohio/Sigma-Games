@@ -1,13 +1,20 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
 
 export default function PrankOverlay() {
   const [isPranked, setIsPranked] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [timeLeft, setTimeLeft] = useState(3 * 60 * 60);
   const [cooldownLeft, setCooldownLeft] = useState(0);
-  const location = useLocation();
+  const [currentPath, setCurrentPath] = useState(window.location.hash.replace(/^#/, '') || '/');
   const lastTickRef = useRef(Date.now());
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentPath(window.location.hash.replace(/^#/, '') || '/');
+    };
+    window.addEventListener('hashchange', handleHashChange);
+    return () => window.removeEventListener('hashchange', handleHashChange);
+  }, []);
 
   useEffect(() => {
     const checkPrank = () => {
@@ -27,7 +34,7 @@ export default function PrankOverlay() {
     };
 
     checkPrank();
-  }, [location]); // Re-check on nav, although token removes params
+  }, [currentPath]); // Re-check on nav, although token removes params
 
   useEffect(() => {
     if (!isPranked) return;
@@ -111,7 +118,7 @@ export default function PrankOverlay() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const isPlay = location.pathname.startsWith('/play') || location.pathname === '/gn-math' || location.pathname === '/ugs' || location.pathname === '/seraph' || location.pathname === '/3kh0' || location.pathname === '/noah' || location.pathname === '/lumin' || location.pathname === '/external-player';
+  const isPlay = currentPath.startsWith('/play') || currentPath === '/gn-math' || currentPath === '/ugs' || currentPath === '/seraph' || currentPath === '/3kh0' || currentPath === '/noah' || currentPath === '/lumin' || currentPath === '/external-player';
   const topOffset = isPlay ? '64px' : '80px';
 
   if (!isPranked) return null;
@@ -156,7 +163,7 @@ export default function PrankOverlay() {
         </div>
       )}
       
-      {outOfTime && location.pathname !== '/settings' && (
+      {outOfTime && currentPath !== '/settings' && (
         <div 
           className="fixed left-0 right-0 bottom-0 z-[90] bg-zinc-950 flex flex-col items-center justify-center p-6 text-center pointer-events-auto border-t border-zinc-800"
           style={{ top: topOffset }}

@@ -1,15 +1,21 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '../components/PageLayout';
 import { useThemeColors } from '../context/ThemeContext';
-import { Play, Film, Tv, Search, Loader2, Maximize, X, AlertTriangle } from 'lucide-react';
+import { Play, Film, Tv, Youtube, Search, Loader2, Maximize, X, AlertTriangle } from 'lucide-react';
 
-export default function Movies() {
+export default function Entertainment() {
   const colors = useThemeColors();
-  const [type, setType] = useState<typeof window.location.hash extends '#tv' ? 'tv' : 'movie'>('movie');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [type, setType] = useState<'movie' | 'tv' | 'youtube'>(
+    location.pathname === '/entertainment/tv' ? 'tv' : location.pathname === '/entertainment/youtube' ? 'youtube' : 'movie'
+  );
   const [searchQuery, setSearchQuery] = useState('');
   const [results, setResults] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [error, setError] = useState('');
   
@@ -37,48 +43,70 @@ export default function Movies() {
     
     try {
       const isSearch = query && query.trim().length > 0;
-      const API_KEY = 'f1e91ad0cfd485271785971f8117ec74';
-      const BASE_URL = 'https://api.themoviedb.org/3';
-      let url = '';
-      if (type === 'movie') {
-        url = isSearch 
-          ? `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=${pageToFetch}`
-          : `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${pageToFetch}`;
-      } else {
-        url = isSearch 
-          ? `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=${pageToFetch}`
-          : `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${pageToFetch}`;
-      }
+      
+      let items: any[] = [];
 
-      // Try fetching via direct API first
-      let response = await fetch(url);
-      
-      if (!response.ok) {
-         throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-      }
-      const data = await response.json();
-      
-      // Handle various response shapes commonly used by TMDB wrappers
-      let items = [];
-      if (Array.isArray(data)) {
-        items = data;
-      } else if (data.results && Array.isArray(data.results)) {
-        items = data.results;
-      } else if (data.data && Array.isArray(data.data)) {
-        items = data.data;
+      if (type === 'youtube') {
+        const fetchQuery = isSearch ? query : 'trending videos';
+        const searchUrl = `/api/youtube-search?query=${encodeURIComponent(fetchQuery!)}&page=${pageToFetch}`;
+        const response = await fetch(searchUrl);
+        if (!response.ok) {
+           throw new Error(`Failed to fetch youtube: ${response.status}`);
+        }
+        const data = await response.json();
+        // data.results has the scraped array
+        items = data.results || [];
+      } else {
+        const API_KEY = 'f1e91ad0cfd485271785971f8117ec74';
+        const BASE_URL = 'https://api.themoviedb.org/3';
+        let url = '';
+        if (type === 'movie') {
+          url = isSearch 
+            ? `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=${pageToFetch}`
+            : `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${pageToFetch}`;
+        } else {
+          url = isSearch 
+            ? `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=${pageToFetch}`
+            : `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${pageToFetch}`;
+        }
+
+        // Try fetching via direct API first
+        let response = await fetch(url);
+        
+        if (!response.ok) {
+           throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
+        }
+        const data = await response.json();
+        
+        // Handle various response shapes commonly used by TMDB wrappers
+        if (Array.isArray(data)) {
+          items = data;
+        } else if (data.results && Array.isArray(data.results)) {
+          items = data.results;
+        } else if (data.data && Array.isArray(data.data)) {
+          items = data.data;
+        }
       }
       
       if (pageToFetch === 1) {
         setResults(items);
+        setHasMore(items.length > 0);
       } else {
-        setResults(prev => [...prev, ...items]);
+        setResults(prev => {
+          const existingIds = new Set(prev.map(p => getId(p)));
+          const newItems = items.filter(item => !existingIds.has(getId(item)));
+          if (newItems.length === 0) {
+            setHasMore(false);
+          }
+          return [...prev, ...newItems];
+        });
       }
       setPage(pageToFetch);
     } catch (err: any) {
       console.error("API error:", err);
       // Fallback: If CORS or 403 fails, maybe the API structure is slightly different.
       // But we will show the error for debugging for the user
-      setError("We are having trouble contacting the database API. You can still manually enter an ID below.");
+      setError("We are having trouble contacting the search API. You can still manually enter an ID below.");
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -97,6 +125,7 @@ export default function Movies() {
   };
 
   const getImageUrl = (item: any) => {
+    if (item.thumbnail) return item.thumbnail;
     if (item.poster_path) return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
     if (item.poster) return item.poster;
     return 'https://via.placeholder.com/500x750/111/555?text=No+Poster';
@@ -118,14 +147,18 @@ export default function Movies() {
         setSeason('1');
         setEpisode('1');
         updateEmbedUrl(id, 'tv', '1', '1');
+    } else if (type === 'youtube') {
+        updateEmbedUrl(id, 'youtube', '1', '1');
     } else {
         updateEmbedUrl(id, 'movie', '1', '1');
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
   
-  const updateEmbedUrl = (id: string, mediaType: 'movie' | 'tv', s: string, e: string) => {
-      if (mediaType === 'movie') {
+  const updateEmbedUrl = (id: string, mediaType: 'movie' | 'tv' | 'youtube', s: string, e: string) => {
+      if (mediaType === 'youtube') {
+        setEmbedUrl(`https://www.youtube-nocookie.com/embed/${id}?autoplay=1`);
+      } else if (mediaType === 'movie') {
         setEmbedUrl(`https://movies.niketeam.workers.dev/embed/${id}`);
       } else {
         setEmbedUrl(`https://movies.niketeam.workers.dev/embedtv/${id}&s=${s}&e=${e}`);
@@ -157,7 +190,7 @@ export default function Movies() {
   };
 
   return (
-    <PageLayout title="Movies & TV" showBack>
+    <PageLayout title="Entertainment" showBack>
       {showWarning && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
           <div className="bg-zinc-900 border border-zinc-800 p-6 sm:p-8 rounded-2xl max-w-md w-full shadow-2xl relative overflow-hidden">
@@ -188,7 +221,7 @@ export default function Movies() {
             <div className="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800 w-full sm:w-fit">
               <button
                 type="button"
-                onClick={() => { setType('movie'); setSelectedMedia(null); setEmbedUrl(''); }}
+                onClick={() => { setType('movie'); navigate('/entertainment'); setSelectedMedia(null); setEmbedUrl(''); }}
                 className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-md transition-colors text-sm font-bold ${
                   type === 'movie' 
                     ? `${colors.primaryBg} text-white shadow-md` 
@@ -199,7 +232,7 @@ export default function Movies() {
               </button>
               <button
                 type="button"
-                onClick={() => { setType('tv'); setSelectedMedia(null); setEmbedUrl(''); }}
+                onClick={() => { setType('tv'); navigate('/entertainment/tv'); setSelectedMedia(null); setEmbedUrl(''); }}
                 className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-md transition-colors text-sm font-bold ${
                   type === 'tv' 
                     ? `${colors.primaryBg} text-white shadow-md` 
@@ -208,6 +241,17 @@ export default function Movies() {
               >
                 <Tv size={18} /> TV Shows
               </button>
+              <button
+                type="button"
+                onClick={() => { setType('youtube'); navigate('/entertainment/youtube'); setSelectedMedia(null); setEmbedUrl(''); }}
+                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-md transition-colors text-sm font-bold ${
+                  type === 'youtube' 
+                    ? `${colors.primaryBg} text-white shadow-md` 
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
+                }`}
+              >
+                <Youtube size={18} /> YouTube
+              </button>
             </div>
 
             <form onSubmit={handleSearch} className="relative w-full sm:w-96">
@@ -215,7 +259,7 @@ export default function Movies() {
                    type="text" 
                    value={searchQuery}
                    onChange={e => setSearchQuery(e.target.value)}
-                   placeholder={`Search ${type === 'movie' ? 'movies' : 'TV shows'}...`}
+                   placeholder={`Search ${type === 'movie' ? 'movies' : type === 'tv' ? 'TV shows' : 'YouTube videos'}...`}
                    className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 transition-all font-medium"
                 />
                 <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
@@ -311,7 +355,7 @@ export default function Movies() {
                 ) : (
                     <>
                         <h3 className="text-xl font-bold text-white mb-6">
-                            {searchQuery ? `Search Results for "${searchQuery}"` : `Trending ${type === 'movie' ? 'Movies' : 'TV Shows'}`}
+                            {searchQuery ? `Search Results for "${searchQuery}"` : `Trending ${type === 'movie' ? 'Movies' : type === 'tv' ? 'TV Shows' : 'YouTube Videos'}`}
                         </h3>
                         
                         {error && (
@@ -321,7 +365,7 @@ export default function Movies() {
                                     <h4 className="font-bold text-white">Manual Entry Fallback</h4>
                                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                         <div className="sm:col-span-1">
-                                            <input name="mediaId" type="text" placeholder="IMDb/TMDB ID (e.g. tt1234567)" className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-2 text-white" required />
+                                            <input name="mediaId" type="text" placeholder={type === 'youtube' ? "YouTube Video ID (e.g. dQw4w9WgXcQ)" : "IMDb/TMDB ID (e.g. tt1234567)"} className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-2 text-white" required />
                                         </div>
                                         {type === 'tv' && (
                                             <>
@@ -342,13 +386,18 @@ export default function Movies() {
                                   onClick={() => playMedia(item)}
                                   className="group flex flex-col text-left space-y-3 cursor-pointer outline-none focus:ring-2 focus:ring-white/20 rounded-xl rounded-b-none"
                                 >
-                                    <div className="relative aspect-[2/3] rounded-xl overflow-hidden bg-zinc-900 shadow-xl border border-zinc-800/50 group-hover:border-zinc-500 transition-colors">
+                                    <div className={`relative ${type === 'youtube' ? 'aspect-video' : 'aspect-[2/3]'} rounded-xl overflow-hidden bg-zinc-900 shadow-xl border border-zinc-800/50 group-hover:border-zinc-500 transition-colors`}>
                                         <img 
                                           src={getImageUrl(item)} 
                                           alt={getTitle(item)}
                                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                           loading="lazy"
                                         />
+                                        {type === 'youtube' && item.duration && (
+                                            <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white">
+                                                {item.duration}
+                                            </div>
+                                        )}
                                         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
                                             <div className={`w-14 h-14 rounded-full ${colors.primaryBg} flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-xl`}>
                                                 <Play size={24} fill="currentColor" className="text-white ml-1" />
@@ -357,15 +406,22 @@ export default function Movies() {
                                     </div>
                                     <div>
                                         <h4 className="font-bold text-sm text-zinc-200 line-clamp-1 group-hover:text-white">{getTitle(item)}</h4>
-                                        <p className="text-xs text-zinc-500 mt-1">
-                                            {item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date).getFullYear() : ''}
+                                        <p className="text-xs text-zinc-500 mt-1 flex flex-col gap-0.5">
+                                            {type === 'youtube' ? (
+                                                <>
+                                                    <span className="line-clamp-1">{item.channel}</span>
+                                                    <span>{item.views} views</span>
+                                                </>
+                                            ) : (
+                                                <span>{item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date).getFullYear() : ''}</span>
+                                            )}
                                         </p>
                                     </div>
                                 </button>
                             ))}
                         </div>
 
-                        {!error && results.length > 0 && !isLoading && (
+                        {!error && results.length > 0 && hasMore && !isLoading && (
                             <div className="flex justify-center mt-12 pb-12">
                                 <button 
                                     onClick={loadMore}
@@ -379,7 +435,7 @@ export default function Movies() {
 
                         {!error && results.length === 0 && !isLoading && (
                             <div className="text-center py-20 text-zinc-500">
-                                No {type === 'movie' ? 'movies' : 'TV shows'} found.
+                                No {type === 'movie' ? 'movies' : type === 'tv' ? 'TV shows' : 'YouTube videos'} found.
                             </div>
                         )}
                     </>

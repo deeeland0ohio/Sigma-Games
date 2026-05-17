@@ -16,10 +16,9 @@ import UgsFiles from './pages/UgsFiles';
 import SeraphGames from './pages/SeraphGames';
 import Threekh0Games from './pages/Threekh0Games';
 import NoahGames from './pages/NoahGames';
-import LuminGames from './pages/LuminGames';
 import ExternalPlayer from './pages/ExternalPlayer';
 import NotFound from './pages/NotFound';
-import Movies from './pages/Movies';
+import Entertainment from './pages/Entertainment';
 
 export default function App() {
   return (
@@ -43,8 +42,9 @@ export default function App() {
               <Route path="/seraph" element={<SeraphGames />} />
               <Route path="/3kh0" element={<Threekh0Games />} />
               <Route path="/noah" element={<NoahGames />} />
-              <Route path="/lumin" element={<LuminGames />} />
-              <Route path="/movies" element={<Movies />} />
+              <Route path="/entertainment" element={<Entertainment />} />
+              <Route path="/entertainment/tv" element={<Entertainment />} />
+              <Route path="/entertainment/youtube" element={<Entertainment />} />
               <Route path="/external-player" element={<ExternalPlayer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
