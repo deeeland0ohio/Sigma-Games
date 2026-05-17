@@ -292,7 +292,7 @@ builtins.input = custom_input
                 game={game} 
                 to={
                   game.id === 'all-games' ? '/all-games' : 
-                  game.id === 'movies' ? '/movies' :
+                  game.id === 'movies' ? '/entertainment' :
                   game.id === 'popular' ? '/popular' : 
                   game.id === 'favorites' ? '/favorites' : 
                   game.id === 'gn-math' ? '/gn-math' :

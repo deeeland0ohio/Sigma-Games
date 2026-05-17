@@ -307,6 +307,130 @@ async function startServer() {
     }
   });
 
+  app.get("/api/youtube-search", async (req, res) => {
+    try {
+      const { query, page } = req.query;
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ results: [] });
+      }
+
+      const pageNum = parseInt(page as string) || 1;
+      const bParams = pageNum > 1 ? { b: ((pageNum - 1) * 30 + 1).toString() } : {};
+
+      const searchUrl =
+        "https://video.search.yahoo.com/search/video?" +
+        new URLSearchParams({
+          p: query + " youtube",
+          fr: "sfp",
+          ...bParams
+        });
+
+      const searchResponse = await fetch(searchUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0",
+          Accept: "text/html"
+        }
+      });
+
+      if (!searchResponse.ok) {
+        return res.status(200).json({ results: [] });
+      }
+
+      const html = await searchResponse.text();
+      const cards = html.split('<li class="tile').slice(1);
+      const results: any[] = [];
+      const seen = new Set();
+      const ids: string[] = [];
+
+      for (const card of cards) {
+        const refMatch = card.match(/data-referenceurl="([^"]+)"/);
+        const hrefMatch = card.match(/href="([^"]+)"/);
+        let url = refMatch?.[1] || hrefMatch?.[1];
+        if (!url) continue;
+
+        let idMatch = url.match(/v=([^&"]+)/);
+        if (!idMatch) continue;
+
+        let id = idMatch[1];
+        if (!id || seen.has(id)) continue;
+
+        seen.add(id);
+        ids.push(id);
+      }
+
+      if (ids.length === 0) {
+        return res.status(200).json({ results: [] });
+      }
+
+      for (const card of cards) {
+        const refMatch = card.match(/data-referenceurl="([^"]+)"/);
+        const hrefMatch = card.match(/href="([^"]+)"/);
+        let url = refMatch?.[1] || hrefMatch?.[1];
+        if (!url) continue;
+
+        let idMatch = url.match(/v=([^&"]+)/);
+        if (!idMatch) continue;
+
+        let id = idMatch[1];
+        if (!ids.includes(id)) continue;
+        
+        // Remove so we process each unique ID only once
+        ids.splice(ids.indexOf(id), 1);
+
+        const titleMatch = card.match(/tile-title[^>]*>(.*?)<\/p>/s);
+        const title = titleMatch
+          ? titleMatch[1].replace(/<[^>]+>/g, "").trim()
+          : "";
+
+        const thumbMatch = card.match(/<img[^>]+src="([^"]+)"/);
+        const thumbnail =
+          thumbMatch?.[1] ||
+          `https://i.ytimg.com/vi/${id}/mqdefault.jpg`;
+
+        const durationMatch = card.match(/class="[^"]*time[^"]*"[^>]*>(.*?)<\/p>/);
+        const duration = durationMatch?.[1]?.trim() || "unknown";
+
+        const viewsMatch = card.match(/(\d[\d.,]*[MK]?) views/i);
+        const views = viewsMatch?.[1] || "unknown";
+
+        const channelMatch = card.match(/tile-domain[^>]*>(.*?)<\/p>/);
+        let channel = channelMatch
+          ? channelMatch[1].replace(/<[^>]+>/g, "").trim()
+          : "YouTube";
+
+        results.push({
+          id,
+          title,
+          thumbnail,
+          duration,
+          views,
+          channel
+        });
+      }
+
+      // Fetch accurate channel names from oEmbed API in parallel
+      await Promise.all(
+        results.map(async (item) => {
+          try {
+            const embedRes = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${item.id}&format=json`);
+            if (embedRes.ok) {
+              const data = await embedRes.json();
+              if (data.author_name) item.channel = data.author_name;
+              if (data.title) item.title = data.title; // sometimes oembed provides an un-truncated, cleaner title
+            }
+          } catch (e) {
+            // Error silently, fall back to scraped data
+          }
+        })
+      );
+
+      res.status(200).json({ results });
+    } catch (e: any) {
+      console.error("Youtube API error:", e);
+      res.status(500).json({ results: [] });
+    }
+  });
+
   // Serve public directory directly for maximum speed on local games
   // This bypasses Vite's processing for large static HTML files
   app.use(express.static(path.join(process.cwd(), 'public')));

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <base href="https://cdn.jsdelivr.net/gh/technonyte00/deltarune@main/">
+  <base href="https://cdn.jsdelivr.net/gh/regedit-sys/web-port@main/deltarune/">
   <meta charset="UTF-8">
   <link rel="stylesheet" href="style.css">
 </head>
@@ -31,21 +31,6 @@
       <span class="title">Prophecy</span>
       <img src="icons/4.png">
     </a>
-    <a href="javascript:alert('Chapter 5 coming soon!')" class="disabled-row">
-      <span class="chapter">Chapter 5</span>
-      <span class="disabled-title">--</span>
-      <img src="icons/0.png">
-    </a>
-    <a href="javascript:alert('Chapter 6 coming soon!')" class="disabled-row">
-      <span class="chapter">Chapter 6</span>
-      <span class="disabled-title">--</span>
-      <img src="icons/0.png">
-    </a>
-    <a href="javascript:alert('Chapter 7 coming soon!')" class="disabled-row">
-      <span class="chapter">Chapter 7</span>
-      <span class="disabled-title">--</span>
-      <img src="icons/0.png">
-    </a>
   </div>
   <audio id="drone" controls loop autoplay hidden>
     <source src="audios/AUDIO_DRONE.ogg" type="audio/ogg">
@@ -73,6 +58,8 @@
     updateButton();
 
     function loadChapter(chapter) {
+      // The user suggested using a different path structure if needed.
+      // Assuming 'chapterX/index.html' is correct based on original structure.
       fetch(`chapter${chapter}/index.html`).then(res => res.text()).then(html => {
         gamestarted = true;
         document.documentElement.innerHTML = html;
