@@ -7,6 +7,6 @@ export const twentyMins: Game = {
   description: 'A rogue-lite, shoot\'em up where you mow down endless hordes of monsters.',
   icon: Target,
   type: 'iframe',
-  url: '/20mins.html',
+  url: '/games/20-minutes-till-dawn/index.html',
   keywords: ['20', 'minutes', 'dawn', 'survival', 'shooter', 'action'],
 };

@@ -7,6 +7,6 @@ export const stardew: Game = {
   description: 'A relaxing country-life RPG.',
   icon: Sprout,
   type: 'iframe',
-  url: '/stardew.html',
+  url: '/games/stardew-valley/index.html',
   keywords: ['stardew', 'farming', 'rpg', 'relaxing'],
 };
