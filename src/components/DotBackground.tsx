@@ -202,8 +202,11 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
         const distance = Math.sqrt(dx * dx + dy * dy);
         const brightnessRadius = 150 * Math.sqrt(powerRef.current);
         let brightness = 1;
+        let scale = 1;
         if (distance < brightnessRadius && powerRef.current > 0) {
-          brightness = 1 + (1 - distance / brightnessRadius) * 2;
+          const influence = 1 - distance / brightnessRadius;
+          brightness = 1 + influence * 2;
+          scale = 1 + influence * 0.5;
         }
 
         // Shockwave brightness effect
@@ -217,11 +220,13 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
             const brightMult = (ringThickness - Math.abs(sdist - sw.radius)) / ringThickness;
             const fadeOut = Math.max(0, 1 - (sw.radius / sw.maxRadius));
             brightness = Math.max(brightness, 1 + brightMult * 2.5 * fadeOut);
+            // Optionally make shockwave scale up the dots too, or just brightness
+            scale = Math.max(scale, 1 + brightMult * 0.75 * fadeOut);
           }
         }
 
         ctx.beginPath();
-        ctx.arc(dot.x, dot.y, size, 0, Math.PI * 2);
+        ctx.arc(dot.x, dot.y, size * scale, 0, Math.PI * 2);
         
         // Apply brightness to color
         if (brightness > 1) {

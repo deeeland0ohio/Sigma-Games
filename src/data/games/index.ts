@@ -124,10 +124,16 @@ import { snowRider3d } from "./snow-rider-3d";
 import { soccerBros } from "./soccer-bros";
 import { stickManHook } from "./stick-man-hook";
 import { tunnelRush } from "./tunnel-rush";
+import { tabs } from "./tabs";
+import { stardew } from "./stardew";
+import { twentyMins } from "./twenty-mins";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
   gtaViceCity,
+  tabs,
+  stardew,
+  twentyMins,
   undertale,
   deltarune14,
   hollowKnight,
