@@ -60,15 +60,6 @@
         #player-overlay.active {
             display: flex;
         }
-
-        /* Lumin overrides */
-        #lumin-container {
-            --lumin-bg: transparent !important;
-            --lumin-surface: #18181b !important;
-            --lumin-surface-hover: #27272a !important;
-            --lumin-border: #27272a !important;
-            --lumin-text: #ffffff !important;
-        }
     </style>
 </head>
 <body class="antialiased">
@@ -81,7 +72,7 @@
                     <i data-lucide="globe" class="text-zinc-400"></i>
                     Sigma G*mes Static
                 </h1>
-                <p class="text-zinc-500 mt-1 text-sm">Play g*mes from GN-Math, UGS, Seraph, Noah's, Lumin, and 3kh0 all in one place.</p>
+                <p class="text-zinc-500 mt-1 text-sm">Play g*mes from GN-Math, UGS, Seraph, Noah's, and 3kh0 all in one place.</p>
             </div>
             <div class="mt-4 sm:mt-0 flex gap-2">
                 <button onclick="window.location.href='https://ais-pre-sohh6faiwpdjywb75q5qhk-207654894741.us-west2.run.app'" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2">
@@ -102,7 +93,6 @@
                 <option value="seraph">Seraph</option>
                 <option value="noah">Noah's</option>
                 <option value="ugs">UGS</option>
-                <option value="lumin">Lumin</option>
                 <option value="3kh0">3kh0</option>
             </select>
         </div>
@@ -117,14 +107,6 @@
         
         <div id="loadMoreContainer" class="flex justify-center mt-10 hidden">
             <button id="loadMoreBtn" class="px-6 py-3 bg-zinc-900 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors font-medium">Load More</button>
-        </div>
-
-        <!-- Lumin Container -->
-        <div id="luminSection" class="hidden mt-8 border-t border-zinc-800 pt-8">
-            <h2 class="text-2xl font-bold text-white mb-6 flex items-center gap-2">
-                <i data-lucide="zap" class="text-yellow-500"></i> LuminSDK G*mes
-            </h2>
-            <div id="lumin-container" class="w-full min-h-[500px]"></div>
         </div>
     </div>
 
@@ -283,26 +265,6 @@
             }
         }
 
-        function loadLumin() {
-            const script = document.createElement('script');
-            script.src = 'https://cdn.jsdelivr.net/gh/luminsdk/script@latest/lumin.min.js';
-            script.onload = () => {
-                if (window.Lumin) {
-                    window.Lumin.init({ container: '#lumin-container', theme: 'dark' });
-                    // hide random button
-                    setInterval(() => {
-                        const root = document.querySelector('#lumin-container')?.shadowRoot;
-                        if(root) {
-                            root.querySelectorAll('button').forEach(b => {
-                                if(b.textContent.toLowerCase().includes('random')) b.style.display = 'none';
-                            });
-                        }
-                    }, 500);
-                }
-            };
-            document.body.appendChild(script);
-        }
-
         function renderGames() {
             const grid = document.getElementById('gamesGrid');
             grid.innerHTML = '';
@@ -358,27 +320,18 @@
             const query = document.getElementById('searchInput').value.toLowerCase();
             const source = document.getElementById('sourceFilter').value;
             
-            const luminSec = document.getElementById('luminSection');
             const gridSec = document.getElementById('gamesGrid');
             const loadMoreSec = document.getElementById('loadMoreContainer');
 
-            if (source === 'lumin') {
-                luminSec.classList.remove('hidden');
-                gridSec.classList.add('hidden');
-                loadMoreSec.classList.add('hidden');
-                filteredGames = [];
-            } else {
-                luminSec.classList.add('hidden');
-                gridSec.classList.remove('hidden');
-                
-                filteredGames = allGames.filter(g => {
-                    const matchQ = g.title.toLowerCase().includes(query) || (g.url && g.url.toLowerCase().includes(query));
-                    const matchS = source === 'all' ? true : g.source === source;
-                    return matchQ && matchS;
-                });
-                currentRenderCount = 100;
-                renderGames();
-            }
+            gridSec.classList.remove('hidden');
+            
+            filteredGames = allGames.filter(g => {
+                const matchQ = g.title.toLowerCase().includes(query) || (g.url && g.url.toLowerCase().includes(query));
+                const matchS = source === 'all' ? true : g.source === source;
+                return matchQ && matchS;
+            });
+            currentRenderCount = 100;
+            renderGames();
         }
 
         document.getElementById('searchInput').addEventListener('input', filterGames);
@@ -418,7 +371,6 @@
             
             document.getElementById('loading').style.display = 'none';
             filterGames();
-            loadLumin();
         }
 
         init();
