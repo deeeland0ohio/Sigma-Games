@@ -177,7 +177,9 @@ export default function Entertainment() {
        id: id
     });
 
-    if (type === 'movie') {
+    if (type === 'youtube') {
+      updateEmbedUrl(id, 'youtube', '1', '1');
+    } else if (type === 'movie') {
       updateEmbedUrl(id, 'movie', '1', '1');
     } else {
       const formSeason = formData.get('season') as string || '1';

@@ -118,7 +118,7 @@ export default function PrankOverlay() {
     return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
-  const isPlay = currentPath.startsWith('/play') || currentPath === '/gn-math' || currentPath === '/ugs' || currentPath === '/seraph' || currentPath === '/3kh0' || currentPath === '/noah' || currentPath === '/lumin' || currentPath === '/external-player';
+  const isPlay = currentPath.startsWith('/play') || currentPath === '/gn-math' || currentPath === '/ugs' || currentPath === '/seraph' || currentPath === '/3kh0' || currentPath === '/noah' || currentPath === '/external-player';
   const topOffset = isPlay ? '64px' : '80px';
 
   if (!isPranked) return null;
