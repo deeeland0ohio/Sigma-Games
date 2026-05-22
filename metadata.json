@@ -1,5 +1,8 @@
 {
   "name": "Sigma Games",
   "description": "An Unblocked Games Website.",
-  "requestFramePermissions": []
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
 }

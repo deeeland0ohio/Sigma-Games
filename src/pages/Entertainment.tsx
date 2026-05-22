@@ -1,38 +1,179 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
 import PageLayout from '../components/PageLayout';
 import { useThemeColors } from '../context/ThemeContext';
-import { Play, Film, Tv, Youtube, Search, Loader2, Maximize, X, AlertTriangle } from 'lucide-react';
+import { Play, Youtube, Search, Loader2, Maximize, X, Video, Smartphone, Music, Tv } from 'lucide-react';
+
+interface MediaItem {
+  id: string;
+  title: string;
+  thumbnail: string;
+  duration?: string;
+  views: string;
+  channel: string;
+  isTikTok?: boolean;
+  username?: string;
+  isShort?: boolean;
+}
+
+function TikTokEmbed({ videoId }: { videoId: string; username?: string }) {
+  return (
+    <div className="w-full flex justify-center bg-zinc-950/80 p-4 rounded-2xl border border-zinc-900 overflow-hidden">
+      <div 
+        className="relative overflow-hidden rounded-xl bg-black shadow-2xl"
+        style={{
+          width: '325px',
+          height: '525px', // Clean cropped height of the video player viewport
+        }}
+      >
+        <iframe
+          src={`https://www.tiktok.com/embed/v2/${videoId}`}
+          className="absolute"
+          style={{
+            top: '0',
+            left: '0',
+            width: '325px',
+            height: '670px', // Full height containing the bottom bar (pushed out of bounds)
+            border: 'none',
+          }}
+          allow="autoplay; encrypted-media"
+          allowFullScreen
+          title="TikTok Player"
+        />
+      </div>
+    </div>
+  );
+}
 
 export default function Entertainment() {
   const colors = useThemeColors();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [type, setType] = useState<'movie' | 'tv' | 'youtube'>(
-    location.pathname === '/entertainment/tv' ? 'tv' : location.pathname === '/entertainment/youtube' ? 'youtube' : 'movie'
-  );
+  const [activeTab, setActiveTab] = useState<'youtube' | 'tiktok'>('youtube');
   const [searchQuery, setSearchQuery] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<MediaItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
   const [error, setError] = useState('');
-  
-  const [showWarning, setShowWarning] = useState(true);
 
-  const [selectedMedia, setSelectedMedia] = useState<any | null>(null);
-  const [season, setSeason] = useState('1');
-  const [episode, setEpisode] = useState('1');
+  const [selectedMedia, setSelectedMedia] = useState<MediaItem | null>(null);
   const [embedUrl, setEmbedUrl] = useState('');
+  const [isPortraitPlayer, setIsPortraitPlayer] = useState(false);
 
   const playerRef = useRef<HTMLDivElement>(null);
+  const activeTabRef = useRef(activeTab);
 
+  // Keep the ref in sync with the state
   useEffect(() => {
-    fetchResults();
-  }, [type]);
+    activeTabRef.current = activeTab;
+  }, [activeTab]);
 
-  const fetchResults = async (query?: string, pageToFetch: number = 1) => {
+  // Trigger results fetch on active tab change
+  useEffect(() => {
+    setSearchQuery('');
+    setSelectedMedia(null);
+    setEmbedUrl('');
+    fetchResults('', 1, activeTab);
+  }, [activeTab]);
+
+  const extractTikTokId = (url: string): { id: string; username: string } | null => {
+    let decoded = url;
+    try {
+      decoded = decodeURIComponent(url);
+      const tiktokIndex = decoded.search(/tiktok\.com/i);
+      if (tiktokIndex !== -1) {
+        decoded = decoded.substring(tiktokIndex);
+      }
+    } catch (e) {}
+
+    // Match: tiktok.com/@username/video/1234567890
+    const match1 = decoded.match(/tiktok\.com\/@([^\/]+)\/video\/(\d+)/i);
+    if (match1) {
+      return { username: match1[1], id: match1[2] };
+    }
+
+    // Match: tiktok.com/v/1234567890 or tiktok.com/embed/1234567890
+    const match2 = decoded.match(/tiktok\.com\/(?:v|embed|embed\/v2)\/(\d+)/i);
+    if (match2) {
+      return { username: '', id: match2[1] };
+    }
+
+    // General digits at the end
+    const match3 = decoded.match(/tiktok\.com\/.*\/(\d+)/i);
+    if (match3) {
+      return { username: '', id: match3[1] };
+    }
+
+    // Is it just a numeric string of digits (presumably a direct video ID)?
+    if (/^\d+$/.test(url.trim())) {
+      return { username: '', id: url.trim() };
+    }
+
+    return null;
+  };
+
+  const extractYouTubeId = (input: string): { id: string | null; isShort: boolean } => {
+    const trimmed = input.trim();
+    let isShort = trimmed.toLowerCase().includes('/shorts/') || trimmed.toLowerCase().includes('shorts=1');
+
+    // 1. If it's a pure 11 character ID
+    if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) {
+      return { id: trimmed, isShort };
+    }
+
+    try {
+      // Add secure protocol so absolute URL parsing works
+      const urlString = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
+      const url = new URL(urlString);
+
+      // youtu.be/VIDEO_ID
+      if (url.hostname.includes('youtu.be')) {
+        const id = url.pathname.substring(1).split('&')[0].split('?')[0].split('#')[0].split('/')[0];
+        return { id: id || null, isShort };
+      }
+
+      // youtube.com/shorts/VIDEO_ID
+      if (url.pathname.includes('/shorts/')) {
+        const parts = url.pathname.split('/shorts/');
+        if (parts[1]) {
+          const id = parts[1].split('/')[0].split('&')[0].split('?')[0].split('#')[0];
+          return { id: id || null, isShort: true };
+        }
+      }
+
+      // youtube.com/embed/VIDEO_ID or youtube-nocookie.com/embed/VIDEO_ID
+      if (url.pathname.includes('/embed/')) {
+        const parts = url.pathname.split('/embed/');
+        if (parts[1]) {
+          const id = parts[1].split('/')[0].split('&')[0].split('?')[0].split('#')[0];
+          return { id: id || null, isShort };
+        }
+      }
+
+      // Standard youtube.com/watch?v=VIDEO_ID
+      const vParam = url.searchParams.get('v');
+      if (vParam) {
+        return { id: vParam, isShort };
+      }
+
+      // Backups for query-param strings inside path
+      const pathParts = url.pathname.split('/');
+      // e.g. /v/VIDEO_ID
+      if (pathParts.includes('v') && pathParts[pathParts.indexOf('v') + 1]) {
+        return { id: pathParts[pathParts.indexOf('v') + 1], isShort };
+      }
+    } catch (e) {
+      // Regex fallback if URL constructor fails
+      const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\/shorts\/)([^#\&\?]*).*/;
+      const match = trimmed.match(regExp);
+      if (match && match[2] && match[2].length === 11) {
+        return { id: match[2], isShort: isShort || trimmed.includes('/shorts/') };
+      }
+    }
+
+    return { id: null, isShort };
+  };
+
+  const fetchResults = async (query?: string, pageToFetch: number = 1, tab: 'youtube' | 'tiktok' = activeTab) => {
     if (pageToFetch === 1) {
       setIsLoading(true);
       setResults([]);
@@ -43,58 +184,67 @@ export default function Entertainment() {
     
     try {
       const isSearch = query && query.trim().length > 0;
+      let endpoint = '';
       
-      let items: any[] = [];
-
-      if (type === 'youtube') {
-        const fetchQuery = isSearch ? query : 'trending videos';
-        const searchUrl = `/api/youtube-search?query=${encodeURIComponent(fetchQuery!)}&page=${pageToFetch}`;
-        const response = await fetch(searchUrl);
-        if (!response.ok) {
-           throw new Error(`Failed to fetch youtube: ${response.status}`);
-        }
-        const data = await response.json();
-        // data.results has the scraped array
-        items = data.results || [];
+      if (tab === 'youtube') {
+        const fetchQuery = isSearch ? query : 'gaming videos';
+        endpoint = `/api/youtube-search?query=${encodeURIComponent(fetchQuery!)}&page=${pageToFetch}`;
       } else {
-        const API_KEY = 'f1e91ad0cfd485271785971f8117ec74';
-        const BASE_URL = 'https://api.themoviedb.org/3';
-        let url = '';
-        if (type === 'movie') {
-          url = isSearch 
-            ? `${BASE_URL}/search/movie?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=${pageToFetch}`
-            : `${BASE_URL}/trending/movie/week?api_key=${API_KEY}&page=${pageToFetch}`;
-        } else {
-          url = isSearch 
-            ? `${BASE_URL}/search/tv?api_key=${API_KEY}&query=${encodeURIComponent(query!)}&page=${pageToFetch}`
-            : `${BASE_URL}/trending/tv/week?api_key=${API_KEY}&page=${pageToFetch}`;
-        }
-
-        // Try fetching via direct API first
-        let response = await fetch(url);
-        
-        if (!response.ok) {
-           throw new Error(`Failed to fetch: ${response.status} ${response.statusText}`);
-        }
-        const data = await response.json();
-        
-        // Handle various response shapes commonly used by TMDB wrappers
-        if (Array.isArray(data)) {
-          items = data;
-        } else if (data.results && Array.isArray(data.results)) {
-          items = data.results;
-        } else if (data.data && Array.isArray(data.data)) {
-          items = data.data;
-        }
+        const fetchQuery = isSearch ? query : 'gaming';
+        endpoint = `/api/tiktok-search?query=${encodeURIComponent(fetchQuery!)}&page=${pageToFetch}`;
       }
       
+      const response = await fetch(endpoint);
+      if (!response.ok) {
+         throw new Error(`Failed to fetch: ${response.status}`);
+      }
+
+      // Forcefully discard responses from previous tab if active tab changes mid-request
+      if (tab !== activeTabRef.current) {
+        return;
+      }
+
+      const data = await response.json();
+      const items = data.results || [];
+
+      if (tab !== activeTabRef.current) {
+        return;
+      }
+      
+      const typedItems = items.map((item: any) => {
+        const titleLower = (item.title || '').toLowerCase();
+        
+        let durationSecs = 999;
+        if (item.duration && typeof item.duration === 'string') {
+          const parts = item.duration.split(':');
+          if (parts.length === 2) {
+            durationSecs = parseInt(parts[0], 10) * 60 + parseInt(parts[1], 10);
+          } else if (parts.length === 3) {
+            durationSecs = parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseInt(parts[2], 10);
+          }
+        }
+
+        const isShort = tab === 'youtube' && (
+          // Standard YouTube Short is strictly 60 seconds or less
+          (durationSecs <= 60) ||
+          // Fallback if metadata has no duration but title explicitly lists a shorts tag
+          (!item.duration && (titleLower.includes('#shorts') || titleLower.includes('shorts')))
+        );
+
+        return {
+          ...item,
+          isTikTok: tab === 'tiktok',
+          isShort: isShort
+        };
+      });
+
       if (pageToFetch === 1) {
-        setResults(items);
-        setHasMore(items.length > 0);
+        setResults(typedItems);
+        setHasMore(typedItems.length > 0);
       } else {
         setResults(prev => {
-          const existingIds = new Set(prev.map(p => getId(p)));
-          const newItems = items.filter(item => !existingIds.has(getId(item)));
+          const existingIds = new Set(prev.map(p => p.id));
+          const newItems = typedItems.filter((item: MediaItem) => !existingIds.has(item.id));
           if (newItems.length === 0) {
             setHasMore(false);
           }
@@ -104,9 +254,7 @@ export default function Entertainment() {
       setPage(pageToFetch);
     } catch (err: any) {
       console.error("API error:", err);
-      // Fallback: If CORS or 403 fails, maybe the API structure is slightly different.
-      // But we will show the error for debugging for the user
-      setError("We are having trouble contacting the search API. You can still manually enter an ID below.");
+      setError(`We are having trouble contacting the search API for ${tab === 'youtube' ? 'YouTube' : 'TikTok'}. You can still manually load a link below.`);
     } finally {
       setIsLoading(false);
       setIsLoadingMore(false);
@@ -124,299 +272,273 @@ export default function Entertainment() {
     fetchResults(searchQuery, page + 1);
   };
 
-  const getImageUrl = (item: any) => {
-    if (item.thumbnail) return item.thumbnail;
-    if (item.poster_path) return `https://image.tmdb.org/t/p/w500${item.poster_path}`;
-    if (item.poster) return item.poster;
-    return 'https://via.placeholder.com/500x750/111/555?text=No+Poster';
-  };
-
-  const getTitle = (item: any) => {
-    return item.title || item.name || item.original_title || item.original_name || 'Unknown Title';
-  };
-
-  const getId = (item: any) => {
-    return item.imdb_id || item.tmdb_id || item.id;
-  };
-
-  const playMedia = (item: any) => {
+  const playMedia = (item: MediaItem) => {
     setSelectedMedia(item);
-    const id = getId(item);
-
-    if (type === 'tv') {
-        setSeason('1');
-        setEpisode('1');
-        updateEmbedUrl(id, 'tv', '1', '1');
-    } else if (type === 'youtube') {
-        updateEmbedUrl(id, 'youtube', '1', '1');
+    setIsPortraitPlayer(!!item.isShort);
+    if (item.isTikTok) {
+      setEmbedUrl(`https://www.tiktok.com/embed/v2/${item.id}`);
     } else {
-        updateEmbedUrl(id, 'movie', '1', '1');
+      setEmbedUrl(`https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1`);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-  
-  const updateEmbedUrl = (id: string, mediaType: 'movie' | 'tv' | 'youtube', s: string, e: string) => {
-      if (mediaType === 'youtube') {
-        setEmbedUrl(`https://www.youtube-nocookie.com/embed/${id}?autoplay=1`);
-      } else if (mediaType === 'movie') {
-        setEmbedUrl(`https://movies.niketeam.workers.dev/embed/${id}`);
-      } else {
-        setEmbedUrl(`https://movies.niketeam.workers.dev/embedtv/${id}&s=${s}&e=${e}`);
-      }
   };
 
   const handleManualWatch = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
-    const id = formData.get('mediaId') as string;
-    if (!id) return;
+    const idInput = formData.get('mediaId') as string;
+    if (!idInput) return;
 
-    setSelectedMedia({
-       isManual: true,
-       title: `Manual ID: ${id}`,
-       id: id
-    });
+    const trimmedInput = idInput.trim();
 
-    if (type === 'youtube') {
-      updateEmbedUrl(id, 'youtube', '1', '1');
-    } else if (type === 'movie') {
-      updateEmbedUrl(id, 'movie', '1', '1');
+    // Explicitly check for youtube/tiktok indicators first
+    const isExplicitYouTube = trimmedInput.includes('youtube.com') || trimmedInput.includes('youtu.be');
+    const isExplicitTikTok = trimmedInput.includes('tiktok.com');
+
+    // Default to activeTab if no explicit indicator is found in the link
+    const targetPlatform = isExplicitTikTok ? 'tiktok' : (isExplicitYouTube ? 'youtube' : activeTab);
+
+    if (targetPlatform === 'tiktok') {
+      const parsed = extractTikTokId(trimmedInput);
+      if (parsed) {
+        const item: MediaItem = {
+          id: parsed.id,
+          title: parsed.username ? `TikTok by @${parsed.username}` : `TikTok Video (${parsed.id})`,
+          thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60',
+          views: 'unknown',
+          channel: parsed.username ? `@${parsed.username}` : 'TikTok Creator',
+          isTikTok: true
+        };
+        setSelectedMedia(item);
+        setEmbedUrl(`https://www.tiktok.com/embed/v2/${parsed.id}`);
+        setError('');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setError("Could not parse TikTok Video URL/ID. Double check and try again.");
+      }
     } else {
-      const formSeason = formData.get('season') as string || '1';
-      const formEpisode = formData.get('episode') as string || '1';
-      setSeason(formSeason);
-      setEpisode(formEpisode);
-      updateEmbedUrl(id, 'tv', formSeason, formEpisode);
+      // YouTube fallback
+      const { id: finalId, isShort } = extractYouTubeId(trimmedInput);
+
+      if (!finalId) {
+        setError("Could not parse YouTube URL or Video/Shorts ID. Double check and try again.");
+        return;
+      }
+
+      const item: MediaItem = {
+        id: finalId,
+        title: isShort ? `YouTube Short (${finalId})` : `YouTube Video (${finalId})`,
+        thumbnail: `https://i.ytimg.com/vi/${finalId}/mqdefault.jpg`,
+        views: 'unknown',
+        channel: 'YouTube Video',
+        isTikTok: false,
+        isShort: isShort
+      };
+      setSelectedMedia(item);
+      setIsPortraitPlayer(isShort);
+      setEmbedUrl(`https://www.youtube-nocookie.com/embed/${finalId}?autoplay=1`);
+      setError('');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
+  const isTikTokPlayer = selectedMedia?.isTikTok;
+
   return (
-    <PageLayout title="Entertainment" showBack>
-      {showWarning && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-zinc-900 border border-zinc-800 p-6 sm:p-8 rounded-2xl max-w-md w-full shadow-2xl relative overflow-hidden">
-            <div className={`absolute top-0 left-0 w-full h-1 ${colors.primaryBg}`}></div>
-            <div className="flex flex-col items-center text-center space-y-4">
-              <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center">
-                <AlertTriangle size={32} className={colors.secondary} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-white mb-2">Experimental Feature</h3>
-                <p className="text-sm text-zinc-400">
-                  These might not work. They are experimental and depend on external streaming services.
-                </p>
-              </div>
-              <button 
-                onClick={() => setShowWarning(false)}
-                className={`mt-4 w-full py-3 px-6 rounded-xl font-bold text-white ${colors.primaryBg} hover:opacity-90 transition-opacity`}
-              >
-                I Understand
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="max-w-6xl mx-auto space-y-8 pb-12">
-        <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-            <div className="flex bg-zinc-900 rounded-lg p-1 border border-zinc-800 w-full sm:w-fit">
-              <button
-                type="button"
-                onClick={() => { setType('movie'); navigate('/entertainment'); setSelectedMedia(null); setEmbedUrl(''); }}
-                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-md transition-colors text-sm font-bold ${
-                  type === 'movie' 
-                    ? `${colors.primaryBg} text-white shadow-md` 
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-                }`}
-              >
-                <Film size={18} /> Movies
-              </button>
-              <button
-                type="button"
-                onClick={() => { setType('tv'); navigate('/entertainment/tv'); setSelectedMedia(null); setEmbedUrl(''); }}
-                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-md transition-colors text-sm font-bold ${
-                  type === 'tv' 
-                    ? `${colors.primaryBg} text-white shadow-md` 
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-                }`}
-              >
-                <Tv size={18} /> TV Shows
-              </button>
-              <button
-                type="button"
-                onClick={() => { setType('youtube'); navigate('/entertainment/youtube'); setSelectedMedia(null); setEmbedUrl(''); }}
-                className={`flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-md transition-colors text-sm font-bold ${
-                  type === 'youtube' 
-                    ? `${colors.primaryBg} text-white shadow-md` 
-                    : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
-                }`}
-              >
-                <Youtube size={18} /> YouTube
-              </button>
+    <PageLayout title="YouTube & TikTok" showBack>
+      <div className="max-w-6xl mx-auto space-y-8 pb-12 px-4 sm:px-0">
+        
+        {/* Header Tabs Controls and Search Bar */}
+        <div className="flex flex-col lg:flex-row gap-4 items-stretch lg:items-center justify-between">
+            <div className="flex bg-zinc-900 rounded-xl p-1.5 border border-zinc-800 self-start sm:self-auto shadow-inner">
+               <button 
+                 onClick={() => setActiveTab('youtube')}
+                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'youtube' ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-400 hover:text-white'}`}
+               >
+                 <Youtube size={18} className={activeTab === 'youtube' ? 'text-red-500' : 'text-zinc-500'} />
+                 <span>YouTube</span>
+               </button>
+               <button 
+                 onClick={() => setActiveTab('tiktok')}
+                 className={`flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-bold transition-all ${activeTab === 'tiktok' ? 'bg-zinc-800 text-white shadow-md' : 'text-zinc-400 hover:text-white'}`}
+               >
+                 <Music size={18} className={activeTab === 'tiktok' ? 'text-teal-400' : 'text-zinc-500'} />
+                 <span>TikTok</span>
+               </button>
             </div>
 
-            <form onSubmit={handleSearch} className="relative w-full sm:w-96">
+            <form onSubmit={handleSearch} className="relative w-full lg:w-96">
                 <input 
                    type="text" 
                    value={searchQuery}
                    onChange={e => setSearchQuery(e.target.value)}
-                   placeholder={`Search ${type === 'movie' ? 'movies' : type === 'tv' ? 'TV shows' : 'YouTube videos'}...`}
-                   className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white focus:outline-none focus:border-zinc-600 focus:ring-1 focus:ring-zinc-600 transition-all font-medium"
+                   placeholder={`Search ${activeTab === 'youtube' ? 'YouTube videos' : 'TikToks'}...`}
+                   className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-10 pr-4 py-3 text-white focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 transition-all font-medium placeholder-zinc-500"
                 />
                 <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500" />
             </form>
         </div>
 
-        {selectedMedia && embedUrl && (
-          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-black text-white px-1">
-                   {selectedMedia.isManual ? selectedMedia.title : getTitle(selectedMedia)}
-                </h2>
-                <div className="flex gap-4">
-                  <button 
-                    onClick={() => { setSelectedMedia(null); setEmbedUrl(''); }}
-                    className="flex items-center gap-2 text-sm text-zinc-400 hover:text-white"
-                  >
-                      <X size={16} /> Close Player
-                  </button>
+        {/* Media Player Container */}
+        {selectedMedia && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 bg-zinc-900/40 p-4 sm:p-6 rounded-2xl border border-zinc-800">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                     <span className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wide text-white ${isTikTokPlayer ? 'bg-teal-500' : 'bg-red-500'}`}>
+                        {isTikTokPlayer ? 'TikTok' : 'YouTube'}
+                     </span>
+                     <span className="text-xs text-zinc-400 font-semibold">{selectedMedia.channel}</span>
+                  </div>
+                  <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                     {selectedMedia.title || 'Playing Video'}
+                  </h2>
+                </div>
+                <div className="flex items-center gap-3 shrink-0 w-full sm:w-auto">
+                    {!isTikTokPlayer && (
+                        <button
+                          onClick={() => setIsPortraitPlayer(!isPortraitPlayer)}
+                          className="flex items-center justify-center gap-2 text-xs sm:text-sm text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 px-4 py-2.5 rounded-xl transition-all hover:bg-zinc-805 shadow-md flex-1 sm:flex-initial"
+                          title={isPortraitPlayer ? "Switch to landscape widescreen" : "Switch to vertical portrait layout for Shorts"}
+                        >
+                          {isPortraitPlayer ? <Tv size={16} className="text-zinc-400" /> : <Smartphone size={16} className="text-red-400 animate-pulse" />}
+                          <span>{isPortraitPlayer ? "Widescreen" : "Shorts Frame"}</span>
+                        </button>
+                    )}
+                    <button 
+                      onClick={() => { setSelectedMedia(null); setEmbedUrl(''); }}
+                      className="flex items-center justify-center gap-2 text-xs sm:text-sm text-zinc-400 hover:text-white bg-zinc-900 border border-zinc-800 px-4 py-2.5 rounded-xl transition-all hover:bg-zinc-800 shadow-md flex-1 sm:flex-initial"
+                    >
+                        <X size={16} /> Close Player
+                    </button>
                 </div>
             </div>
             
-            <div ref={playerRef} className="rounded-xl overflow-hidden border border-zinc-800 bg-black aspect-video relative shadow-2xl group/player">
-              <iframe
-                src={embedUrl}
-                className="absolute inset-0 w-full h-full bg-black"
-                frameBorder="0"
-                allowFullScreen
-                title="Media Player"
-              ></iframe>
-              <button
-                onClick={() => {
-                  if (playerRef.current) {
-                    if (document.fullscreenElement) {
-                      document.exitFullscreen();
-                    } else {
-                      playerRef.current.requestFullscreen();
-                    }
-                  }
-                }}
-                className="absolute bottom-4 right-4 p-2 bg-black/60 rounded-full text-white/50 hover:text-white/100 hover:bg-black/90 transition-all opacity-0 group-hover/player:opacity-100 z-50 player-fullscreen-btn"
-                title="Fullscreen"
-              >
-                <Maximize size={20} />
-              </button>
-            </div>
-
-            {type === 'tv' && (
-              <div className="p-4 bg-zinc-900/80 border border-zinc-800 rounded-xl flex items-center gap-4 flex-wrap">
-                  <div className="flex items-center gap-4">
-                      <div>
-                          <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5">Season</label>
-                          <input 
-                            type="number" 
-                            min="1" 
-                            value={season}
-                            onChange={e => {
-                                setSeason(e.target.value);
-                                if (selectedMedia && !selectedMedia.isManual) {
-                                    updateEmbedUrl(getId(selectedMedia), 'tv', e.target.value, episode);
-                                }
-                            }}
-                            className="w-24 bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white font-bold max-w-[100px]" 
-                          />
-                      </div>
-                      <div>
-                          <label className="block text-xs font-bold text-zinc-500 uppercase mb-1.5">Episode</label>
-                          <input 
-                            type="number" 
-                            min="1" 
-                            value={episode}
-                            onChange={e => {
-                                setEpisode(e.target.value);
-                                if (selectedMedia && !selectedMedia.isManual) {
-                                    updateEmbedUrl(getId(selectedMedia), 'tv', season, e.target.value);
-                                }
-                            }}
-                            className="w-24 bg-black border border-zinc-800 rounded-lg px-3 py-2 text-white font-bold max-w-[100px]" 
-                          />
-                      </div>
-                  </div>
+            {isTikTokPlayer ? (
+              <TikTokEmbed videoId={selectedMedia.id} username={selectedMedia.username || ''} />
+            ) : (
+              <div className="w-full flex justify-center bg-zinc-950/40 p-2 sm:p-4 rounded-2xl border border-zinc-900/60 overflow-hidden">
+                <div 
+                  ref={playerRef} 
+                  className={`rounded-xl overflow-hidden border border-zinc-800 bg-black relative shadow-2xl group/player mx-auto transition-all duration-300 ${
+                    isPortraitPlayer ? 'aspect-[9/16] w-full max-w-[340px]' : 'aspect-video w-full'
+                  }`}
+                >
+                  <iframe
+                    src={embedUrl}
+                    className="absolute inset-0 w-full h-full bg-black"
+                    frameBorder="0"
+                    allowFullScreen
+                    title="Embed Player"
+                  ></iframe>
+                  <button
+                    onClick={() => {
+                      if (playerRef.current) {
+                        if (document.fullscreenElement) {
+                          document.exitFullscreen();
+                        } else {
+                          playerRef.current.requestFullscreen();
+                        }
+                      }
+                    }}
+                    className="absolute bottom-4 right-4 p-2.5 bg-black/60 rounded-full text-white/50 hover:text-white/100 hover:bg-black/90 transition-all opacity-0 group-hover/player:opacity-100 z-50 shadow-lg"
+                    title="Fullscreen"
+                  >
+                    <Maximize size={18} />
+                  </button>
+                </div>
               </div>
             )}
           </div>
         )}
 
+        {/* Video Catalog List Grid */}
         {!selectedMedia && (
             <>
                 {isLoading ? (
                     <div className="h-64 flex items-center justify-center">
-                        <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
+                        <Loader2 className="w-8 h-8 animate-spin text-zinc-600" />
                     </div>
                 ) : (
                     <>
-                        <h3 className="text-xl font-bold text-white mb-6">
-                            {searchQuery ? `Search Results for "${searchQuery}"` : `Trending ${type === 'movie' ? 'Movies' : type === 'tv' ? 'TV Shows' : 'YouTube Videos'}`}
-                        </h3>
+                        <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+                          <h3 className="text-sm font-black text-zinc-400 uppercase tracking-widest flex items-center gap-2">
+                              {activeTab === 'youtube' ? (
+                                <><Youtube size={16} className="text-red-500" /> YouTube Search RESULTS</>
+                              ) : (
+                                <><Music size={16} className="text-teal-400" /> TikTok Video Stream</>
+                              )}
+                          </h3>
+                        </div>
                         
                         {error && (
-                            <div className="p-6 bg-zinc-900 border border-red-900/50 rounded-xl mb-8">
-                                <p className="text-red-400 mb-4">{error}</p>
+                            <div className="p-6 bg-zinc-900 border border-red-900/30 rounded-2xl mb-8">
+                                <p className="text-red-400 text-sm font-medium mb-4">{error}</p>
                                 <form onSubmit={handleManualWatch} className="space-y-4">
-                                    <h4 className="font-bold text-white">Manual Entry Fallback</h4>
-                                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                        <div className="sm:col-span-1">
-                                            <input name="mediaId" type="text" placeholder={type === 'youtube' ? "YouTube Video ID (e.g. dQw4w9WgXcQ)" : "IMDb/TMDB ID (e.g. tt1234567)"} className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-2 text-white" required />
-                                        </div>
-                                        {type === 'tv' && (
-                                            <>
-                                                <div className="sm:col-span-1"><input name="season" type="number" min="1" defaultValue="1" placeholder="Season" className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-2 text-white" /></div>
-                                                <div className="sm:col-span-1"><input name="episode" type="number" min="1" defaultValue="1" placeholder="Episode" className="w-full bg-black border border-zinc-800 rounded-lg px-4 py-2 text-white" /></div>
-                                            </>
-                                        )}
+                                    <h4 className="font-bold text-white text-sm">Direct Video Loader</h4>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <input 
+                                           name="mediaId" 
+                                           type="text" 
+                                           placeholder={activeTab === 'tiktok' ? "TikTok Video Link (e.g. https://www.tiktok.com/@creator/video/1234)" : "YouTube Video ID or Link (e.g. dQw4w9WgXcQ)"} 
+                                           className="flex-1 bg-black border border-zinc-800 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-zinc-700 font-medium" 
+                                           required 
+                                        />
+                                        <button type="submit" className={`px-6 py-2.5 ${colors.primaryBg} text-white rounded-xl text-sm font-bold transition-all hover:brightness-110 shadow-md shrink-0`}>
+                                           Watch Now
+                                        </button>
                                     </div>
-                                    <button type="submit" className={`px-6 py-2 ${colors.primaryBg} text-white rounded-lg font-bold`}>Watch Now</button>
                                 </form>
                             </div>
                         )}
 
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                        {/* TikTok uses a taller portrait grid, YouTube uses horizontal widescreen grid */}
+                        <div className={`grid gap-6 ${
+                          activeTab === 'tiktok' 
+                            ? 'grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5' 
+                            : 'grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4'
+                        }`}>
                             {results.map((item, i) => (
                                 <button 
-                                  key={`${getId(item)}-${i}`}
+                                  key={`${item.id}-${i}`}
                                   onClick={() => playMedia(item)}
-                                  className="group flex flex-col text-left space-y-3 cursor-pointer outline-none focus:ring-2 focus:ring-white/20 rounded-xl rounded-b-none"
+                                  className="group flex flex-col text-left space-y-3 cursor-pointer outline-none focus:ring-2 focus:ring-white/10 rounded-2xl p-1.5 hover:bg-zinc-900/30 transition-all"
                                 >
-                                    <div className={`relative ${type === 'youtube' ? 'aspect-video' : 'aspect-[2/3]'} rounded-xl overflow-hidden bg-zinc-900 shadow-xl border border-zinc-800/50 group-hover:border-zinc-500 transition-colors`}>
+                                    <div className={`relative rounded-xl overflow-hidden bg-zinc-950 shadow-xl border border-zinc-800/40 group-hover:border-zinc-700 transition-colors w-full ${
+                                        activeTab === 'tiktok' ? 'aspect-[9/16]' : 'aspect-video'
+                                    }`}>
                                         <img 
-                                          src={getImageUrl(item)} 
-                                          alt={getTitle(item)}
+                                          src={item.thumbnail} 
+                                          alt={item.title}
                                           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                           loading="lazy"
+                                          referrerPolicy="no-referrer"
                                         />
-                                        {type === 'youtube' && item.duration && (
-                                            <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white">
-                                                {item.duration}
+                                        {item.duration && (
+                                            <div className="absolute bottom-2 right-2 bg-black/80 px-1.5 py-0.5 rounded text-[10px] font-bold text-white tracking-wider flex items-center gap-1">
+                                                {item.isShort && <Smartphone size={10} className="text-red-400" />}
+                                                <span>{item.duration}</span>
                                             </div>
                                         )}
-                                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
-                                            <div className={`w-14 h-14 rounded-full ${colors.primaryBg} flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-xl`}>
-                                                <Play size={24} fill="currentColor" className="text-white ml-1" />
+                                        {item.isShort && (
+                                            <div className="absolute top-2 left-2 bg-red-600/90 backdrop-blur-md px-2 py-0.5 rounded text-[9px] font-extrabold text-white tracking-wider uppercase flex items-center gap-1 shadow-md border border-red-500/30 z-10">
+                                                <Smartphone size={10} />
+                                                <span>Shorts</span>
+                                            </div>
+                                        )}
+                                        <div className="absolute inset-0 bg-black/55 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                                            <div className={`w-12 h-12 rounded-full ${activeTab === 'tiktok' ? 'bg-teal-500' : colors.primaryBg} flex items-center justify-center transform scale-75 group-hover:scale-100 transition-transform duration-300 shadow-xl text-white`}>
+                                                <Play size={20} fill="currentColor" className="ml-0.5" />
                                             </div>
                                         </div>
                                     </div>
-                                    <div>
-                                        <h4 className="font-bold text-sm text-zinc-200 line-clamp-1 group-hover:text-white">{getTitle(item)}</h4>
-                                        <p className="text-xs text-zinc-500 mt-1 flex flex-col gap-0.5">
-                                            {type === 'youtube' ? (
-                                                <>
-                                                    <span className="line-clamp-1">{item.channel}</span>
-                                                    <span>{item.views} views</span>
-                                                </>
-                                            ) : (
-                                                <span>{item.release_date || item.first_air_date ? new Date(item.release_date || item.first_air_date).getFullYear() : ''}</span>
-                                            )}
+                                    <div className="px-1.5 space-y-1">
+                                        <h4 className="font-bold text-xs sm:text-sm text-zinc-100 line-clamp-2 group-hover:text-white leading-snug tracking-tight">
+                                           {item.title}
+                                        </h4>
+                                        <p className="text-[11px] text-zinc-500 mt-1 flex flex-col">
+                                            <span className="font-bold text-zinc-400 line-clamp-1">{item.channel}</span>
+                                            {item.views && item.views !== 'unknown' && <span>{item.views} views</span>}
                                         </p>
                                     </div>
                                 </button>
@@ -428,16 +550,48 @@ export default function Entertainment() {
                                 <button 
                                     onClick={loadMore}
                                     disabled={isLoadingMore}
-                                    className={`px-8 py-3 rounded-xl font-bold text-white ${colors.primaryBg} hover:opacity-90 transition-opacity flex items-center justify-center min-w-[200px]`}
+                                    className={`px-8 py-3.5 rounded-xl font-bold text-white border border-zinc-800 bg-zinc-900 hover:bg-zinc-800 transition-all flex items-center justify-center min-w-[200px] shadow-lg`}
                                 >
-                                    {isLoadingMore ? <Loader2 className="w-5 h-5 animate-spin" /> : "Load More Titles"}
+                                    {isLoadingMore ? <Loader2 className="w-5 h-5 animate-spin" /> : "Load More Videos"}
                                 </button>
                             </div>
                         )}
 
                         {!error && results.length === 0 && !isLoading && (
-                            <div className="text-center py-20 text-zinc-500">
-                                No {type === 'movie' ? 'movies' : type === 'tv' ? 'TV shows' : 'YouTube videos'} found.
+                            <div className="text-center py-20 text-zinc-500 text-sm font-medium">
+                                No {activeTab === 'youtube' ? 'YouTube videos' : 'TikToks'} found matching that filter.
+                            </div>
+                        )}
+                        
+                        {/* Always available Manual Loader section at bottom of layout */}
+                        {!error && (
+                            <div className="p-6 bg-zinc-900/20 border border-zinc-800/60 rounded-2xl mt-12 shadow-inner">
+                                <form onSubmit={handleManualWatch} className="space-y-4">
+                                    <h4 className="font-bold text-white text-sm flex items-center gap-2">
+                                        {activeTab === 'tiktok' ? (
+                                          <><Smartphone size={18} className="text-teal-400" /> Watch TikTok by Link</>
+                                        ) : (
+                                          <><Youtube size={18} className="text-red-500" /> Watch YouTube by URL</>
+                                        )}
+                                    </h4>
+                                    <p className="text-xs text-zinc-500">
+                                        {activeTab === 'tiktok' 
+                                          ? "Paste any full TikTok video link (e.g. from the mobile app or browser URL) to load here." 
+                                          : "Paste any YouTube link, link share shortcut, or video ID directly into the bar."}
+                                    </p>
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        <input 
+                                           name="mediaId" 
+                                           type="text" 
+                                           placeholder={activeTab === 'tiktok' ? "TikTok Link (e.g. https://www.tiktok.com/@username/video/7391823...)" : "YouTube URL or video ID (e.g. https://youtu.be/...)"} 
+                                           className="flex-1 bg-black border border-zinc-850 rounded-xl px-4 py-2.5 text-xs sm:text-sm text-white focus:outline-none focus:border-zinc-700 font-medium placeholder-zinc-600" 
+                                           required 
+                                        />
+                                        <button type="submit" className={`px-6 py-2.5 ${activeTab === 'tiktok' ? 'bg-teal-500 hover:bg-teal-600' : colors.primaryBg} text-white rounded-xl text-xs sm:text-sm font-bold transition-all shrink-0`}>
+                                           Play Now
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         )}
                     </>
@@ -448,4 +602,3 @@ export default function Entertainment() {
     </PageLayout>
   );
 }
-
