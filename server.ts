@@ -283,30 +283,6 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  app.get("/api/tmdb-proxy", async (req, res) => {
-    try {
-      const { url } = req.query;
-      if (!url || typeof url !== 'string') {
-        return res.status(400).json({ error: "No URL provided" });
-      }
-      
-      const response = await fetch(decodeURIComponent(url), {
-        headers: {
-          'Accept': 'application/json',
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        }
-      });
-      if (!response.ok) {
-        return res.status(response.status).json({ error: `Failed to fetch: ${response.statusText}` });
-      }
-      
-      const data = await response.json();
-      res.json(data);
-    } catch (err: any) {
-      res.status(500).json({ error: err.message });
-    }
-  });
-
   app.get("/api/youtube-search", async (req, res) => {
     try {
       const { query, page } = req.query;
@@ -427,6 +403,95 @@ async function startServer() {
       res.status(200).json({ results });
     } catch (e: any) {
       console.error("Youtube API error:", e);
+      res.status(500).json({ results: [] });
+    }
+  });
+
+  app.get("/api/tiktok-search", async (req, res) => {
+    try {
+      const { query, page } = req.query;
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ results: [] });
+      }
+
+      const pageNum = parseInt(page as string) || 1;
+      const bParams = pageNum > 1 ? { b: ((pageNum - 1) * 30 + 1).toString() } : {};
+
+      const searchUrl =
+        "https://video.search.yahoo.com/search/video?" +
+        new URLSearchParams({
+          p: query + " site:tiktok.com",
+          fr: "sfp",
+          ...bParams
+        });
+
+      const searchResponse = await fetch(searchUrl, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+          Accept: "text/html"
+        }
+      });
+
+      if (!searchResponse.ok) {
+        return res.status(200).json({ results: [] });
+      }
+
+      const html = await searchResponse.text();
+      const cards = html.split('<li class="tile').slice(1);
+      const results: any[] = [];
+      const seen = new Set();
+
+      for (const card of cards) {
+        const refMatch = card.match(/data-referenceurl="([^"]+)"/);
+        const hrefMatch = card.match(/href="([^"]+)"/);
+        let url = refMatch?.[1] || hrefMatch?.[1];
+        if (!url) continue;
+
+        let decodedUrl = "";
+        try {
+          decodedUrl = decodeURIComponent(url);
+        } catch(e) {
+          decodedUrl = url;
+        }
+
+        // Match: tiktok.com/@username/video/1234567890
+        const tiktokMatch = decodedUrl.match(/tiktok\.com\/@([^\/]+)\/video\/(\d+)/i);
+        if (!tiktokMatch) continue;
+
+        const username = tiktokMatch[1];
+        const id = tiktokMatch[2];
+
+        if (seen.has(id)) continue;
+        seen.add(id);
+
+        const titleMatch = card.match(/tile-title[^>]*>(.*?)<\/p>/s);
+        const title = titleMatch
+          ? titleMatch[1].replace(/<[^>]+>/g, "").trim()
+          : `TikTok by @${username}`;
+
+        const thumbMatch = card.match(/<img[^>]+src="([^"]+)"/);
+        const thumbnail = thumbMatch?.[1] || "https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60";
+
+        const durationMatch = card.match(/class="[^"]*time[^"]*"[^>]*>(.*?)<\/p>/);
+        const duration = durationMatch?.[1]?.trim() || "";
+
+        const viewsMatch = card.match(/(\d[\d.,]*[MK]?) views/i);
+        const views = viewsMatch?.[1] || "unknown";
+
+        results.push({
+          id,
+          username,
+          title,
+          thumbnail,
+          duration,
+          views,
+          channel: `@${username}`
+        });
+      }
+
+      res.status(200).json({ results });
+    } catch (e: any) {
+      console.error("TikTok API error:", e);
       res.status(500).json({ results: [] });
     }
   });
