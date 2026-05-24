@@ -85,7 +85,7 @@
         <div class="flex flex-col md:flex-row gap-4 mb-8">
             <div class="relative flex-1">
                 <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500"></i>
-                <input type="text" id="searchInput" placeholder="Search 4.5k+ G*mes!" class="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors">
+                <input type="text" id="searchInput" placeholder="Search 4.6k+ G*mes!" class="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors">
             </div>
             <select id="sourceFilter" class="bg-zinc-900/80 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-zinc-600 transition-colors">
                 <option value="all">All Sources</option>
@@ -304,9 +304,10 @@
             });
 
             const loadMoreBtn = document.getElementById('loadMoreContainer');
-            if (currentRenderCount < filteredGames.length) {
+            const remaining = filteredGames.length - toRender.length;
+            if (remaining > 0) {
                 loadMoreBtn.classList.remove('hidden');
-                document.getElementById('loadMoreBtn').innerText = `Load More (${filteredGames.length - currentRenderCount} left)`;
+                document.getElementById('loadMoreBtn').innerText = `Load More (${remaining} left)`;
             } else {
                 loadMoreBtn.classList.add('hidden');
             }
