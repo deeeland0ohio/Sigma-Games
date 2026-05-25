@@ -33,7 +33,7 @@ export default function GamePlayer() {
         <h1 className="text-2xl font-bold text-white mb-2 tracking-tight">Game Not Found</h1>
         <p className="mb-8 text-zinc-500">The requested game could not be located in the system.</p>
         <Link to="/" className={`${colors.primary} hover:opacity-80 flex items-center gap-2 font-medium transition-all`}>
-          <ArrowLeft size={16} /> Back to Games
+          <ArrowLeft size={16} /> Back to Home
         </Link>
       </div>
     );

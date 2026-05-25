@@ -20,7 +20,7 @@ export default function PageLayout({
   title, 
   showBack = false, 
   backTo = "/", 
-  backText = "Back to Games",
+  backText = "Back to Home",
   maxWidth = '6xl',
   noPadding = false
 }: PageLayoutProps) {
