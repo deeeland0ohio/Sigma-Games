@@ -628,7 +628,7 @@ export default function ChatPage() {
               </div>
               <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
               <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
-                Chat will not work if you are using a .vercel or .pages.dev link
+                Chat will not work depending on the link.
               </p>
               <button
                 onClick={() => setShowVercelWarning(false)}

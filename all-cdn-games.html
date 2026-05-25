@@ -38,9 +38,13 @@
         .matrix-bg {
             position: fixed;
             top: 0; left: 0; width: 100vw; height: 100vh;
-            z-index: -1;
-            background: linear-gradient(rgba(0,0,0,0.9), rgba(0,0,0,0.9)), 
-                        radial-gradient(circle at center, rgba(10,10,12,1) 0%, rgba(0,0,0,1) 100%);
+            z-index: -2;
+            background-color: #09090b;
+            background-image: 
+                radial-gradient(circle at center, rgba(239, 68, 68, 0.06) 0%, rgba(16, 185, 129, 0.04) 50%, rgba(0,0,0,0) 100%),
+                linear-gradient(to right, rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+            background-size: 100% 100%, 35px 35px, 35px 35px;
         }
         .card-img {
             width: 100%;
@@ -64,6 +68,7 @@
 </head>
 <body class="antialiased">
     <div class="matrix-bg"></div>
+    <canvas id="dotCanvas" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; background-color: transparent;"></canvas>
 
     <div class="max-w-7xl mx-auto px-4 py-8 relative z-10">
         <header class="flex flex-col sm:flex-row items-center justify-between mb-8 pb-4 border-b border-zinc-800">
@@ -375,6 +380,285 @@
         }
 
         init();
+    </script>
+    <script>
+        (function() {
+            const canvas = document.getElementById('dotCanvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) return;
+
+            // Load theme & colors
+            const savedTheme = localStorage.getItem('app-theme') || 'red-green';
+            const themeColorsMap = {
+                'red-green': ['rgba(239, 68, 68, 0.4)', 'rgba(16, 185, 129, 0.4)'],
+                'blue-pink': ['rgba(59, 130, 246, 0.4)', 'rgba(236, 72, 153, 0.4)'],
+                'purple-cyan': ['rgba(168, 85, 247, 0.4)', 'rgba(6, 182, 212, 0.4)'],
+                'orange-yellow': ['rgba(249, 115, 22, 0.4)', 'rgba(234, 179, 8, 0.4)'],
+                'monochrome': ['rgba(244, 244, 245, 0.4)', 'rgba(161, 161, 170, 0.4)'],
+                'neon-green': ['rgba(163, 230, 53, 0.4)', 'rgba(16, 185, 129, 0.4)'],
+                'cyberpunk': ['rgba(250, 204, 21, 0.4)', 'rgba(217, 70, 239, 0.4)'],
+                'synthwave': ['rgba(99, 102, 241, 0.4)', 'rgba(236, 72, 153, 0.4)'],
+                'dracula': ['rgba(192, 132, 252, 0.4)', 'rgba(16, 185, 129, 0.4)'],
+                'hacker': ['rgba(16, 185, 129, 0.4)', 'rgba(16, 185, 129, 0.2)']
+            };
+
+            const colors = [...(themeColorsMap[savedTheme] || themeColorsMap['red-green'])];
+
+            if (savedTheme === 'custom') {
+                try {
+                    const savedCustom = localStorage.getItem('app-custom-colors');
+                    if (savedCustom) {
+                        const parsedCustom = JSON.parse(savedCustom);
+                        if (Array.isArray(parsedCustom) && parsedCustom.length > 0) {
+                            colors[0] = hexToRgb(parsedCustom[0] || '#ffffff', 0.4);
+                            if (parsedCustom[1]) colors[1] = hexToRgb(parsedCustom[1], 0.4);
+                            if (parsedCustom[2]) colors[2] = hexToRgb(parsedCustom[2], 0.4);
+                            if (parsedCustom[3]) colors[3] = hexToRgb(parsedCustom[3], 0.4);
+                        }
+                    }
+                } catch(e) {}
+            }
+
+            function hexToRgb(hex, alpha) {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                if (result) {
+                    return `rgba(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}, ${alpha})`;
+                }
+                return `rgba(255, 255, 255, ${alpha})`;
+            }
+
+            // Load config
+            let config = { speed: 40, size: 2, density: 35 };
+            const savedConfig = localStorage.getItem('app-background-config');
+            if (savedConfig) {
+                try {
+                    const parsed = JSON.parse(savedConfig);
+                    if (parsed && parsed.dots) {
+                        config = parsed.dots;
+                    }
+                } catch(e) {}
+            }
+
+            // Setup power multiplier
+            const savedPower = localStorage.getItem('app-energy-level');
+            let powerMultiplier = 0.8;
+            if (savedPower) {
+                const parsedPower = parseInt(savedPower, 10);
+                if (!isNaN(parsedPower)) {
+                    powerMultiplier = parsedPower / 50;
+                }
+            }
+
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            let dpr = window.devicePixelRatio || 1;
+
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            canvas.width = Math.floor(width * dpr);
+            canvas.height = Math.floor(height * dpr);
+            ctx.scale(dpr, dpr);
+
+            let mouse = { x: -1000, y: -1000 };
+            const shockwaves = [];
+
+            const handleMouseMove = (e) => {
+                mouse.x = e.clientX;
+                mouse.y = e.clientY;
+            };
+
+            const handleMouseLeave = () => {
+                mouse.x = -1000;
+                mouse.y = -1000;
+            };
+
+            const handleClick = (e) => {
+                if (e.target instanceof Element && e.target.closest('button, a, input, textarea, select, label, [role="button"], [role="switch"]')) {
+                    return;
+                }
+                shockwaves.push({
+                    x: e.clientX,
+                    y: e.clientY,
+                    radius: 0,
+                    maxRadius: Math.max(width, height) * 0.5 * powerMultiplier,
+                    speed: 20 * Math.sqrt(powerMultiplier),
+                    force: 10 * powerMultiplier
+                });
+            };
+
+            window.addEventListener('mousemove', handleMouseMove);
+            window.addEventListener('mouseout', handleMouseLeave);
+            window.addEventListener('click', handleClick);
+
+            const dots = [];
+
+            const initDots = () => {
+                dots.length = 0;
+                width = window.innerWidth;
+                height = window.innerHeight;
+                dpr = window.devicePixelRatio || 1;
+
+                canvas.style.width = width + 'px';
+                canvas.style.height = height + 'px';
+                canvas.width = Math.floor(width * dpr);
+                canvas.height = Math.floor(height * dpr);
+                ctx.scale(dpr, dpr);
+
+                const spacing = config.density;
+
+                for (let x = 0; x < width + spacing; x += spacing) {
+                    for (let y = 0; y < height + spacing; y += spacing) {
+                        const color = colors[Math.floor(Math.random() * colors.length)];
+                        dots.push({
+                            x, y,
+                            baseX: x, baseY: y,
+                            vx: 0, vy: 0,
+                            color
+                        });
+                    }
+                }
+            };
+
+            initDots();
+            window.addEventListener('resize', initDots);
+
+            let animationFrameId;
+
+            const animate = () => {
+                const speed = config.speed / 1000;
+                const size = config.size;
+                const gridSpacing = config.density;
+
+                ctx.clearRect(0, 0, width, height);
+
+                // Draw faint grid
+                ctx.beginPath();
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+                ctx.lineWidth = 0.4;
+                for (let x = 0; x < width; x += gridSpacing) {
+                    ctx.moveTo(x, 0);
+                    ctx.lineTo(x, height);
+                }
+                for (let y = 0; y < height; y += gridSpacing) {
+                    ctx.moveTo(0, y);
+                    ctx.lineTo(width, y);
+                }
+                ctx.stroke();
+
+                // Update shockwaves
+                for (let j = shockwaves.length - 1; j >= 0; j--) {
+                    const sw = shockwaves[j];
+                    sw.radius += sw.speed;
+                    if (sw.radius >= sw.maxRadius) {
+                        shockwaves.splice(j, 1);
+                    }
+                }
+
+                for (let i = 0; i < dots.length; i++) {
+                    const dot = dots[i];
+
+                    if (powerMultiplier === 0) {
+                        dot.x = dot.baseX;
+                        dot.y = dot.baseY;
+                        dot.vx = 0;
+                        dot.vy = 0;
+                    } else {
+                        // 1. Mouse repulsion
+                        const dx = mouse.x - dot.x;
+                        const dy = mouse.y - dot.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const maxDistance = 120 * Math.sqrt(powerMultiplier);
+
+                        if (distance < maxDistance && distance > 0) {
+                            const force = (maxDistance - distance) / maxDistance;
+                            const angle = Math.atan2(dy, dx);
+                            dot.vx -= Math.cos(angle) * force * 1.5 * powerMultiplier;
+                            dot.vy -= Math.sin(angle) * force * 1.5 * powerMultiplier;
+                        }
+
+                        // 2. Shockwaves
+                        for (let j = 0; j < shockwaves.length; j++) {
+                            const sw = shockwaves[j];
+                            const sdx = dot.x - sw.x;
+                            const sdy = dot.y - sw.y;
+                            const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+
+                            const ringThickness = 30;
+                            if (Math.abs(sdist - sw.radius) < ringThickness) {
+                                const forceMult = (ringThickness - Math.abs(sdist - sw.radius)) / ringThickness;
+                                const angle = Math.atan2(sdy, sdx);
+                                dot.vx += Math.cos(angle) * sw.force * forceMult;
+                                dot.vy += Math.sin(angle) * sw.force * forceMult;
+                            }
+                        }
+
+                        // 3. Spring back & sway
+                        const time = Date.now() * 0.0008;
+                        const swayX = Math.sin(time + dot.baseX * 0.01) * 6.0;
+                        const swayY = Math.cos(time + dot.baseY * 0.01) * 6.0;
+
+                        dot.vx += (dot.baseX + swayX - dot.x) * speed;
+                        dot.vy += (dot.baseY + swayY - dot.y) * speed;
+
+                        // 4. Friction
+                        dot.vx *= 0.82;
+                        dot.vy *= 0.82;
+
+                        // 5. Update pos
+                        dot.x += dot.vx;
+                        dot.y += dot.vy;
+                    }
+
+                    // Cursor brightness
+                    const dx = mouse.x - dot.x;
+                    const dy = mouse.y - dot.y;
+                    const distance = Math.sqrt(dx * dx + dy * dy);
+                    const brightnessRadius = 150 * Math.sqrt(powerMultiplier);
+                    let brightness = 1;
+                    let scale = 1;
+                    if (distance < brightnessRadius && powerMultiplier > 0) {
+                        const influence = 1 - distance / brightnessRadius;
+                        brightness = 1 + influence * 2;
+                        scale = 1 + influence * 0.5;
+                    }
+
+                    // Shockwave brightness
+                    for (let j = 0; j < shockwaves.length; j++) {
+                        const sw = shockwaves[j];
+                        const sdx = dot.x - sw.x;
+                        const sdy = dot.y - sw.y;
+                        const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+                        const ringThickness = 40;
+                        if (Math.abs(sdist - sw.radius) < ringThickness) {
+                            const brightMult = (ringThickness - Math.abs(sdist - sw.radius)) / ringThickness;
+                            const fadeOut = Math.max(0, 1 - (sw.radius / sw.maxRadius));
+                            brightness = Math.max(brightness, 1 + brightMult * 2.5 * fadeOut);
+                            scale = Math.max(scale, 1 + brightMult * 0.75 * fadeOut);
+                        }
+                    }
+
+                    ctx.beginPath();
+                    ctx.arc(dot.x, dot.y, size * scale, 0, Math.PI * 2);
+
+                    if (brightness > 1) {
+                        ctx.fillStyle = dot.color.replace('0.4', (0.4 * brightness).toString());
+                        ctx.shadowBlur = 10 * (brightness - 1);
+                        ctx.shadowColor = dot.color;
+                    } else {
+                        ctx.fillStyle = dot.color;
+                        ctx.shadowBlur = 0;
+                    }
+
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                animationFrameId = requestAnimationFrame(animate);
+            };
+
+            animate();
+        })();
     </script>
 </body>
 </html>
