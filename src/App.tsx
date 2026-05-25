@@ -1,4 +1,5 @@
-import { HashRouter, Routes, Route } from 'react-router-dom';
+import { HashRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Home from './pages/Home';
 import GamePlayer from './pages/GamePlayer';
 import AllGames from './pages/AllGames';
@@ -20,12 +21,32 @@ import ExternalPlayer from './pages/ExternalPlayer';
 import NotFound from './pages/NotFound';
 import Entertainment from './pages/Entertainment';
 
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const currentPath = location.pathname;
+
+    // Track ONLY the home page
+    if (currentPath === '/') {
+      const umami = (window as any).umami;
+      if (umami && typeof umami.track === 'function') {
+        // Track page view manually
+        umami.track();
+      }
+    }
+  }, [location]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
         <FavoritesProvider>
           <HashRouter>
+            <AnalyticsTracker />
             <BackgroundManager />
             <SettingsOverlay />
             <PrankOverlay />
