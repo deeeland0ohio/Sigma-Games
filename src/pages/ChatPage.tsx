@@ -56,6 +56,7 @@ const getOS = () => {
 
 export default function ChatPage() {
   const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [guestUser, setGuestUser] = useState<{ uid: string } | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [nickname, setNickname] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
@@ -94,6 +95,16 @@ export default function ChatPage() {
     }, 1000);
   };
 
+  // Initialize guest user backup ID
+  useEffect(() => {
+    let id = localStorage.getItem('chat_guest_id');
+    if (!id) {
+      id = 'g_' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('chat_guest_id', id);
+    }
+    setGuestUser({ uid: id });
+  }, []);
+
   // Sync Auth State Change
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -123,8 +134,16 @@ export default function ChatPage() {
           }
         }
       } else {
-        setNickname(null);
-        setIsOwner(false);
+        // Fallback to unauthenticated guest mode if nickname is already defined
+        const storedNickname = localStorage.getItem('chat_nickname');
+        const storedIsOwner = localStorage.getItem('chat_is_owner') === 'true';
+        if (storedNickname) {
+          setNickname(storedNickname);
+          setIsOwner(storedIsOwner);
+        } else {
+          setNickname(null);
+          setIsOwner(false);
+        }
       }
     });
 
@@ -217,12 +236,13 @@ export default function ChatPage() {
 
   // Heartbeat helper effect to keep Firestore presence alive
   useEffect(() => {
-    if (!currentUser || !nickname) return;
+    const activeUser = currentUser || guestUser;
+    if (!activeUser || !nickname) return;
 
     const updatePresence = async () => {
       try {
-        await setDoc(doc(db, 'users', currentUser.uid), {
-          id: currentUser.uid,
+        await setDoc(doc(db, 'users', activeUser.uid), {
+          id: activeUser.uid,
           nickname,
           lastActive: Date.now(),
           isTyping,
@@ -240,15 +260,17 @@ export default function ChatPage() {
     return () => {
       clearInterval(heartbeat);
       // Delete presence doc on unmount
-      if (auth.currentUser) {
-        deleteDoc(doc(db, 'users', auth.currentUser.uid)).catch(() => {});
+      const targetUid = auth.currentUser?.uid || activeUser?.uid;
+      if (targetUid) {
+        deleteDoc(doc(db, 'users', targetUid)).catch(() => {});
       }
     };
-  }, [currentUser, nickname, isTyping, isOwner]);
+  }, [currentUser, guestUser, nickname, isTyping, isOwner]);
 
   // Listen to active ban logs to kick current user if banned by owner
   useEffect(() => {
-    if (!currentUser || !nickname) return;
+    const activeUser = currentUser || guestUser;
+    if (!activeUser || !nickname) return;
 
     const queryKicks = collection(db, 'kicks');
     const unsubscribe = onSnapshot(queryKicks, (snapshot) => {
@@ -257,15 +279,16 @@ export default function ChatPage() {
         const kickEnd = data.kickEnd || 0;
         
         if (data.nickname === nickname && Date.now() < kickEnd) {
+          const targetUid = activeUser.uid;
           if (data.kickType === '5m') {
             alert("You were kicked by the Owner for 5 minutes");
-            await deleteDoc(doc(db, 'users', currentUser.uid)).catch(() => {});
+            await deleteDoc(doc(db, 'users', targetUid)).catch(() => {});
             await signOut(auth);
             localStorage.setItem('kick_end', kickEnd.toString());
             startBanTimer(kickEnd);
           } else if (data.kickType === 'soft') {
             alert("You were kicked by the Owner, you may join back in");
-            await deleteDoc(doc(db, 'users', currentUser.uid)).catch(() => {});
+            await deleteDoc(doc(db, 'users', targetUid)).catch(() => {});
             await signOut(auth);
           }
         }
@@ -275,7 +298,7 @@ export default function ChatPage() {
     });
 
     return () => unsubscribe();
-  }, [currentUser, nickname]);
+  }, [currentUser, guestUser, nickname]);
 
   // Typing status mechanism
   useEffect(() => {
@@ -317,11 +340,23 @@ export default function ChatPage() {
     }
 
     try {
-      // Sign in anonymously if not already signed in
-      let user = auth.currentUser;
+      // Sign in anonymously if not already signed in, fallback to client-only guest ID on auth errors (e.g. restricted operations)
+      let user: { uid: string } | null = auth.currentUser;
       if (!user) {
-        const result = await signInAnonymously(auth);
-        user = result.user;
+        try {
+          const result = await signInAnonymously(auth);
+          user = result.user;
+        } catch (authErr: any) {
+          console.warn("signInAnonymously failed (likely disabled in console). Falling back to client-only guest ID:", authErr);
+          if (guestUser) {
+            user = { uid: guestUser.uid };
+          } else {
+            const fallbackUid = 'g_' + Math.random().toString(36).substring(2, 15);
+            localStorage.setItem('chat_guest_id', fallbackUid);
+            setGuestUser({ uid: fallbackUid });
+            user = { uid: fallbackUid };
+          }
+        }
       }
 
       if (!user) {
@@ -377,7 +412,8 @@ export default function ChatPage() {
   const handleSendMessage = async (e?: React.FormEvent | React.KeyboardEvent) => {
     if (e) e.preventDefault();
     const trimmed = newMessage.trim();
-    if (!trimmed || !nickname || !currentUser) return;
+    const activeUser = currentUser || guestUser;
+    if (!trimmed || !nickname || !activeUser) return;
 
     const msgId = Math.random().toString(36).substring(2, 15);
     try {
@@ -385,7 +421,7 @@ export default function ChatPage() {
         id: msgId,
         text: trimmed,
         senderName: nickname,
-        senderId: currentUser.uid,
+        senderId: activeUser.uid,
         createdAt: Date.now(),
         os: getOS()
       });
@@ -399,6 +435,7 @@ export default function ChatPage() {
     try {
       const msgRef = doc(db, 'messages', messageId);
       let patch: any = {};
+      const activeUser = currentUser || guestUser;
 
       if (isPermanent && isOwner) {
         patch = { isPermanentlyRemoved: true, isDeleted: true };
@@ -406,7 +443,7 @@ export default function ChatPage() {
         patch = { isAdminDeleted: true, isDeleted: true };
       } else {
         const msg = messages.find(m => m.id === messageId);
-        if (msg && currentUser && msg.senderId === currentUser.uid) {
+        if (msg && activeUser && msg.senderId === activeUser.uid) {
           patch = { isDeleted: true, isPlaceholder: true };
         } else {
           return;
@@ -420,7 +457,8 @@ export default function ChatPage() {
   };
 
   const handleKickUser = async (targetNickname: string, is5Minutes: boolean = false) => {
-    if (!isOwner || !currentUser) return;
+    const activeUser = currentUser || guestUser;
+    if (!isOwner || !activeUser) return;
 
     const kickId = Math.random().toString(36).substring(2, 15);
     const kickEnd = Date.now() + (is5Minutes ? 300000 : 5000);
@@ -430,7 +468,7 @@ export default function ChatPage() {
         nickname: targetNickname,
         kickType: is5Minutes ? '5m' : 'soft',
         kickEnd,
-        adminId: currentUser.uid
+        adminId: activeUser.uid
       });
     } catch (err) {
       handleFirestoreError(err, OperationType.WRITE, `kicks/${kickId}`);
@@ -466,9 +504,10 @@ export default function ChatPage() {
   };
 
   const handleLogout = async () => {
-    if (currentUser) {
+    const activeUser = currentUser || guestUser;
+    if (activeUser) {
       try {
-        await deleteDoc(doc(db, 'users', currentUser.uid));
+        await deleteDoc(doc(db, 'users', activeUser.uid));
         localStorage.removeItem('chat_nickname');
         localStorage.removeItem('chat_is_owner');
         await signOut(auth);
@@ -774,7 +813,7 @@ export default function ChatPage() {
                               </p>
                             )}
                           </div>
-                          {isOwner && currentUser && user.id !== currentUser.uid && (
+                          {isOwner && (currentUser || guestUser) && user.id !== (currentUser || guestUser)?.uid && (
                             <button 
                               onClick={() => handleKickUser(user.nickname)}
                               className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
