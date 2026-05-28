@@ -1,9 +1,26 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { io, Socket } from 'socket.io-client';
-import { Send, MessageSquare, User as UserIcon, UserPlus, LogOut, Trash2, X } from 'lucide-react';
+import { 
+  collection, 
+  doc, 
+  setDoc, 
+  updateDoc, 
+  deleteDoc, 
+  onSnapshot, 
+  query, 
+  orderBy, 
+  limit 
+} from 'firebase/firestore';
+import { 
+  signInAnonymously, 
+  signOut, 
+  onAuthStateChanged, 
+  User as FirebaseUser 
+} from 'firebase/auth';
+import { Send, MessageSquare, User as UserIcon, LogOut, Trash2, X } from 'lucide-react';
 import { useThemeColors } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
+import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 
 interface Message {
   id: string;
@@ -15,6 +32,8 @@ interface Message {
   isPlaceholder?: boolean;
   isSystemInfo?: boolean;
   isAdminDeleted?: boolean;
+  isPermanentlyRemoved?: boolean;
+  os?: string;
 }
 
 interface ChatUser {
@@ -23,17 +42,30 @@ interface ChatUser {
   lastActive: number;
   isTyping: boolean;
   isOwner?: boolean;
+  os?: string;
 }
 
+const getOS = () => {
+  const userAgent = typeof window !== 'undefined' ? window.navigator.userAgent : '';
+  if (userAgent.indexOf("Win") != -1) return "Windows";
+  if (userAgent.indexOf("Mac") != -1) return "Mac";
+  if (userAgent.indexOf("CrOS") != -1) return "Chromebook";
+  if (userAgent.indexOf("Linux") != -1) return "Linux";
+  return "Other";
+};
+
 export default function ChatPage() {
-  const [nickname, setNickname] = useState<string | null>(localStorage.getItem('chat_nickname'));
-  const [tempName, setTempName] = useState('');
-  const [password, setPassword] = useState('');
+  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [nickname, setNickname] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
+  
+  const [inputNickname, setInputNickname] = useState('');
+  const [inputPassword, setInputPassword] = useState('');
+  
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnected, setIsConnected] = useState(false);
+  const [isConnected, setIsConnected] = useState(navigator.onLine);
   const [users, setUsers] = useState<ChatUser[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,13 +76,7 @@ export default function ChatPage() {
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useThemeColors();
   const [banTimeLeft, setBanTimeLeft] = useState<number | null>(null);
-  const [showVercelWarning, setShowVercelWarning] = useState(false);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const socketRef = useRef<Socket | null>(null);
-
-  useEffect(() => {
-    socketRef.current = socket;
-  }, [socket]);
 
   const startBanTimer = (end: number) => {
     if (intervalRef.current) clearInterval(intervalRef.current);
@@ -61,14 +87,49 @@ export default function ChatPage() {
         setBanTimeLeft(null);
         localStorage.removeItem('kick_end');
         if (intervalRef.current) clearInterval(intervalRef.current);
-        
-        // Automatically reload the page so they can join back in
         window.location.reload();
       } else {
         setBanTimeLeft(timeLeft);
       }
     }, 1000);
   };
+
+  // Sync Auth State Change
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      setCurrentUser(user);
+      setAuthLoading(false);
+      
+      if (user) {
+        const storedNickname = localStorage.getItem('chat_nickname');
+        const storedIsOwner = localStorage.getItem('chat_is_owner') === 'true';
+        
+        if (storedNickname) {
+          setNickname(storedNickname);
+          setIsOwner(storedIsOwner);
+          
+          // Write standard presence on connection
+          try {
+            await setDoc(doc(db, 'users', user.uid), {
+              id: user.uid,
+              nickname: storedNickname,
+              lastActive: Date.now(),
+              isTyping: false,
+              isOwner: storedIsOwner,
+              os: getOS()
+            });
+          } catch (err) {
+            console.error("Presence status write error on auth change: ", err);
+          }
+        }
+      } else {
+        setNickname(null);
+        setIsOwner(false);
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
 
   useEffect(() => {
     const kickEnd = localStorage.getItem('kick_end');
@@ -81,14 +142,12 @@ export default function ChatPage() {
       }
     }
 
-    setShowVercelWarning(true);
-
     return () => {
       if (intervalRef.current) clearInterval(intervalRef.current);
     };
   }, []);
 
-  // Force re-render every minute to filter out old messages
+  // Force re-render periodically to filter expired messages client-side
   useEffect(() => {
     const interval = setInterval(() => {
       setTick(t => t + 1);
@@ -96,65 +155,9 @@ export default function ChatPage() {
     return () => clearInterval(interval);
   }, []);
 
+  // Sync network status listeners
   useEffect(() => {
-    const newSocket = io(window.location.origin, {
-      transports: ['websocket', 'polling'],
-      secure: true,
-    });
-    setSocket(newSocket);
-
-    newSocket.on('connect', () => {
-      setIsConnected(true);
-      const savedNickname = localStorage.getItem('chat_nickname');
-      if (savedNickname) {
-        newSocket.emit('join_chat', savedNickname);
-      }
-    });
-    newSocket.on('disconnect', () => setIsConnected(false));
-
-    newSocket.on('initial_messages', (msgs: Message[]) => {
-      setMessages(msgs);
-    });
-
-    newSocket.on('new_message', (msg: Message) => {
-      setMessages(prev => [...prev, msg]);
-    });
-
-    newSocket.on('user_list', (userList: ChatUser[]) => {
-      setUsers(userList);
-    });
-
-    newSocket.on('join_success', ({ nickname: finalNickname, isOwner: ownerStatus }: { nickname: string, isOwner: boolean }) => {
-      setNickname(finalNickname);
-      setIsOwner(ownerStatus);
-      localStorage.setItem('chat_nickname', finalNickname);
-      localStorage.setItem('last_nickname', finalNickname);
-      setError(null);
-    });
-
-    newSocket.on('join_error', (msg: string) => {
-      setError(msg);
-    });
-
-    newSocket.on('kicked', (msg: string) => {
-      alert(msg);
-      setNickname(null);
-      setIsOwner(false);
-      localStorage.removeItem('chat_nickname');
-      localStorage.removeItem('ban_end');
-    });
-
-    newSocket.on('kicked_5m', ({ message, kickEnd }: { message: string, kickEnd: number }) => {
-      alert(message);
-      setNickname(null);
-      setIsOwner(false);
-      localStorage.removeItem('chat_nickname');
-      localStorage.setItem('kick_end', kickEnd.toString());
-      startBanTimer(kickEnd);
-    });
-
-    // Handle browser online/offline status
-    const handleOnline = () => setIsConnected(newSocket.connected);
+    const handleOnline = () => setIsConnected(true);
     const handleOffline = () => setIsConnected(false);
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
@@ -163,83 +166,274 @@ export default function ChatPage() {
     window.addEventListener('click', handleClickOutside);
 
     return () => {
-      newSocket.close();
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('click', handleClickOutside);
     };
   }, []);
 
+  // Listen to messages list on Firestore
   useEffect(() => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-    }
-  }, [messages]);
+    if (!nickname) return;
 
-  const getOS = () => {
-    const userAgent = window.navigator.userAgent;
-    if (userAgent.indexOf("Win") != -1) return "Windows";
-    if (userAgent.indexOf("Mac") != -1) return "Mac";
-    if (userAgent.indexOf("CrOS") != -1) return "Chromebook";
-    if (userAgent.indexOf("Linux") != -1) return "Linux";
-    return "Other";
-  };
+    const msgQuery = query(
+      collection(db, 'messages'),
+      orderBy('createdAt', 'desc'),
+      limit(150)
+    );
 
-  const handleJoinChat = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!tempName.trim() || !socket) return;
-    socket.emit('join_chat', { nickname: tempName.trim(), password, os: getOS() });
-  };
+    const unsubscribe = onSnapshot(msgQuery, (snapshot) => {
+      const fetchedMsgs = snapshot.docs.map(doc => ({
+        ...doc.data(),
+        id: doc.id
+      })) as Message[];
 
+      // Sort chronological order
+      fetchedMsgs.sort((a, b) => a.createdAt - b.createdAt);
+      setMessages(fetchedMsgs);
+    }, (err) => {
+      handleFirestoreError(err, OperationType.GET, 'messages');
+    });
+
+    return () => unsubscribe();
+  }, [nickname]);
+
+  // Listen to active users registry presence list
   useEffect(() => {
-    if (socket && nickname) {
+    if (!nickname) return;
+
+    const queryPresence = collection(db, 'users');
+    const unsubscribe = onSnapshot(queryPresence, (snapshot) => {
+      const fetchedUsers = snapshot.docs.map(doc => doc.data() as ChatUser);
+      // Filter out users who haven't updated heartbeat for over 30s
+      const active = fetchedUsers.filter(u => (Date.now() - u.lastActive) < 30000);
+      setUsers(active);
+    }, (err) => {
+      handleFirestoreError(err, OperationType.GET, 'users');
+    });
+
+    return () => unsubscribe();
+  }, [nickname]);
+
+  // Heartbeat helper effect to keep Firestore presence alive
+  useEffect(() => {
+    if (!currentUser || !nickname) return;
+
+    const updatePresence = async () => {
+      try {
+        await setDoc(doc(db, 'users', currentUser.uid), {
+          id: currentUser.uid,
+          nickname,
+          lastActive: Date.now(),
+          isTyping,
+          isOwner,
+          os: getOS()
+        });
+      } catch (err) {
+        console.error("Presence status sync error: ", err);
+      }
+    };
+
+    updatePresence();
+    const heartbeat = setInterval(updatePresence, 10000);
+
+    return () => {
+      clearInterval(heartbeat);
+      // Delete presence doc on unmount
+      if (auth.currentUser) {
+        deleteDoc(doc(db, 'users', auth.currentUser.uid)).catch(() => {});
+      }
+    };
+  }, [currentUser, nickname, isTyping, isOwner]);
+
+  // Listen to active ban logs to kick current user if banned by owner
+  useEffect(() => {
+    if (!currentUser || !nickname) return;
+
+    const queryKicks = collection(db, 'kicks');
+    const unsubscribe = onSnapshot(queryKicks, (snapshot) => {
+      snapshot.docs.forEach(async (docRef) => {
+        const data = docRef.data();
+        const kickEnd = data.kickEnd || 0;
+        
+        if (data.nickname === nickname && Date.now() < kickEnd) {
+          if (data.kickType === '5m') {
+            alert("You were kicked by the Owner for 5 minutes");
+            await deleteDoc(doc(db, 'users', currentUser.uid)).catch(() => {});
+            await signOut(auth);
+            localStorage.setItem('kick_end', kickEnd.toString());
+            startBanTimer(kickEnd);
+          } else if (data.kickType === 'soft') {
+            alert("You were kicked by the Owner, you may join back in");
+            await deleteDoc(doc(db, 'users', currentUser.uid)).catch(() => {});
+            await signOut(auth);
+          }
+        }
+      });
+    }, (err) => {
+      handleFirestoreError(err, OperationType.GET, 'kicks');
+    });
+
+    return () => unsubscribe();
+  }, [currentUser, nickname]);
+
+  // Typing status mechanism
+  useEffect(() => {
+    if (nickname) {
       if (newMessage.trim().length > 0 && !isTyping) {
         setIsTyping(true);
-        socket.emit('typing', true);
       } else if (newMessage.trim().length === 0 && isTyping) {
         setIsTyping(false);
-        socket.emit('typing', false);
       }
 
-      // Auto stop typing after 3 seconds of no input
       if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
       typingTimeoutRef.current = setTimeout(() => {
         if (isTyping) {
           setIsTyping(false);
-          socket.emit('typing', false);
         }
       }, 3000);
     }
-  }, [newMessage, socket, nickname]);
+  }, [newMessage, nickname, isTyping]);
 
-  const handleSendMessage = (e?: React.FormEvent | React.KeyboardEvent) => {
+  const handleJoinChat = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    if (!newMessage.trim() || !nickname || !socket) return;
+    setError(null);
 
-    const msg = {
-      text: newMessage.trim(),
-      senderName: nickname,
-    };
+    const trimmedNickname = inputNickname.trim();
+    if (!trimmedNickname) {
+      setError("Please enter a nickname.");
+      return;
+    }
 
-    socket.emit('send_message', msg);
-    setNewMessage('');
+    if (trimmedNickname.length > 25) {
+      setError("Nickname must be 25 characters or less.");
+      return;
+    }
+
+    const isSigmaDev = trimmedNickname.toLowerCase() === "sigma dev";
+    if (isSigmaDev && inputPassword !== "sigmarizzsigmaenigma") {
+      setError("Invalid password for Sigma Dev");
+      return;
+    }
+
+    try {
+      // Sign in anonymously if not already signed in
+      let user = auth.currentUser;
+      if (!user) {
+        const result = await signInAnonymously(auth);
+        user = result.user;
+      }
+
+      if (!user) {
+        throw new Error("Could not initialize guest session.");
+      }
+
+      // Check for nickname deconfliction using the synced users presence list
+      let finalNickname = trimmedNickname;
+      let suffix = 1;
+      const existingNicknames = users.map(u => u.nickname.toLowerCase());
+      
+      // If the nickname is taken (case-insensitive check, except if they are the verified Sigma Dev)
+      if (existingNicknames.includes(finalNickname.toLowerCase())) {
+        if (isSigmaDev) {
+          finalNickname = "Sigma Dev";
+        } else {
+          while (existingNicknames.includes(finalNickname.toLowerCase() + (suffix > 1 ? `(${suffix})` : ''))) {
+            suffix++;
+          }
+          finalNickname = `${trimmedNickname}(${suffix})`;
+        }
+      }
+
+      // If Sigma Dev, write secret to subcollection to satisfy rules
+      if (isSigmaDev) {
+        await setDoc(doc(db, 'users', user.uid, 'private', 'secrets'), {
+          password: "sigmarizzsigmaenigma"
+        });
+      }
+
+      // Set user presence details in Firestore
+      await setDoc(doc(db, 'users', user.uid), {
+        id: user.uid,
+        nickname: finalNickname,
+        lastActive: Date.now(),
+        isTyping: false,
+        isOwner: isSigmaDev,
+        os: getOS()
+      });
+
+      // Save to localStorage for session persistence on refresh
+      localStorage.setItem('chat_nickname', finalNickname);
+      localStorage.setItem('chat_is_owner', isSigmaDev ? 'true' : 'false');
+
+      setNickname(finalNickname);
+      setIsOwner(isSigmaDev);
+    } catch (err: any) {
+      console.error(err);
+      setError("Failed to join chat: " + (err.message || String(err)));
+    }
   };
 
-  const handleDeleteMessage = (messageId: string, isPermanent: boolean = false, isAdminSoft: boolean = false) => {
-    if (socket) {
-      let type = 'soft';
-      if (isPermanent) type = 'permanent';
-      else if (isAdminSoft) type = 'admin_soft';
-      
-      socket.emit('delete_message', { messageId, type });
+  const handleSendMessage = async (e?: React.FormEvent | React.KeyboardEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = newMessage.trim();
+    if (!trimmed || !nickname || !currentUser) return;
+
+    const msgId = Math.random().toString(36).substring(2, 15);
+    try {
+      await setDoc(doc(db, 'messages', msgId), {
+        id: msgId,
+        text: trimmed,
+        senderName: nickname,
+        senderId: currentUser.uid,
+        createdAt: Date.now(),
+        os: getOS()
+      });
+      setNewMessage('');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `messages/${msgId}`);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string, isPermanent: boolean = false, isAdminSoft: boolean = false) => {
+    try {
+      const msgRef = doc(db, 'messages', messageId);
+      let patch: any = {};
+
+      if (isPermanent && isOwner) {
+        patch = { isPermanentlyRemoved: true, isDeleted: true };
+      } else if (isAdminSoft && isOwner) {
+        patch = { isAdminDeleted: true, isDeleted: true };
+      } else {
+        const msg = messages.find(m => m.id === messageId);
+        if (msg && currentUser && msg.senderId === currentUser.uid) {
+          patch = { isDeleted: true, isPlaceholder: true };
+        } else {
+          return;
+        }
+      }
+      await updateDoc(msgRef, patch);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `messages/${messageId}`);
     }
     setContextMenu(null);
   };
 
-  const handleKickUser = (userId: string) => {
-    if (socket && isOwner) {
-      console.log(`[CLIENT] Emitting kick_user for ID: ${userId}`);
-      socket.emit('kick_user', userId);
+  const handleKickUser = async (targetNickname: string, is5Minutes: boolean = false) => {
+    if (!isOwner || !currentUser) return;
+
+    const kickId = Math.random().toString(36).substring(2, 15);
+    const kickEnd = Date.now() + (is5Minutes ? 300000 : 5000);
+
+    try {
+      await setDoc(doc(db, 'kicks', kickId), {
+        nickname: targetNickname,
+        kickType: is5Minutes ? '5m' : 'soft',
+        kickEnd,
+        adminId: currentUser.uid
+      });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, `kicks/${kickId}`);
     }
     setContextMenu(null);
   };
@@ -263,23 +457,52 @@ export default function ChatPage() {
       const diff = now - lastEnterTime.current;
       
       if (diff < 500 && diff > 0) {
-        // Double enter detected
         e.preventDefault();
         handleSendMessage();
       } else {
-        // First enter or too slow, let it add a newline naturally
         lastEnterTime.current = now;
       }
     }
   };
 
-  const handleLogout = () => {
-    setNickname(null);
-    localStorage.removeItem('chat_nickname');
+  const handleLogout = async () => {
+    if (currentUser) {
+      try {
+        await deleteDoc(doc(db, 'users', currentUser.uid));
+        localStorage.removeItem('chat_nickname');
+        localStorage.removeItem('chat_is_owner');
+        await signOut(auth);
+      } catch (err) {
+        console.error(err);
+      }
+    }
   };
 
-  // Client-side message expiration filter
-  const filteredMessages = messages.filter(msg => {
+  // Scroll to bottom helper
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // Client-side mapping & filter
+  const mappedMessages = messages.map(msg => {
+    if (msg.isPermanentlyRemoved) {
+      return null;
+    }
+    if (msg.isAdminDeleted) {
+      return { ...msg, text: `[DELETED BY Sigma Dev]`, isAdminDeleted: true, isPlaceholder: true };
+    }
+    if (msg.isDeleted) {
+      if (isOwner) {
+        return { ...msg, text: `[DELETED BY USER]`, isSystemInfo: true };
+      }
+      return { ...msg, text: `[this message was deleted by ${msg.senderName}]`, isPlaceholder: true };
+    }
+    return msg;
+  }).filter((msg): msg is Message => msg !== null);
+
+  const filteredMessages = mappedMessages.filter(msg => {
     const oneHourAgo = Date.now() - 3600000;
     return msg.createdAt > oneHourAgo;
   });
@@ -287,120 +510,137 @@ export default function ChatPage() {
   return (
     <PageLayout title="" maxWidth="full" showBack={false}>
       <div className="max-w-[95%] mx-auto transform scale-[0.85] origin-top">
-        <div className={`w-full h-[calc(100vh-4rem)] flex flex-col bg-zinc-900/95 rounded-2xl overflow-hidden relative shadow-2xl border border-zinc-800/50`}>
-        {/* Subtle theme glow background */}
-        <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} opacity-10 pointer-events-none`} />
-        
-        {/* Chat Header */}
-        <div className="p-6 border-b border-zinc-800/30 flex items-center justify-between bg-zinc-900/40 relative z-10">
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${colors.primaryBg} text-black`}>
-              <MessageSquare size={24} />
-            </div>
-            <div>
-              <h2 className="text-xl font-bold text-white tracking-tight uppercase">Global Chat</h2>
-              <div className="flex items-center gap-2">
-                <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`}></div>
-                <p className={`text-[10px] font-bold uppercase tracking-widest ${isConnected ? 'text-zinc-500' : 'text-red-500'}`}>
-                  {isConnected ? 'Connected' : 'Disconnected'}
-                </p>
-                <div className="w-1 h-1 rounded-full bg-zinc-800"></div>
-                <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
-                  {users.length} Online
-                </p>
+        <div className="w-full h-[calc(100vh-4rem)] flex flex-col bg-zinc-900/95 rounded-2xl overflow-hidden relative shadow-2xl border border-zinc-800/50">
+          {/* Subtle theme glow background */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} opacity-10 pointer-events-none`} />
+          
+          {/* Chat Header */}
+          <div className="p-6 border-b border-zinc-800/30 flex items-center justify-between bg-zinc-900/40 relative z-10">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 rounded-lg ${colors.primaryBg} text-black`}>
+                <MessageSquare size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white tracking-tight uppercase">Global Chat</h2>
+                <div className="flex items-center gap-2">
+                  <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500 animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.5)]'}`} />
+                  <p className={`text-[10px] font-bold uppercase tracking-widest ${isConnected ? 'text-zinc-500' : 'text-red-500'}`}>
+                    {isConnected ? 'Connected' : 'Disconnected'}
+                  </p>
+                  <div className="w-1 h-1 rounded-full bg-zinc-800" />
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-zinc-600">
+                    {users.length} Online
+                  </p>
+                </div>
               </div>
             </div>
+            {nickname && (
+              <button 
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all text-xs font-bold uppercase tracking-widest"
+              >
+                <LogOut size={14} />
+                Sign Out
+              </button>
+            )}
           </div>
-          {nickname && (
-            <button 
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all text-xs font-bold uppercase tracking-widest"
-            >
-              <LogOut size={14} />
-              Exit Session
-            </button>
-          )}
-        </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-row min-h-0 relative z-10 overflow-hidden">
-          {!nickname ? (
-            <div className="absolute inset-0 flex items-center justify-center p-4 md:p-8 text-center">
-              <div className="w-full max-w-sm flex flex-col items-center space-y-8">
-                <motion.div 
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 shadow-xl"
+          {/* Chat Area */}
+          <div className="flex-1 flex flex-row min-h-0 relative z-10 overflow-hidden">
+            {authLoading ? (
+              <div className="absolute inset-0 flex items-center justify-center p-4">
+                <p className="text-zinc-500 text-xs tracking-[0.2em] font-bold uppercase animate-pulse">Initializing authentications...</p>
+              </div>
+            ) : !nickname ? (
+              <div className="absolute inset-0 flex items-center justify-center p-4 md:p-8 text-center">
+                <form 
+                  onSubmit={handleJoinChat}
+                  className="w-full max-w-sm flex flex-col items-center space-y-8"
                 >
-                  <UserIcon size={40} className="text-zinc-500" />
-                </motion.div>
-                
-                <div className="space-y-2">
-                  <h3 className="text-2xl font-bold text-white tracking-tight uppercase">Enter a name</h3>
-                </div>
-                
-                <form onSubmit={handleJoinChat} className="w-full space-y-4">
-                  <div className="space-y-4">
-                    <input
-                      type="text"
-                      value={tempName}
-                      onChange={(e) => setTempName(e.target.value)}
-                      placeholder="ENTER NICKNAME..."
-                      maxLength={20}
-                      autoFocus
-                      className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-6 py-4 text-lg text-white focus:outline-none focus:border-zinc-500 transition-all placeholder:text-zinc-700 text-center font-mono tracking-widest"
-                    />
-                    
-                    {tempName === "Sigma Dev" && (
-                      <motion.input
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        type="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="ENTER OWNER PASSWORD..."
-                        className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-6 py-4 text-lg text-white focus:outline-none focus:border-zinc-500 transition-all placeholder:text-zinc-700 text-center font-mono tracking-widest"
-                      />
+                  <motion.div 
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 shadow-xl"
+                  >
+                    <UserIcon size={40} className="text-zinc-500" />
+                  </motion.div>
+                  
+                  <div className="space-y-2">
+                    <h3 className="text-2xl font-bold text-white tracking-tight uppercase">Enter Chatroom</h3>
+                  </div>
+                  
+                  <div className="w-full space-y-4">
+                    <div className="space-y-4 text-left">
+                      <div>
+                        <input
+                          type="text"
+                          value={inputNickname}
+                          onChange={(e) => setInputNickname(e.target.value)}
+                          placeholder="CHOOSE A NICKNAME..."
+                          maxLength={25}
+                          autoFocus
+                          className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-zinc-500 transition-all font-mono tracking-wider text-center"
+                        />
+                      </div>
+
+                      <AnimatePresence>
+                        {inputNickname.trim().toLowerCase() === "sigma dev" && (
+                          <motion.div 
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="overflow-hidden"
+                          >
+                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Enter Recon Password</label>
+                            <input
+                              type="password"
+                              value={inputPassword}
+                              onChange={(e) => setInputPassword(e.target.value)}
+                              placeholder="PASSWORD..."
+                              className="w-full bg-zinc-800/50 border border-zinc-800 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-red-500 transition-all font-mono tracking-wider text-center"
+                            />
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+
+                    <button
+                      type="submit"
+                      disabled={banTimeLeft !== null || !inputNickname.trim()}
+                      className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${colors.primaryBg} text-black hover:scale-[1.02] active:scale-95 disabled:opacity-50 uppercase tracking-tighter shadow-lg ${colors.shadow}`}
+                      style={{ color: '#000000' }}
+                    >
+                      Join Chatroom
+                    </button>
+                    {banTimeLeft !== null && (
+                      <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center mt-2">
+                        You were kicked for {banTimeLeft} seconds
+                      </p>
+                    )}
+                    {error && (
+                      <p className="text-red-500 text-xs font-bold uppercase tracking-widest mt-2 max-w-xs mx-auto text-center animate-pulse">
+                        {error}
+                      </p>
                     )}
                   </div>
-
-                  {error && (
-                    <p className="text-red-500 text-xs font-bold uppercase tracking-widest animate-pulse">
-                      {error}
-                    </p>
-                  )}
-                  <button
-                    type="submit"
-                    disabled={!tempName.trim() || banTimeLeft !== null}
-                    className={`w-full flex items-center justify-center gap-3 py-4 rounded-xl font-bold text-lg transition-all ${colors.primaryBg} text-black hover:scale-[1.02] active:scale-95 disabled:opacity-50 uppercase tracking-tighter shadow-lg ${colors.shadow}`}
-                  >
-                    <UserPlus size={20} />
-                    Join Chat!
-                  </button>
-                  {banTimeLeft !== null && (
-                    <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center mt-2">
-                      You were kicked for {banTimeLeft} seconds
-                    </p>
-                  )}
                 </form>
               </div>
-            </div>
-          ) : (
-            <>
-              {/* Main Chat Content */}
-              <div className="flex-1 flex flex-col min-h-0 border-r border-zinc-800/50">
-                {/* Messages List */}
-                <div 
-                  ref={scrollRef}
-                  className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-zinc-800"
-                >
-                  {filteredMessages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-full space-y-4 opacity-30">
-                      <MessageSquare size={48} className="text-zinc-500" />
-                      <p className="text-zinc-500 text-xs uppercase tracking-[0.3em] font-bold">Waiting for transmissions...</p>
-                    </div>
-                  ) : (
-                    filteredMessages.map((msg, idx) => (
+            ) : (
+              <>
+                {/* Main Chat Content */}
+                <div className="flex-1 flex flex-col min-h-0 border-r border-zinc-800/50">
+                  {/* Messages List */}
+                  <div 
+                    ref={scrollRef}
+                    className="flex-1 overflow-y-auto p-6 space-y-6 scrollbar-thin scrollbar-thumb-zinc-800"
+                  >
+                    {filteredMessages.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center h-full space-y-4 opacity-30">
+                        <MessageSquare size={48} className="text-zinc-500" />
+                        <p className="text-zinc-500 text-xs uppercase tracking-[0.3em] font-bold">Waiting for transmissions...</p>
+                      </div>
+                    ) : (
+                      filteredMessages.map((msg, idx) => (
                         <div 
                           key={msg.id || idx}
                           className={`flex flex-col group ${msg.senderName === nickname ? 'items-end' : 'items-start'}`}
@@ -439,7 +679,7 @@ export default function ChatPage() {
                                 </div>
                               ) : msg.text}
                               
-                              {/* Delete Button on Hover (Always Soft Delete) */}
+                              {/* Delete Button on Hover */}
                               {!msg.isPlaceholder && !msg.isSystemInfo && !msg.isAdminDeleted && msg.senderName === nickname && (
                                 <button 
                                   onClick={() => handleDeleteMessage(msg.id, false)}
@@ -457,99 +697,100 @@ export default function ChatPage() {
                             </motion.div>
                           </div>
                         </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Message Input */}
-                <div className="p-6 border-t border-zinc-800 bg-zinc-900/40">
-                  <div className="flex gap-4">
-                    <textarea
-                      value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
-                      onKeyDown={handleKeyDown}
-                      placeholder="TYPE A MESSAGE..."
-                      autoFocus
-                      rows={2}
-                      className="flex-1 bg-zinc-800/50 border border-zinc-700 rounded-xl px-6 py-4 text-white focus:outline-none focus:border-zinc-500 transition-all placeholder:text-zinc-700 font-mono tracking-wider resize-none"
-                    />
-                    <button
-                      onClick={() => handleSendMessage()}
-                      disabled={!newMessage.trim()}
-                      className={`px-8 rounded-xl transition-all ${colors.primaryBg} text-black disabled:opacity-50 disabled:grayscale hover:scale-105 active:scale-95 shadow-lg ${colors.shadow}`}
-                    >
-                      <Send size={24} />
-                    </button>
+                      ))
+                    )}
                   </div>
-                  <div className="mt-4 flex items-center justify-between px-2">
-                    <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
-                      {nickname ? `Logged in as: ${nickname}` : 'Not logged in'}
-                    </span>
-                    <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
-                      Double Enter to Send
-                    </span>
-                  </div>
-                </div>
-              </div>
 
-              {/* Sidebar */}
-              <div className="w-48 md:w-64 bg-zinc-900/30 flex flex-col overflow-hidden border-l border-zinc-800/50">
-                <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between bg-zinc-900/20">
-                  <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Online Users</h3>
-                  <span className={`px-2 py-0.5 rounded-full bg-zinc-800 text-[10px] font-bold ${colors.primary}`}>
-                    {users.length}
-                  </span>
-                </div>
-                <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                  <AnimatePresence>
-                    {users.map((user) => (
-                      <motion.div
-                        key={user.id}
-                        initial={{ opacity: 0, x: 20 }}
-                        animate={{ 
-                          opacity: 1, 
-                          x: 0,
-                        }}
-                        exit={{ opacity: 0, x: 20 }}
-                        className="flex items-center gap-3 group"
+                  {/* Message Input */}
+                  <div className="p-6 border-t border-zinc-800 bg-zinc-900/40">
+                    <div className="flex gap-4">
+                      <textarea
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="TYPE A MESSAGE..."
+                        autoFocus
+                        rows={2}
+                        className="flex-1 bg-zinc-800/50 border border-zinc-700 rounded-xl px-6 py-4 text-white focus:outline-none focus:border-zinc-500 transition-all placeholder:text-zinc-700 font-mono tracking-wider resize-none"
+                      />
+                      <button
+                        onClick={() => handleSendMessage()}
+                        disabled={!newMessage.trim()}
+                        className={`px-8 rounded-xl transition-all ${colors.primaryBg} text-black disabled:opacity-50 disabled:grayscale hover:scale-105 active:scale-95 shadow-lg ${colors.shadow}`}
                       >
-                        <div className="relative">
-                          <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center border border-zinc-700 group-hover:border-zinc-600 transition-colors`}>
-                            <UserIcon size={14} className={user.nickname === nickname ? colors.primary : "text-zinc-500"} />
+                        <Send size={24} />
+                      </button>
+                    </div>
+                    <div className="mt-4 flex items-center justify-between px-2">
+                      <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                        {nickname ? `Logged in as: ${nickname}` : 'Not logged in'}
+                      </span>
+                      <span className="text-[10px] font-bold text-zinc-600 uppercase tracking-widest">
+                        Double Enter to Send
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Sidebar */}
+                <div className="w-48 md:w-64 bg-zinc-900/30 flex flex-col overflow-hidden border-l border-zinc-800/50">
+                  <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between bg-zinc-900/20">
+                    <h3 className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">Online Users</h3>
+                    <span className={`px-2 py-0.5 rounded-full bg-zinc-800 text-[10px] font-bold ${colors.primary}`}>
+                      {users.length}
+                    </span>
+                  </div>
+                  <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                    <AnimatePresence>
+                      {users.map((user) => (
+                        <motion.div
+                          key={user.id}
+                          initial={{ opacity: 0, x: 20 }}
+                          animate={{ 
+                            opacity: 1, 
+                            x: 0,
+                          }}
+                          exit={{ opacity: 0, x: 20 }}
+                          className="flex items-center gap-3 group"
+                        >
+                          <div className="relative">
+                            <div className={`w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center border border-zinc-700 group-hover:border-zinc-600 transition-colors`}>
+                              <UserIcon size={14} className={user.nickname === nickname ? colors.primary : "text-zinc-500"} />
+                            </div>
+                            <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-zinc-950" />
                           </div>
-                          <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 rounded-full bg-green-500 border-2 border-zinc-950"></div>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className={`text-xs font-bold truncate tracking-wider transition-all duration-300 ${user.isTyping ? 'text-white animate-pulse' : user.isOwner ? 'animate-rainbow' : user.nickname === nickname ? colors.primary : 'text-zinc-400'}`}>
-                              {user.nickname} {user.nickname === nickname && "(YOU)"}
-                            </p>
-                            {user.isOwner && (
-                              <span className="text-[8px] font-black animate-rainbow">(The Owner)</span>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className={`text-xs font-bold truncate tracking-wider transition-all duration-300 ${user.isTyping ? 'text-white animate-pulse' : user.isOwner ? 'animate-rainbow' : user.nickname === nickname ? colors.primary : 'text-zinc-400'}`}>
+                                {user.nickname} {user.nickname === nickname && "(YOU)"}
+                              </p>
+                              {user.isOwner && (
+                                <span className="text-[8px] font-black animate-rainbow">(The Owner)</span>
+                              )}
+                            </div>
+                            {user.isTyping && (
+                              <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest animate-pulse">
+                                Typing...
+                              </p>
                             )}
                           </div>
-                          {user.isTyping && (
-                            <p className="text-[8px] font-bold text-zinc-600 uppercase tracking-widest animate-pulse">
-                              Typing...
-                            </p>
+                          {isOwner && currentUser && user.id !== currentUser.uid && (
+                            <button 
+                              onClick={() => handleKickUser(user.nickname)}
+                              className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
+                              title="Kick User"
+                            >
+                              <LogOut size={12} />
+                            </button>
                           )}
-                        </div>
-                        {isOwner && user.id !== socket?.id && (
-                          <button 
-                            onClick={() => handleKickUser(user.id)}
-                            className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
-                            title="Kick User"
-                          >
-                            <LogOut size={12} />
-                          </button>
-                        )}
-                      </motion.div>
-                    ))}
-                  </AnimatePresence>
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
                 </div>
-              </div>
-            </>
-          )}
+              </>
+            )}
+          </div>
         </div>
       </div>
 
@@ -593,17 +834,14 @@ export default function ChatPage() {
               Admin Remove
             </button>
             <button
-              onClick={() => handleKickUser(contextMenu.nickname)}
+              onClick={() => handleKickUser(contextMenu.nickname, false)}
               className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-500 hover:bg-red-500/10 transition-all uppercase tracking-wider"
             >
               <LogOut size={20} />
               Kick User
             </button>
             <button
-              onClick={() => {
-                if (socket) socket.emit('kick_user_5m', contextMenu.nickname);
-                setContextMenu(null);
-              }}
+              onClick={() => handleKickUser(contextMenu.nickname, true)}
               className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-600 hover:bg-red-500/10 transition-all uppercase tracking-wider"
             >
               <LogOut size={20} />
@@ -613,34 +851,6 @@ export default function ChatPage() {
         )}
       </AnimatePresence>
 
-      {/* Vercel Warning Popup */}
-      <AnimatePresence>
-        {showVercelWarning && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.9, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: 20 }}
-              className={`max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 shadow-2xl ${colors.shadow} flex flex-col items-center text-center`}
-            >
-              <div className={`w-16 h-16 rounded-full ${colors.tertiaryBg || colors.secondaryBg} ${colors.groupHoverQuaternary || colors.groupHoverText || 'text-white'} flex items-center justify-center mb-6`}>
-                <MessageSquare size={32} />
-              </div>
-              <h2 className="text-2xl font-bold text-white mb-4">Notice!</h2>
-              <p className="text-zinc-400 leading-relaxed mb-8 text-lg">
-                Chat will not work depending on the link.
-              </p>
-              <button
-                onClick={() => setShowVercelWarning(false)}
-                className={`w-full py-4 rounded-xl font-bold text-white transition-all hover:scale-[1.02] active:scale-[0.98] ${colors.primaryBg} shadow-lg ${colors.shadow}`}
-              >
-                UNDERSTOOD
-              </button>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
-    </div>
-  </PageLayout>
-);
+    </PageLayout>
+  );
 }

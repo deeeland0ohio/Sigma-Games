@@ -291,7 +291,7 @@ builtins.input = custom_input
                 key={game.id} 
                 game={game} 
                 to={
-                  game.id === 'all-games' ? '/all-games' : 
+                  game.id === 'all-games' ? '/our-games' : 
                   game.id === 'entertainment' ? '/entertainment' :
                   game.id === 'popular' ? '/popular' : 
                   game.id === 'favorites' ? '/favorites' : 

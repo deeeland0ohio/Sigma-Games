@@ -18,7 +18,7 @@ export default function ExternalPlayer() {
 
   useEffect(() => {
     if (!url) {
-      navigate('/games', { replace: true });
+      navigate('/our-games', { replace: true });
     }
   }, [url, navigate]);
 
