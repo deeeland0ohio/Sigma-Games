@@ -1,0 +1,87 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Global safety net - default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Global authorization helper to verify Sigma Dev ownership
+    function currentIsOwner() {
+      return request.auth != null &&
+             exists(/databases/$(database)/documents/users/$(request.auth.uid)/private/secrets) && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)/private/secrets).data.password == "sigmarizzsigmaenigma";
+    }
+    
+    // Type and schema validation helpers
+    function isValidMessage(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.text is string && data.text.size() <= 10000 &&
+             data.senderName is string && data.senderName.size() <= 50 &&
+             data.senderId is string && data.senderId.size() <= 128 &&
+             data.createdAt is int &&
+             data.os is string && data.os.size() <= 50;
+    }
+
+    function isValidUser(data) {
+      return data.id is string && data.id.size() <= 128 &&
+             data.nickname is string && data.nickname.size() <= 50 &&
+             data.lastActive is int &&
+             data.isTyping is bool &&
+             data.isOwner is bool &&
+             data.os is string && data.os.size() <= 50;
+    }
+
+    // Messages collection rules
+    match /messages/{messageId} {
+      allow read: if true;
+      
+      allow create: if request.auth != null &&
+                      request.resource.data.senderId == request.auth.uid &&
+                      isValidMessage(request.resource.data) &&
+                      (!request.resource.data.keys().hasAll(['isOwner']) || !request.resource.data.isOwner || currentIsOwner());
+      
+      allow update: if request.auth != null && isValidMessage(request.resource.data) && (
+        // Regular user soft deletion of their own message
+        (request.resource.data.senderId == request.auth.uid && 
+         request.resource.data.senderId == resource.data.senderId && 
+         request.resource.data.diff(resource.data).affectedKeys().hasOnly(['isDeleted', 'isPlaceholder'])) ||
+        
+        // Owner soft or hard deletion of any message
+        (currentIsOwner() && 
+         request.resource.data.diff(resource.data).affectedKeys().hasAny(['isDeleted', 'isPlaceholder', 'isAdminDeleted', 'isPermanentlyRemoved']))
+      );
+      
+      allow delete: if false; // Deletions should follow soft-delete pattern
+    }
+
+    // User Presence collection rules
+    match /users/{userId} {
+      allow read: if true;
+      
+      allow create, update: if request.auth != null && 
+                              userId == request.auth.uid &&
+                              userId == request.resource.data.id && 
+                              isValidUser(request.resource.data) &&
+                              (!request.resource.data.isOwner || currentIsOwner());
+                              
+      allow delete: if request.auth != null && userId == request.auth.uid;
+
+      // Private secrets subcollection
+      match /private/secrets {
+        allow read: if false; // Absolutely no one can read secret tokens/passwords
+        allow write: if request.auth != null &&
+                        userId == request.auth.uid &&
+                        request.resource.data.password is string && 
+                        request.resource.data.password.size() <= 100;
+      }
+    }
+
+    // Ban list rules
+    match /kicks/{kickId} {
+      allow read: if true;
+      allow write: if request.auth != null && currentIsOwner();
+    }
+  }
+}

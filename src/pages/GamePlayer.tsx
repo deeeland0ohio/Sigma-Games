@@ -76,7 +76,7 @@ export default function GamePlayer() {
       {/* Top Bar */}
       <header className="border-b border-zinc-800 bg-zinc-950/80 backdrop-blur-md shrink-0 z-50 shadow-sm">
         <div className="w-full px-4 h-16 flex items-center justify-between">
-          <Link to="/all-games" className={`flex items-center gap-2 text-zinc-400 hover:${colors.primary} hover:bg-zinc-800 p-2 rounded-lg transition-all font-medium`}>
+          <Link to="/our-games" className={`flex items-center gap-2 text-zinc-400 hover:${colors.primary} hover:bg-zinc-800 p-2 rounded-lg transition-all font-medium`}>
             <ArrowLeft size={20} />
             <span className="hidden sm:inline">Back to Our Games</span>
           </Link>
