@@ -283,13 +283,21 @@ export default function ChatPage() {
           if (data.kickType === '5m') {
             alert("You were kicked by the Owner for 5 minutes");
             await deleteDoc(doc(db, 'users', targetUid)).catch(() => {});
-            await signOut(auth);
+            localStorage.removeItem('chat_nickname');
+            localStorage.removeItem('chat_is_owner');
+            setNickname(null);
+            setIsOwner(false);
+            await signOut(auth).catch(() => {});
             localStorage.setItem('kick_end', kickEnd.toString());
             startBanTimer(kickEnd);
           } else if (data.kickType === 'soft') {
             alert("You were kicked by the Owner, you may join back in");
             await deleteDoc(doc(db, 'users', targetUid)).catch(() => {});
-            await signOut(auth);
+            localStorage.removeItem('chat_nickname');
+            localStorage.removeItem('chat_is_owner');
+            setNickname(null);
+            setIsOwner(false);
+            await signOut(auth).catch(() => {});
           }
         }
       });
@@ -507,13 +515,19 @@ export default function ChatPage() {
     const activeUser = currentUser || guestUser;
     if (activeUser) {
       try {
-        await deleteDoc(doc(db, 'users', activeUser.uid));
-        localStorage.removeItem('chat_nickname');
-        localStorage.removeItem('chat_is_owner');
-        await signOut(auth);
+        await deleteDoc(doc(db, 'users', activeUser.uid)).catch(() => {});
       } catch (err) {
         console.error(err);
       }
+    }
+    localStorage.removeItem('chat_nickname');
+    localStorage.removeItem('chat_is_owner');
+    setNickname(null);
+    setIsOwner(false);
+    try {
+      await signOut(auth);
+    } catch (err) {
+      console.warn("SignOut failed:", err);
     }
   };
 
