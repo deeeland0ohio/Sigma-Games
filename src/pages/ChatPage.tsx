@@ -1,26 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { 
-  collection, 
-  doc, 
-  setDoc, 
-  updateDoc, 
-  deleteDoc, 
-  onSnapshot, 
-  query, 
-  orderBy, 
-  limit 
-} from 'firebase/firestore';
-import { 
-  signInAnonymously, 
-  signOut, 
-  onAuthStateChanged, 
-  User as FirebaseUser 
-} from 'firebase/auth';
 import { Send, MessageSquare, User as UserIcon, LogOut, Trash2, X } from 'lucide-react';
 import { useThemeColors } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
-import { db, auth, handleFirestoreError, OperationType } from '../lib/firebase';
 
 interface Message {
   id: string;
@@ -54,10 +36,24 @@ const getOS = () => {
   return "Other";
 };
 
+// Core endpoints for server-side real-time chat
+const publishEvent = async (endpoint: string, payload: any) => {
+  try {
+    await fetch(endpoint, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+  } catch (err) {
+    console.error(`Failed to publish event to ${endpoint}:`, err);
+  }
+};
+
 export default function ChatPage() {
-  const [currentUser, setCurrentUser] = useState<FirebaseUser | null>(null);
-  const [guestUser, setGuestUser] = useState<{ uid: string } | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
+  const [userId, setUserId] = useState<string>('');
+  const [authLoading] = useState(false);
   const [nickname, setNickname] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   
@@ -67,11 +63,13 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isConnected, setIsConnected] = useState(navigator.onLine);
-  const [users, setUsers] = useState<ChatUser[]>([]);
+  
+  // Track online presence timestamps
+  const [usersMap, setUsersMap] = useState<Record<string, ChatUser>>({});
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, messageId: string, userId: string, nickname: string } | null>(null);
-  const [, setTick] = useState(0); // Used to force re-render for message filtering
+  const [, setTick] = useState(0); // Force custom re-render for message expirations
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastEnterTime = useRef<number>(0);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -95,62 +93,22 @@ export default function ChatPage() {
     }, 1000);
   };
 
-  // Initialize guest user backup ID
+  // Initialize client userId
   useEffect(() => {
     let id = localStorage.getItem('chat_guest_id');
     if (!id) {
-      id = 'g_' + Math.random().toString(36).substring(2, 15);
+      id = 'u_' + Math.random().toString(36).substring(2, 15);
       localStorage.setItem('chat_guest_id', id);
     }
-    setGuestUser({ uid: id });
-  }, []);
+    setUserId(id);
 
-  // Sync Auth State Change
-  useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      setCurrentUser(user);
-      setAuthLoading(false);
-      
-      if (user) {
-        const storedNickname = localStorage.getItem('chat_nickname');
-        const storedIsOwner = localStorage.getItem('chat_is_owner') === 'true';
-        
-        if (storedNickname) {
-          setNickname(storedNickname);
-          setIsOwner(storedIsOwner);
-          
-          // Write standard presence on connection
-          try {
-            await setDoc(doc(db, 'users', user.uid), {
-              id: user.uid,
-              nickname: storedNickname,
-              lastActive: Date.now(),
-              isTyping: false,
-              isOwner: storedIsOwner,
-              os: getOS()
-            });
-          } catch (err) {
-            console.error("Presence status write error on auth change: ", err);
-          }
-        }
-      } else {
-        // Fallback to unauthenticated guest mode if nickname is already defined
-        const storedNickname = localStorage.getItem('chat_nickname');
-        const storedIsOwner = localStorage.getItem('chat_is_owner') === 'true';
-        if (storedNickname) {
-          setNickname(storedNickname);
-          setIsOwner(storedIsOwner);
-        } else {
-          setNickname(null);
-          setIsOwner(false);
-        }
-      }
-    });
+    const storedNickname = localStorage.getItem('chat_nickname');
+    const storedIsOwner = localStorage.getItem('chat_is_owner') === 'true';
+    if (storedNickname) {
+      setNickname(storedNickname);
+      setIsOwner(storedIsOwner);
+    }
 
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
     const kickEnd = localStorage.getItem('kick_end');
     if (kickEnd) {
       const end = parseInt(kickEnd);
@@ -166,15 +124,15 @@ export default function ChatPage() {
     };
   }, []);
 
-  // Force re-render periodically to filter expired messages client-side
+  // Periodic client rendering ticks for the 2-hour filter helper
   useEffect(() => {
     const interval = setInterval(() => {
       setTick(t => t + 1);
-    }, 60000);
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  // Sync network status listeners
+  // Sync network status and custom window click listeners
   useEffect(() => {
     const handleOnline = () => setIsConnected(true);
     const handleOffline = () => setIsConnected(false);
@@ -191,124 +149,147 @@ export default function ChatPage() {
     };
   }, []);
 
-  // Listen to messages list on Firestore
+  // Dynamic Event Handling for incoming server events
+  const handleIncomingPayload = (payload: any) => {
+    if (!payload || !payload.type) return;
+
+    switch (payload.type) {
+      case 'bootstrap':
+        if (payload.messages) {
+          setMessages(payload.messages.sort((a: any, b: any) => a.createdAt - b.createdAt));
+        }
+        if (payload.users) {
+          const map: Record<string, ChatUser> = {};
+          payload.users.forEach((u: any) => {
+            map[u.id] = u;
+          });
+          setUsersMap(map);
+        }
+        break;
+
+      case 'presence_list':
+        if (payload.users) {
+          const map: Record<string, ChatUser> = {};
+          payload.users.forEach((u: any) => {
+            map[u.id] = u;
+          });
+          setUsersMap(map);
+        }
+        break;
+
+      case 'chat_message':
+        if (payload.message) {
+          setMessages(prev => {
+            if (prev.some(m => m.id === payload.message.id)) return prev;
+            return [...prev, payload.message].sort((a, b) => a.createdAt - b.createdAt);
+          });
+        }
+        break;
+
+      case 'message_deleted':
+        setMessages(prev => prev.map(m => {
+          if (m.id === payload.messageId) {
+            if (payload.isPermanentlyRemoved) {
+              return { ...m, isDeleted: true, isPermanentlyRemoved: true };
+            } else if (payload.isAdminDeleted) {
+              return { ...m, isDeleted: true, isAdminDeleted: true, isPlaceholder: true };
+            } else {
+              return { ...m, isDeleted: true, isPlaceholder: true };
+            }
+          }
+          return m;
+        }));
+        break;
+
+      case 'user_kick':
+        const storedNickname = localStorage.getItem('chat_nickname');
+        if (storedNickname && payload.nickname === storedNickname) {
+          const kickEnd = payload.kickEnd || 0;
+          if (Date.now() < kickEnd) {
+            if (payload.kickType === '5m') {
+              alert("You were kicked by the Owner for 5 minutes");
+              localStorage.removeItem('chat_nickname');
+              localStorage.removeItem('chat_is_owner');
+              setNickname(null);
+              setIsOwner(false);
+              localStorage.setItem('kick_end', kickEnd.toString());
+              startBanTimer(kickEnd);
+            } else {
+              alert("You were kicked by the Owner, you may join back in");
+              localStorage.removeItem('chat_nickname');
+              localStorage.removeItem('chat_is_owner');
+              setNickname(null);
+              setIsOwner(false);
+            }
+          }
+        }
+        break;
+
+      default:
+        break;
+    }
+  };
+
+  // Real-time EventSource listener to local server endpoint
   useEffect(() => {
-    if (!nickname) return;
+    if (!userId) return;
 
-    const msgQuery = query(
-      collection(db, 'messages'),
-      orderBy('createdAt', 'desc'),
-      limit(150)
-    );
+    let active = true;
+    let es: EventSource | null = null;
 
-    const unsubscribe = onSnapshot(msgQuery, (snapshot) => {
-      const fetchedMsgs = snapshot.docs.map(doc => ({
-        ...doc.data(),
-        id: doc.id
-      })) as Message[];
+    const streamUrl = `/api/chat/stream?userId=${userId}&nickname=${encodeURIComponent(nickname || '')}&isOwner=${isOwner}&os=${encodeURIComponent(getOS())}`;
+    
+    try {
+      es = new EventSource(streamUrl);
 
-      // Sort chronological order
-      fetchedMsgs.sort((a, b) => a.createdAt - b.createdAt);
-      setMessages(fetchedMsgs);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'messages');
-    });
+      es.onmessage = (event) => {
+        if (!active) return;
+        try {
+          const payload = JSON.parse(event.data);
+          handleIncomingPayload(payload);
+        } catch (e) {
+          // ignore parsing error
+        }
+      };
 
-    return () => unsubscribe();
-  }, [nickname]);
+      es.onerror = () => {
+        // Native EventSource automatically schedules a retry
+      };
+    } catch (err) {
+      console.error("Failed to connect to real-time chat stream:", err);
+    }
 
-  // Listen to active users registry presence list
-  useEffect(() => {
-    if (!nickname) return;
-
-    const queryPresence = collection(db, 'users');
-    const unsubscribe = onSnapshot(queryPresence, (snapshot) => {
-      const fetchedUsers = snapshot.docs.map(doc => doc.data() as ChatUser);
-      // Filter out users who haven't updated heartbeat for over 30s
-      const active = fetchedUsers.filter(u => (Date.now() - u.lastActive) < 30000);
-      setUsers(active);
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'users');
-    });
-
-    return () => unsubscribe();
-  }, [nickname]);
-
-  // Heartbeat helper effect to keep Firestore presence alive
-  useEffect(() => {
-    const activeUser = currentUser || guestUser;
-    if (!activeUser || !nickname) return;
-
-    const updatePresence = async () => {
-      try {
-        await setDoc(doc(db, 'users', activeUser.uid), {
-          id: activeUser.uid,
-          nickname,
-          lastActive: Date.now(),
-          isTyping,
-          isOwner,
-          os: getOS()
-        });
-      } catch (err) {
-        console.error("Presence status sync error: ", err);
+    return () => {
+      active = false;
+      if (es) {
+        es.close();
       }
     };
+  }, [userId, nickname, isOwner]);
 
-    updatePresence();
-    const heartbeat = setInterval(updatePresence, 10000);
+  // Presence Heartbeat Loop
+  useEffect(() => {
+    if (!nickname || !userId) return;
+
+    const broadcastPresence = () => {
+      publishEvent('/api/chat/presence', {
+        id: userId,
+        nickname,
+        isTyping,
+        isOwner,
+        os: getOS()
+      });
+    };
+
+    broadcastPresence();
+    const heartbeat = setInterval(broadcastPresence, 7000);
 
     return () => {
       clearInterval(heartbeat);
-      // Delete presence doc on unmount
-      const targetUid = auth.currentUser?.uid || activeUser?.uid;
-      if (targetUid) {
-        deleteDoc(doc(db, 'users', targetUid)).catch(() => {});
-      }
     };
-  }, [currentUser, guestUser, nickname, isTyping, isOwner]);
+  }, [nickname, userId, isTyping, isOwner]);
 
-  // Listen to active ban logs to kick current user if banned by owner
-  useEffect(() => {
-    const activeUser = currentUser || guestUser;
-    if (!activeUser || !nickname) return;
-
-    const queryKicks = collection(db, 'kicks');
-    const unsubscribe = onSnapshot(queryKicks, (snapshot) => {
-      snapshot.docs.forEach(async (docRef) => {
-        const data = docRef.data();
-        const kickEnd = data.kickEnd || 0;
-        
-        if (data.nickname === nickname && Date.now() < kickEnd) {
-          const targetUid = activeUser.uid;
-          if (data.kickType === '5m') {
-            alert("You were kicked by the Owner for 5 minutes");
-            await deleteDoc(doc(db, 'users', targetUid)).catch(() => {});
-            localStorage.removeItem('chat_nickname');
-            localStorage.removeItem('chat_is_owner');
-            setNickname(null);
-            setIsOwner(false);
-            await signOut(auth).catch(() => {});
-            localStorage.setItem('kick_end', kickEnd.toString());
-            startBanTimer(kickEnd);
-          } else if (data.kickType === 'soft') {
-            alert("You were kicked by the Owner, you may join back in");
-            await deleteDoc(doc(db, 'users', targetUid)).catch(() => {});
-            localStorage.removeItem('chat_nickname');
-            localStorage.removeItem('chat_is_owner');
-            setNickname(null);
-            setIsOwner(false);
-            await signOut(auth).catch(() => {});
-          }
-        }
-      });
-    }, (err) => {
-      handleFirestoreError(err, OperationType.GET, 'kicks');
-    });
-
-    return () => unsubscribe();
-  }, [currentUser, guestUser, nickname]);
-
-  // Typing status mechanism
+  // Typing state tracking mechanism
   useEffect(() => {
     if (nickname) {
       if (newMessage.trim().length > 0 && !isTyping) {
@@ -348,35 +329,13 @@ export default function ChatPage() {
     }
 
     try {
-      // Sign in anonymously if not already signed in, fallback to client-only guest ID on auth errors (e.g. restricted operations)
-      let user: { uid: string } | null = auth.currentUser;
-      if (!user) {
-        try {
-          const result = await signInAnonymously(auth);
-          user = result.user;
-        } catch (authErr: any) {
-          console.warn("signInAnonymously failed (likely disabled in console). Falling back to client-only guest ID:", authErr);
-          if (guestUser) {
-            user = { uid: guestUser.uid };
-          } else {
-            const fallbackUid = 'g_' + Math.random().toString(36).substring(2, 15);
-            localStorage.setItem('chat_guest_id', fallbackUid);
-            setGuestUser({ uid: fallbackUid });
-            user = { uid: fallbackUid };
-          }
-        }
-      }
-
-      if (!user) {
-        throw new Error("Could not initialize guest session.");
-      }
-
-      // Check for nickname deconfliction using the synced users presence list
+      // Deconflict nicknames client-side
       let finalNickname = trimmedNickname;
       let suffix = 1;
-      const existingNicknames = users.map(u => u.nickname.toLowerCase());
+      const existingNicknames = Object.values(usersMap)
+        .filter(u => Date.now() - u.lastActive < 15000)
+        .map(u => u.nickname.toLowerCase());
       
-      // If the nickname is taken (case-insensitive check, except if they are the verified Sigma Dev)
       if (existingNicknames.includes(finalNickname.toLowerCase())) {
         if (isSigmaDev) {
           finalNickname = "Sigma Dev";
@@ -388,29 +347,22 @@ export default function ChatPage() {
         }
       }
 
-      // If Sigma Dev, write secret to subcollection to satisfy rules
-      if (isSigmaDev) {
-        await setDoc(doc(db, 'users', user.uid, 'private', 'secrets'), {
-          password: "sigmarizzsigmaenigma"
-        });
-      }
-
-      // Set user presence details in Firestore
-      await setDoc(doc(db, 'users', user.uid), {
-        id: user.uid,
-        nickname: finalNickname,
-        lastActive: Date.now(),
-        isTyping: false,
-        isOwner: isSigmaDev,
-        os: getOS()
-      });
-
-      // Save to localStorage for session persistence on refresh
       localStorage.setItem('chat_nickname', finalNickname);
       localStorage.setItem('chat_is_owner', isSigmaDev ? 'true' : 'false');
 
       setNickname(finalNickname);
       setIsOwner(isSigmaDev);
+
+      // Broadcast immediate presence
+      if (userId) {
+        publishEvent('/api/chat/presence', {
+          id: userId,
+          nickname: finalNickname,
+          isTyping: false,
+          isOwner: isSigmaDev,
+          os: getOS()
+        });
+      }
     } catch (err: any) {
       console.error(err);
       setError("Failed to join chat: " + (err.message || String(err)));
@@ -420,66 +372,50 @@ export default function ChatPage() {
   const handleSendMessage = async (e?: React.FormEvent | React.KeyboardEvent) => {
     if (e) e.preventDefault();
     const trimmed = newMessage.trim();
-    const activeUser = currentUser || guestUser;
-    if (!trimmed || !nickname || !activeUser) return;
+    if (!trimmed || !nickname || !userId) return;
 
     const msgId = Math.random().toString(36).substring(2, 15);
     try {
-      await setDoc(doc(db, 'messages', msgId), {
+      await publishEvent('/api/chat/send', {
         id: msgId,
         text: trimmed,
         senderName: nickname,
-        senderId: activeUser.uid,
+        senderId: userId,
         createdAt: Date.now(),
         os: getOS()
       });
       setNewMessage('');
     } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `messages/${msgId}`);
+      console.error("Failed to send message:", err);
     }
   };
 
   const handleDeleteMessage = async (messageId: string, isPermanent: boolean = false, isAdminSoft: boolean = false) => {
     try {
-      const msgRef = doc(db, 'messages', messageId);
-      let patch: any = {};
-      const activeUser = currentUser || guestUser;
-
-      if (isPermanent && isOwner) {
-        patch = { isPermanentlyRemoved: true, isDeleted: true };
-      } else if (isAdminSoft && isOwner) {
-        patch = { isAdminDeleted: true, isDeleted: true };
-      } else {
-        const msg = messages.find(m => m.id === messageId);
-        if (msg && activeUser && msg.senderId === activeUser.uid) {
-          patch = { isDeleted: true, isPlaceholder: true };
-        } else {
-          return;
-        }
-      }
-      await updateDoc(msgRef, patch);
+      await publishEvent('/api/chat/delete', {
+        messageId,
+        isPermanentlyRemoved: isPermanent,
+        isAdminDeleted: isAdminSoft
+      });
     } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `messages/${messageId}`);
+      console.error("Failed to delete message:", err);
     }
     setContextMenu(null);
   };
 
   const handleKickUser = async (targetNickname: string, is5Minutes: boolean = false) => {
-    const activeUser = currentUser || guestUser;
-    if (!isOwner || !activeUser) return;
-
-    const kickId = Math.random().toString(36).substring(2, 15);
+    if (!isOwner || !userId) return;
     const kickEnd = Date.now() + (is5Minutes ? 300000 : 5000);
 
     try {
-      await setDoc(doc(db, 'kicks', kickId), {
+      await publishEvent('/api/chat/kick', {
         nickname: targetNickname,
         kickType: is5Minutes ? '5m' : 'soft',
         kickEnd,
-        adminId: activeUser.uid
+        adminId: userId
       });
     } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, `kicks/${kickId}`);
+      console.error("Failed to kick user:", err);
     }
     setContextMenu(null);
   };
@@ -512,23 +448,10 @@ export default function ChatPage() {
   };
 
   const handleLogout = async () => {
-    const activeUser = currentUser || guestUser;
-    if (activeUser) {
-      try {
-        await deleteDoc(doc(db, 'users', activeUser.uid)).catch(() => {});
-      } catch (err) {
-        console.error(err);
-      }
-    }
     localStorage.removeItem('chat_nickname');
     localStorage.removeItem('chat_is_owner');
     setNickname(null);
     setIsOwner(false);
-    try {
-      await signOut(auth);
-    } catch (err) {
-      console.warn("SignOut failed:", err);
-    }
   };
 
   // Scroll to bottom helper
@@ -537,6 +460,9 @@ export default function ChatPage() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages]);
+
+  // Derived active users list from usersMap
+  const users = Object.values(usersMap).filter(u => Date.now() - u.lastActive < 15000);
 
   // Client-side mapping & filter
   const mappedMessages = messages.map(msg => {
@@ -547,18 +473,16 @@ export default function ChatPage() {
       return { ...msg, text: `[DELETED BY Sigma Dev]`, isAdminDeleted: true, isPlaceholder: true };
     }
     if (msg.isDeleted) {
-      if (isOwner) {
-        return { ...msg, text: `[DELETED BY USER]`, isSystemInfo: true };
-      }
       return { ...msg, text: `[this message was deleted by ${msg.senderName}]`, isPlaceholder: true };
     }
     return msg;
   }).filter((msg): msg is Message => msg !== null);
 
   const filteredMessages = mappedMessages.filter(msg => {
-    const oneHourAgo = Date.now() - 3600000;
-    return msg.createdAt > oneHourAgo;
+    const twoHoursAgo = Date.now() - 7200000; // Filter messages older than 2 hours
+    return msg.createdAt > twoHoursAgo;
   });
+
 
   return (
     <PageLayout title="" maxWidth="full" showBack={false}>
@@ -827,7 +751,7 @@ export default function ChatPage() {
                               </p>
                             )}
                           </div>
-                          {isOwner && (currentUser || guestUser) && user.id !== (currentUser || guestUser)?.uid && (
+                          {isOwner && userId && user.id !== userId && (
                             <button 
                               onClick={() => handleKickUser(user.nickname)}
                               className="opacity-0 group-hover:opacity-100 p-1.5 rounded-lg bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white transition-all"
