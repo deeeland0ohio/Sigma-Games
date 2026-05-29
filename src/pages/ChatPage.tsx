@@ -36,24 +36,24 @@ const getOS = () => {
   return "Other";
 };
 
-// Core endpoints for server-side real-time chat
-const publishEvent = async (endpoint: string, payload: any) => {
+// We use ntfy.sh, a free, public, permanent, high-scale Pub/Sub network over SSE/REST.
+// This supports 100% free serverless real-time messaging, presence, deletion, and bans with zero database latency on Vercel and Cloud Run.
+const NTFY_TOPIC_URL = 'https://ntfy.sh/sg_chat_unblocked_v5_9cd927ea_prod';
+
+const publishEvent = async (payload: any) => {
   try {
-    await fetch(endpoint, {
+    await fetch(NTFY_TOPIC_URL, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
       body: JSON.stringify(payload),
     });
   } catch (err) {
-    console.error(`Failed to publish event to ${endpoint}:`, err);
+    console.error("Failed to publish real-time event:", err);
   }
 };
 
 export default function ChatPage() {
   const [userId, setUserId] = useState<string>('');
-  const [authLoading] = useState(false);
+  const [authLoading, setAuthLoading] = useState(false);
   const [nickname, setNickname] = useState<string | null>(null);
   const [isOwner, setIsOwner] = useState(false);
   
@@ -149,41 +149,28 @@ export default function ChatPage() {
     };
   }, []);
 
-  // Dynamic Event Handling for incoming server events
+  // Dynamic Event Handling for incoming ntfy events
   const handleIncomingPayload = (payload: any) => {
     if (!payload || !payload.type) return;
 
     switch (payload.type) {
-      case 'bootstrap':
-        if (payload.messages) {
-          setMessages(payload.messages.sort((a: any, b: any) => a.createdAt - b.createdAt));
-        }
-        if (payload.users) {
-          const map: Record<string, ChatUser> = {};
-          payload.users.forEach((u: any) => {
-            map[u.id] = u;
-          });
-          setUsersMap(map);
-        }
-        break;
-
-      case 'presence_list':
-        if (payload.users) {
-          const map: Record<string, ChatUser> = {};
-          payload.users.forEach((u: any) => {
-            map[u.id] = u;
-          });
-          setUsersMap(map);
-        }
-        break;
-
       case 'chat_message':
-        if (payload.message) {
-          setMessages(prev => {
-            if (prev.some(m => m.id === payload.message.id)) return prev;
-            return [...prev, payload.message].sort((a, b) => a.createdAt - b.createdAt);
-          });
-        }
+        setMessages(prev => {
+          if (prev.some(m => m.id === payload.id)) return prev;
+          const updated = [...prev, {
+            id: payload.id,
+            text: payload.text,
+            senderName: payload.senderName,
+            senderId: payload.senderId,
+            createdAt: payload.createdAt,
+            os: payload.os,
+            isDeleted: payload.isDeleted,
+            isPlaceholder: payload.isPlaceholder,
+            isAdminDeleted: payload.isAdminDeleted,
+            isPermanentlyRemoved: payload.isPermanentlyRemoved
+          }];
+          return updated.sort((a, b) => a.createdAt - b.createdAt);
+        });
         break;
 
       case 'message_deleted':
@@ -199,6 +186,29 @@ export default function ChatPage() {
           }
           return m;
         }));
+        break;
+
+      case 'user_presence':
+        setUsersMap(prev => {
+          const next = { ...prev };
+          next[payload.id] = {
+            id: payload.id,
+            nickname: payload.nickname,
+            lastActive: payload.lastActive || Date.now(),
+            isTyping: payload.isTyping,
+            isOwner: payload.isOwner,
+            os: payload.os
+          };
+          return next;
+        });
+        break;
+
+      case 'user_presence_offline':
+        setUsersMap(prev => {
+          const next = { ...prev };
+          delete next[payload.id];
+          return next;
+        });
         break;
 
       case 'user_kick':
@@ -230,34 +240,125 @@ export default function ChatPage() {
     }
   };
 
-  // Real-time EventSource listener to local server endpoint
+  // Real-time EventSource listener to ntfy.sh endpoint
   useEffect(() => {
     if (!userId) return;
 
     let active = true;
     let es: EventSource | null = null;
 
-    const streamUrl = `/api/chat/stream?userId=${userId}&nickname=${encodeURIComponent(nickname || '')}&isOwner=${isOwner}&os=${encodeURIComponent(getOS())}`;
-    
-    try {
-      es = new EventSource(streamUrl);
+    const bootstrapAndConnect = async () => {
+      setAuthLoading(true);
+      try {
+        // Fetch cached historic payloads from ntfy's cache via json query
+        const res = await fetch(`${NTFY_TOPIC_URL}/json?poll=1`);
+        if (res.ok) {
+          const text = await res.text();
+          const lines = text.trim().split('\n').filter(Boolean);
+          
+          const loadedMessages: Message[] = [];
+          const loadedDeletedIds: Set<string> = new Set();
+          const adminDeletedIds: Map<string, { type: 'soft' | 'hard' }> = new Map();
 
-      es.onmessage = (event) => {
-        if (!active) return;
-        try {
-          const payload = JSON.parse(event.data);
-          handleIncomingPayload(payload);
-        } catch (e) {
-          // ignore parsing error
+          for (const line of lines) {
+            try {
+              const raw = JSON.parse(line);
+              if (raw.event === 'message') {
+                const payload = JSON.parse(raw.message);
+                if (payload.type === 'chat_message') {
+                  loadedMessages.push({
+                    id: payload.id,
+                    text: payload.text,
+                    senderName: payload.senderName,
+                    senderId: payload.senderId,
+                    createdAt: payload.createdAt,
+                    os: payload.os,
+                    isDeleted: payload.isDeleted,
+                    isPlaceholder: payload.isPlaceholder,
+                    isAdminDeleted: payload.isAdminDeleted,
+                    isPermanentlyRemoved: payload.isPermanentlyRemoved
+                  });
+                } else if (payload.type === 'message_deleted') {
+                  if (payload.isPermanentlyRemoved) {
+                    adminDeletedIds.set(payload.messageId, { type: 'hard' });
+                  } else if (payload.isAdminDeleted) {
+                    adminDeletedIds.set(payload.messageId, { type: 'soft' });
+                  } else {
+                    loadedDeletedIds.add(payload.messageId);
+                  }
+                } else if (payload.type === 'user_presence') {
+                  if (active) {
+                    setUsersMap(prev => {
+                      const next = { ...prev };
+                      next[payload.id] = {
+                        id: payload.id,
+                        nickname: payload.nickname,
+                        lastActive: payload.lastActive || Date.now(),
+                        isTyping: payload.isTyping,
+                        isOwner: payload.isOwner,
+                        os: payload.os
+                      };
+                      return next;
+                    });
+                  }
+                }
+              }
+            } catch (e) {
+              // ignore safe line parse errors
+            }
+          }
+
+          const finalMsgs = loadedMessages.map(msg => {
+            const adminDel = adminDeletedIds.get(msg.id);
+            if (adminDel?.type === 'hard') {
+              return { ...msg, isDeleted: true, isPermanentlyRemoved: true };
+            } else if (adminDel?.type === 'soft') {
+              return { ...msg, isDeleted: true, isAdminDeleted: true, isPlaceholder: true };
+            } else if (loadedDeletedIds.has(msg.id)) {
+              return { ...msg, isDeleted: true, isPlaceholder: true };
+            }
+            return msg;
+          });
+
+          if (active) {
+            finalMsgs.sort((a, b) => a.createdAt - b.createdAt);
+            setMessages(finalMsgs);
+          }
         }
-      };
+      } catch (err) {
+        console.error("Failed to bootstrap chat message cache:", err);
+      } finally {
+        if (active) setAuthLoading(false);
+      }
 
-      es.onerror = () => {
-        // Native EventSource automatically schedules a retry
-      };
-    } catch (err) {
-      console.error("Failed to connect to real-time chat stream:", err);
-    }
+      if (!active) return;
+
+      // Connect to the real EventSource stream (using the exact /sse pathname)
+      try {
+        es = new EventSource(`${NTFY_TOPIC_URL}/sse`);
+
+        es.onmessage = (event) => {
+          if (!active) return;
+          try {
+            const raw = JSON.parse(event.data);
+            if (raw.event === 'message') {
+              const payload = JSON.parse(raw.message);
+              handleIncomingPayload(payload);
+            }
+          } catch (e) {
+            // ignore parsing error
+          }
+        };
+
+        es.onerror = () => {
+          // Native SSE automatically schedules dynamic reconnects
+        };
+      } catch (err) {
+        console.error("Failed to initialize SSE EventSource connection:", err);
+      }
+    };
+
+    bootstrapAndConnect();
 
     return () => {
       active = false;
@@ -265,19 +366,21 @@ export default function ChatPage() {
         es.close();
       }
     };
-  }, [userId, nickname, isOwner]);
+  }, [userId]);
 
   // Presence Heartbeat Loop
   useEffect(() => {
     if (!nickname || !userId) return;
 
     const broadcastPresence = () => {
-      publishEvent('/api/chat/presence', {
+      publishEvent({
+        type: 'user_presence',
         id: userId,
         nickname,
         isTyping,
         isOwner,
-        os: getOS()
+        os: getOS(),
+        lastActive: Date.now()
       });
     };
 
@@ -286,6 +389,10 @@ export default function ChatPage() {
 
     return () => {
       clearInterval(heartbeat);
+      publishEvent({
+        type: 'user_presence_offline',
+        id: userId
+      });
     };
   }, [nickname, userId, isTyping, isOwner]);
 
@@ -355,12 +462,14 @@ export default function ChatPage() {
 
       // Broadcast immediate presence
       if (userId) {
-        publishEvent('/api/chat/presence', {
+        publishEvent({
+          type: 'user_presence',
           id: userId,
           nickname: finalNickname,
           isTyping: false,
           isOwner: isSigmaDev,
-          os: getOS()
+          os: getOS(),
+          lastActive: Date.now()
         });
       }
     } catch (err: any) {
@@ -376,7 +485,8 @@ export default function ChatPage() {
 
     const msgId = Math.random().toString(36).substring(2, 15);
     try {
-      await publishEvent('/api/chat/send', {
+      await publishEvent({
+        type: 'chat_message',
         id: msgId,
         text: trimmed,
         senderName: nickname,
@@ -392,7 +502,8 @@ export default function ChatPage() {
 
   const handleDeleteMessage = async (messageId: string, isPermanent: boolean = false, isAdminSoft: boolean = false) => {
     try {
-      await publishEvent('/api/chat/delete', {
+      await publishEvent({
+        type: 'message_deleted',
         messageId,
         isPermanentlyRemoved: isPermanent,
         isAdminDeleted: isAdminSoft
@@ -408,7 +519,8 @@ export default function ChatPage() {
     const kickEnd = Date.now() + (is5Minutes ? 300000 : 5000);
 
     try {
-      await publishEvent('/api/chat/kick', {
+      await publishEvent({
+        type: 'user_kick',
         nickname: targetNickname,
         kickType: is5Minutes ? '5m' : 'soft',
         kickEnd,
