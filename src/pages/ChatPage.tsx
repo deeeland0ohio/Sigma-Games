@@ -66,6 +66,8 @@ export default function ChatPage() {
   
   // Track online presence timestamps
   const [usersMap, setUsersMap] = useState<Record<string, ChatUser>>({});
+  const [bannedNicknames, setBannedNicknames] = useState<Record<string, number>>({});
+  const [bannedUserIds, setBannedUserIds] = useState<Record<string, number>>({});
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, messageId: string, userId: string, nickname: string } | null>(null);
@@ -74,24 +76,6 @@ export default function ChatPage() {
   const lastEnterTime = useRef<number>(0);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useThemeColors();
-  const [banTimeLeft, setBanTimeLeft] = useState<number | null>(null);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
-
-  const startBanTimer = (end: number) => {
-    if (intervalRef.current) clearInterval(intervalRef.current);
-    setBanTimeLeft(Math.floor((end - Date.now()) / 1000));
-    intervalRef.current = setInterval(() => {
-      const timeLeft = Math.floor((end - Date.now()) / 1000);
-      if (timeLeft <= 0) {
-        setBanTimeLeft(null);
-        localStorage.removeItem('kick_end');
-        if (intervalRef.current) clearInterval(intervalRef.current);
-        window.location.reload();
-      } else {
-        setBanTimeLeft(timeLeft);
-      }
-    }, 1000);
-  };
 
   // Initialize client userId
   useEffect(() => {
@@ -113,22 +97,26 @@ export default function ChatPage() {
     if (kickEnd) {
       const end = parseInt(kickEnd);
       if (Date.now() < end) {
-        startBanTimer(end);
+        setBannedUserIds(prev => ({
+          ...prev,
+          [id]: end
+        }));
       } else {
         localStorage.removeItem('kick_end');
       }
     }
-
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
   }, []);
 
-  // Periodic client rendering ticks for the 2-hour filter helper
+  // Real-time ticking for message expirations and ban countdowns
   useEffect(() => {
     const interval = setInterval(() => {
       setTick(t => t + 1);
-    }, 30000);
+      // Clean up localStorage kick_end when expired
+      const kickEnd = localStorage.getItem('kick_end');
+      if (kickEnd && Date.now() >= parseInt(kickEnd)) {
+        localStorage.removeItem('kick_end');
+      }
+    }, 1000);
     return () => clearInterval(interval);
   }, []);
 
@@ -212,8 +200,24 @@ export default function ChatPage() {
         break;
 
       case 'user_kick':
+        if (payload.kickEnd && Date.now() < payload.kickEnd) {
+          setBannedNicknames(prev => ({
+            ...prev,
+            [payload.nickname.toLowerCase()]: payload.kickEnd
+          }));
+          if (payload.targetUserId) {
+            setBannedUserIds(prev => ({
+              ...prev,
+              [payload.targetUserId]: payload.kickEnd
+            }));
+          }
+        }
+
         const storedNickname = localStorage.getItem('chat_nickname');
-        if (storedNickname && payload.nickname === storedNickname) {
+        const isTargetNick = storedNickname && payload.nickname.toLowerCase() === storedNickname.toLowerCase();
+        const isTargetUserId = userId && payload.targetUserId === userId;
+
+        if (isTargetNick || isTargetUserId) {
           const kickEnd = payload.kickEnd || 0;
           if (Date.now() < kickEnd) {
             if (payload.kickType === '5m') {
@@ -223,7 +227,10 @@ export default function ChatPage() {
               setNickname(null);
               setIsOwner(false);
               localStorage.setItem('kick_end', kickEnd.toString());
-              startBanTimer(kickEnd);
+              setBannedUserIds(prev => ({
+                ...prev,
+                [userId]: kickEnd
+              }));
             } else {
               alert("You were kicked by the Owner, you may join back in");
               localStorage.removeItem('chat_nickname');
@@ -251,7 +258,11 @@ export default function ChatPage() {
       setAuthLoading(true);
       try {
         // Fetch cached historic payloads from ntfy's cache via json query
-        const res = await fetch(`${NTFY_TOPIC_URL}/json?poll=1`);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 4000);
+        
+        const res = await fetch(`${NTFY_TOPIC_URL}/json?poll=1`, { signal: controller.signal });
+        clearTimeout(timeoutId);
         if (res.ok) {
           const text = await res.text();
           const lines = text.trim().split('\n').filter(Boolean);
@@ -259,6 +270,8 @@ export default function ChatPage() {
           const loadedMessages: Message[] = [];
           const loadedDeletedIds: Set<string> = new Set();
           const adminDeletedIds: Map<string, { type: 'soft' | 'hard' }> = new Map();
+          const kicks: Record<string, number> = {};
+          const bannedIds: Record<string, number> = {};
 
           for (const line of lines) {
             try {
@@ -301,6 +314,13 @@ export default function ChatPage() {
                       return next;
                     });
                   }
+                } else if (payload.type === 'user_kick') {
+                  if (payload.kickEnd && Date.now() < payload.kickEnd) {
+                    kicks[payload.nickname.toLowerCase()] = payload.kickEnd;
+                    if (payload.targetUserId) {
+                      bannedIds[payload.targetUserId] = payload.kickEnd;
+                    }
+                  }
                 }
               }
             } catch (e) {
@@ -323,6 +343,8 @@ export default function ChatPage() {
           if (active) {
             finalMsgs.sort((a, b) => a.createdAt - b.createdAt);
             setMessages(finalMsgs);
+            setBannedNicknames(kicks);
+            setBannedUserIds(bannedIds);
           }
         }
       } catch (err) {
@@ -438,8 +460,28 @@ export default function ChatPage() {
     }
 
     const isSigmaDev = trimmedNickname.toLowerCase() === "sigma dev";
-    if (isSigmaDev && inputPassword !== "sigmarizzsigmaenigma") {
+    const encodedAdminPass = "c2lnbWFyaXp6c2lnbWFlbmlnbWE=";
+    let isPasswordCorrect = false;
+    try {
+      isPasswordCorrect = window.btoa(inputPassword) === encodedAdminPass;
+    } catch (e) {
+      isPasswordCorrect = false;
+    }
+
+    if (isSigmaDev && !isPasswordCorrect) {
       setError("Invalid password for Sigma Dev");
+      return;
+    }
+
+    // Validate passive/historic kicks by nickname (case-insensitive)
+    const activeNickKickEnd = bannedNicknames[trimmedNickname.toLowerCase()];
+    if (activeNickKickEnd && Date.now() < activeNickKickEnd) {
+      return;
+    }
+
+    // Validate passive/historic kicks by guest userId
+    const activeIdKickEnd = bannedUserIds[userId];
+    if (activeIdKickEnd && Date.now() < activeIdKickEnd) {
       return;
     }
 
@@ -526,10 +568,14 @@ export default function ChatPage() {
     if (!isOwner || !userId) return;
     const kickEnd = Date.now() + (is5Minutes ? 300000 : 5000);
 
+    const targetUser = Object.values(usersMap).find(u => u.nickname.toLowerCase() === targetNickname.toLowerCase());
+    const targetUserId = targetUser ? targetUser.id : null;
+
     try {
       await publishEvent({
         type: 'user_kick',
         nickname: targetNickname,
+        targetUserId,
         kickType: is5Minutes ? '5m' : 'soft',
         kickEnd,
         adminId: userId
@@ -602,6 +648,20 @@ export default function ChatPage() {
     const twoHoursAgo = Date.now() - 7200000; // Filter messages older than 2 hours
     return msg.createdAt > twoHoursAgo;
   });
+
+  const activeIdKickEnd = bannedUserIds[userId];
+  const isIdBanned = activeIdKickEnd ? Date.now() < activeIdKickEnd : false;
+  
+  const activeNickKickEnd = bannedNicknames[inputNickname.trim().toLowerCase()];
+  const isNickBanned = activeNickKickEnd ? Date.now() < activeNickKickEnd : false;
+
+  const currentBanTimeLeft = isIdBanned 
+    ? Math.max(0, Math.ceil((activeIdKickEnd - Date.now()) / 1000))
+    : isNickBanned
+    ? Math.max(0, Math.ceil((activeNickKickEnd - Date.now()) / 1000))
+    : null;
+
+  const isJoinDisabled = isIdBanned || (isNickBanned && inputNickname.trim().toLowerCase() !== "") || !inputNickname.trim();
 
 
   return (
@@ -703,22 +763,25 @@ export default function ChatPage() {
 
                     <button
                       type="submit"
-                      disabled={banTimeLeft !== null || !inputNickname.trim()}
+                      disabled={isJoinDisabled}
                       className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${colors.primaryBg} text-black hover:scale-[1.02] active:scale-95 disabled:opacity-50 uppercase tracking-tighter shadow-lg ${colors.shadow}`}
                       style={{ color: '#000000' }}
                     >
                       Join Chatroom
                     </button>
-                    {banTimeLeft !== null && (
-                      <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center mt-2">
-                        You were kicked for {banTimeLeft} seconds
-                      </p>
-                    )}
-                    {error && (
+                    {error ? (
                       <p className="text-red-500 text-xs font-bold uppercase tracking-widest mt-2 max-w-xs mx-auto text-center animate-pulse">
                         {error}
                       </p>
-                    )}
+                    ) : isIdBanned && currentBanTimeLeft !== null ? (
+                      <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center mt-2">
+                        You were kicked for {currentBanTimeLeft} seconds
+                      </p>
+                    ) : isNickBanned && currentBanTimeLeft !== null && inputNickname.trim().toLowerCase() !== "" ? (
+                      <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center mt-2">
+                        This nickname is currently kicked. Try again in {currentBanTimeLeft} seconds
+                      </p>
+                    ) : null}
                   </div>
                 </form>
               </div>
