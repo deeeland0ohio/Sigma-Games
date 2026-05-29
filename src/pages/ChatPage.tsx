@@ -389,12 +389,20 @@ export default function ChatPage() {
 
     return () => {
       clearInterval(heartbeat);
-      publishEvent({
-        type: 'user_presence_offline',
-        id: userId
-      });
     };
   }, [nickname, userId, isTyping, isOwner]);
+
+  // Broadcast offline presence on true unmount
+  useEffect(() => {
+    return () => {
+      if (userId) {
+        publishEvent({
+          type: 'user_presence_offline',
+          id: userId
+        });
+      }
+    };
+  }, [userId]);
 
   // Typing state tracking mechanism
   useEffect(() => {
@@ -440,7 +448,7 @@ export default function ChatPage() {
       let finalNickname = trimmedNickname;
       let suffix = 1;
       const existingNicknames = Object.values(usersMap)
-        .filter(u => Date.now() - u.lastActive < 15000)
+        .filter(u => Date.now() - u.lastActive < 30000)
         .map(u => u.nickname.toLowerCase());
       
       if (existingNicknames.includes(finalNickname.toLowerCase())) {
@@ -574,7 +582,7 @@ export default function ChatPage() {
   }, [messages]);
 
   // Derived active users list from usersMap
-  const users = Object.values(usersMap).filter(u => Date.now() - u.lastActive < 15000);
+  const users = Object.values(usersMap).filter(u => Date.now() - u.lastActive < 30000);
 
   // Client-side mapping & filter
   const mappedMessages = messages.map(msg => {
