@@ -433,7 +433,7 @@ export default function ChatPage() {
       if (active) {
         setAblyActive(isAblyConfigured);
         if (!isAblyConfigured) {
-          setError("Ably won't work on static link. Chat is disabled.");
+          setError("Ably won't work on static links. Chat is disabled.");
         }
       }
 
@@ -557,7 +557,7 @@ export default function ChatPage() {
   const handleJoinChat = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!ablyActive) {
-      setError("Joining is disabled: Ably won't work on static link.");
+      setError("Joining is disabled: Ably won't work on static links.");
       return;
     }
     setError(null);
@@ -863,14 +863,10 @@ export default function ChatPage() {
         <div className="flex items-center gap-2 bg-zinc-900/60 border border-zinc-800/50 px-3 py-1.5 rounded-full z-20 relative">
           <div className={`w-2 h-2 rounded-full ${ablyActive ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse'}`} />
           <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">
-            {ablyActive ? 'Status: Ably Activated' : "Status: Ably won't work on static link :("}
+            {ablyActive ? 'Status: Ably Activated' : "Status: Ably won't work on static links :("}
           </span>
         </div>
-        {!ablyActive && (
-          <span className="text-[10px] font-mono text-red-500 hidden md:inline bg-zinc-950/40 border border-red-950/20 px-3 py-1 rounded-full animate-pulse">
-            ⚠️ Ably is required to use this chatroom
-          </span>
-        )}
+
       </div>
 
       <div className="max-w-[95%] mx-auto">
