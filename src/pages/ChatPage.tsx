@@ -430,7 +430,12 @@ export default function ChatPage() {
         console.error("Failed checking Ably configuration:", err);
       }
 
-      if (active) setAblyActive(isAblyConfigured);
+      if (active) {
+        setAblyActive(isAblyConfigured);
+        if (!isAblyConfigured) {
+          setError("Ably won't work on static link. Chat is disabled.");
+        }
+      }
 
       // 3. Connect to live real-time streams
       if (isAblyConfigured) {
@@ -551,6 +556,10 @@ export default function ChatPage() {
 
   const handleJoinChat = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (!ablyActive) {
+      setError("Joining is disabled: Ably won't work on static link.");
+      return;
+    }
     setError(null);
 
     const trimmedNickname = inputNickname.trim();
@@ -744,6 +753,13 @@ export default function ChatPage() {
     setIsOwner(false);
   };
 
+  // Force logout if Ably is inactive
+  useEffect(() => {
+    if (!authLoading && !ablyActive && nickname) {
+      handleLogout();
+    }
+  }, [authLoading, ablyActive, nickname]);
+
   // Scroll to bottom helper
   useEffect(() => {
     if (scrollRef.current) {
@@ -837,7 +853,7 @@ export default function ChatPage() {
     return `${seconds} second${seconds > 1 ? 's' : ''}`;
   };
 
-  const isJoinDisabled = isIdBanned || (isNickBanned && inputNickname.trim().toLowerCase() !== "") || !inputNickname.trim();
+  const isJoinDisabled = !ablyActive || isIdBanned || (isNickBanned && inputNickname.trim().toLowerCase() !== "") || !inputNickname.trim();
 
 
   return (
@@ -845,14 +861,14 @@ export default function ChatPage() {
       {/* Realtime / Ably mode indicator badge */}
       <div className="max-w-[95%] mx-auto mb-3 flex items-center justify-between px-2">
         <div className="flex items-center gap-2 bg-zinc-900/60 border border-zinc-800/50 px-3 py-1.5 rounded-full z-20 relative">
-          <div className={`w-2 h-2 rounded-full ${ablyActive ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]'}`} />
+          <div className={`w-2 h-2 rounded-full ${ablyActive ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse'}`} />
           <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">
-            {ablyActive ? 'Status: Ably Activated' : 'Status: Native Live Server'}
+            {ablyActive ? 'Status: Ably Activated' : "Status: Ably won't work on static link :("}
           </span>
         </div>
         {!ablyActive && (
-          <span className="text-[10px] font-mono text-zinc-500 hidden md:inline bg-zinc-950/40 border border-zinc-900/50 px-3 py-1 rounded-full">
-            💡 Setup ABLY_API_KEY for Ably Enterprise connection
+          <span className="text-[10px] font-mono text-red-500 hidden md:inline bg-zinc-950/40 border border-red-950/20 px-3 py-1 rounded-full animate-pulse">
+            ⚠️ Ably is required to use this chatroom
           </span>
         )}
       </div>
@@ -924,15 +940,16 @@ export default function ChatPage() {
                             type="text"
                             value={inputNickname}
                             onChange={(e) => setInputNickname(e.target.value)}
-                            placeholder="CHOOSE A NICKNAME..."
+                            placeholder={ablyActive ? "CHOOSE A NICKNAME..." : "CHAT CURRENTLY CLOSED"}
                             maxLength={25}
+                            disabled={!ablyActive}
                             autoFocus
-                            className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-zinc-500 transition-all font-mono tracking-wider text-center"
+                            className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-zinc-500 transition-all font-mono tracking-wider text-center disabled:opacity-50 disabled:cursor-not-allowed"
                           />
                         </div>
 
                         <AnimatePresence>
-                          {inputNickname.trim().toLowerCase() === "sigma dev" && (
+                          {ablyActive && inputNickname.trim().toLowerCase() === "sigma dev" && (
                             <motion.div 
                               initial={{ opacity: 0, height: 0 }}
                               animate={{ opacity: 1, height: 'auto' }}
@@ -945,6 +962,7 @@ export default function ChatPage() {
                                 value={inputPassword}
                                 onChange={(e) => setInputPassword(e.target.value)}
                                 placeholder="PASSWORD..."
+                                disabled={!ablyActive}
                                 className="w-full bg-zinc-800/50 border border-zinc-800 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-red-500 transition-all font-mono tracking-wider text-center"
                               />
                             </motion.div>
