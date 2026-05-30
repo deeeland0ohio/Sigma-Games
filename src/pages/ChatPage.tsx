@@ -86,12 +86,9 @@ export default function ChatPage() {
     }
     setUserId(id);
 
-    const storedNickname = localStorage.getItem('chat_nickname');
-    const storedIsOwner = localStorage.getItem('chat_is_owner') === 'true';
-    if (storedNickname) {
-      setNickname(storedNickname);
-      setIsOwner(storedIsOwner);
-    }
+    // Chat is disabled, auto-login deactivated
+    setNickname(null);
+    setIsOwner(false);
 
     const kickEnd = localStorage.getItem('kick_end');
     if (kickEnd) {
@@ -119,6 +116,76 @@ export default function ChatPage() {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Automatic eviction if current user is banned
+  useEffect(() => {
+    if (!nickname || !userId) return;
+
+    const activeIdKickEnd = bannedUserIds[userId];
+    const isIdBanned = activeIdKickEnd ? Date.now() < activeIdKickEnd : false;
+
+    const activeNickKickEnd = bannedNicknames[nickname.toLowerCase()];
+    const isNickBanned = activeNickKickEnd ? Date.now() < activeNickKickEnd : false;
+
+    if (isIdBanned || isNickBanned) {
+      localStorage.removeItem('chat_nickname');
+      localStorage.removeItem('chat_is_owner');
+      setNickname(null);
+      setIsOwner(false);
+      setError("You are currently kicked from this chatroom.");
+    }
+  }, [nickname, userId, bannedUserIds, bannedNicknames]);
+
+  // Automatically clear the kicked error string once the ban timer expires
+  useEffect(() => {
+    if (error === "You are currently kicked from this chatroom.") {
+      const activeIdKickEnd = bannedUserIds[userId];
+      const isIdBanned = activeIdKickEnd ? Date.now() < activeIdKickEnd : false;
+
+      const activeNickKickEnd = bannedNicknames[inputNickname.trim().toLowerCase()];
+      const isNickBanned = activeNickKickEnd ? Date.now() < activeNickKickEnd : false;
+
+      if (!isIdBanned && !isNickBanned) {
+        setError(null);
+      }
+    }
+  }, [error, bannedUserIds, bannedNicknames, userId, inputNickname]);
+
+  const lastEnforcedTimes = useRef<Record<string, number>>({});
+
+  // Owner auto-enforcing active bans if a banned user reappears/re-sends presence heartbeat
+  useEffect(() => {
+    if (!isOwner || !userId) return;
+
+    Object.values(usersMap).forEach(u => {
+      if (u.id === userId) return;
+
+      const bNick = bannedNicknames[u.nickname.toLowerCase()];
+      const bId = bannedUserIds[u.id];
+
+      const isNickBanned = bNick && Date.now() < bNick;
+      const isIdBanned = bId && Date.now() < bId;
+
+      if (isNickBanned || isIdBanned) {
+        const remainingEnd = isIdBanned ? bId! : bNick!;
+        const key = `${u.id}-${remainingEnd}`;
+        const lastEnforced = lastEnforcedTimes.current[key] || 0;
+
+        // Only re-enforce once every 15 seconds per unique ban to keep channel traffic low
+        if (Date.now() - lastEnforced > 15000) {
+          lastEnforcedTimes.current[key] = Date.now();
+          publishEvent({
+            type: 'user_kick',
+            nickname: u.nickname,
+            targetUserId: u.id,
+            kickType: isIdBanned ? 'id_enforce' : 'nick_enforce',
+            kickEnd: remainingEnd,
+            adminId: userId
+          });
+        }
+      }
+    });
+  }, [usersMap, bannedUserIds, bannedNicknames, isOwner, userId]);
 
   // Sync network status and custom window click listeners
   useEffect(() => {
@@ -220,8 +287,20 @@ export default function ChatPage() {
         if (isTargetNick || isTargetUserId) {
           const kickEnd = payload.kickEnd || 0;
           if (Date.now() < kickEnd) {
-            if (payload.kickType === '5m') {
-              alert("You were kicked by the Owner for 5 minutes");
+            const isSoft = payload.kickType === 'soft';
+            if (!isSoft) {
+              let label = "5 minutes";
+              if (payload.kickType === '1h') label = "1 hour";
+              else if (payload.kickType === '24h') label = "24 hours";
+              else if (payload.kickType === 'permanent') label = "permanently";
+              else if (payload.kickType === 'nick_enforce' || payload.kickType === 'id_enforce') {
+                const seconds = Math.max(0, Math.ceil((kickEnd - Date.now()) / 1000));
+                if (seconds > 31536000) label = "permanently";
+                else if (seconds > 86400) label = `${Math.ceil(seconds / 86400)} days`;
+                else if (seconds > 3600) label = `${Math.ceil(seconds / 3600)} hours`;
+                else label = `${Math.ceil(seconds / 60)} minutes`;
+              }
+              alert(`You were kicked by the Owner for ${label}`);
               localStorage.removeItem('chat_nickname');
               localStorage.removeItem('chat_is_owner');
               setNickname(null);
@@ -427,105 +506,38 @@ export default function ChatPage() {
   }, [userId]);
 
   // Typing state tracking mechanism
+  const isTypingRef = useRef(isTyping);
   useEffect(() => {
-    if (nickname) {
-      if (newMessage.trim().length > 0 && !isTyping) {
-        setIsTyping(true);
-      } else if (newMessage.trim().length === 0 && isTyping) {
-        setIsTyping(false);
-      }
+    isTypingRef.current = isTyping;
+  }, [isTyping]);
 
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+  useEffect(() => {
+    if (!nickname) return;
+
+    const hasText = newMessage.trim().length > 0;
+    
+    if (hasText && !isTypingRef.current) {
+      setIsTyping(true);
+    } else if (!hasText && isTypingRef.current) {
+      setIsTyping(false);
+    }
+
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    
+    if (hasText) {
       typingTimeoutRef.current = setTimeout(() => {
-        if (isTyping) {
-          setIsTyping(false);
-        }
+        setIsTyping(false);
       }, 3000);
     }
-  }, [newMessage, nickname, isTyping]);
+
+    return () => {
+      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    };
+  }, [newMessage, nickname]);
 
   const handleJoinChat = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    setError(null);
-
-    const trimmedNickname = inputNickname.trim();
-    if (!trimmedNickname) {
-      setError("Please enter a nickname.");
-      return;
-    }
-
-    if (trimmedNickname.length > 25) {
-      setError("Nickname must be 25 characters or less.");
-      return;
-    }
-
-    const isSigmaDev = trimmedNickname.toLowerCase() === "sigma dev";
-    const encodedAdminPass = "c2lnbWFyaXp6c2lnbWFlbmlnbWE=";
-    let isPasswordCorrect = false;
-    try {
-      isPasswordCorrect = window.btoa(inputPassword) === encodedAdminPass;
-    } catch (e) {
-      isPasswordCorrect = false;
-    }
-
-    if (isSigmaDev && !isPasswordCorrect) {
-      setError("Invalid password for Sigma Dev");
-      return;
-    }
-
-    // Validate passive/historic kicks by nickname (case-insensitive)
-    const activeNickKickEnd = bannedNicknames[trimmedNickname.toLowerCase()];
-    if (activeNickKickEnd && Date.now() < activeNickKickEnd) {
-      return;
-    }
-
-    // Validate passive/historic kicks by guest userId
-    const activeIdKickEnd = bannedUserIds[userId];
-    if (activeIdKickEnd && Date.now() < activeIdKickEnd) {
-      return;
-    }
-
-    try {
-      // Deconflict nicknames client-side
-      let finalNickname = trimmedNickname;
-      let suffix = 1;
-      const existingNicknames = Object.values(usersMap)
-        .filter(u => Date.now() - u.lastActive < 30000)
-        .map(u => u.nickname.toLowerCase());
-      
-      if (existingNicknames.includes(finalNickname.toLowerCase())) {
-        if (isSigmaDev) {
-          finalNickname = "Sigma Dev";
-        } else {
-          while (existingNicknames.includes(finalNickname.toLowerCase() + (suffix > 1 ? `(${suffix})` : ''))) {
-            suffix++;
-          }
-          finalNickname = `${trimmedNickname}(${suffix})`;
-        }
-      }
-
-      localStorage.setItem('chat_nickname', finalNickname);
-      localStorage.setItem('chat_is_owner', isSigmaDev ? 'true' : 'false');
-
-      setNickname(finalNickname);
-      setIsOwner(isSigmaDev);
-
-      // Broadcast immediate presence
-      if (userId) {
-        publishEvent({
-          type: 'user_presence',
-          id: userId,
-          nickname: finalNickname,
-          isTyping: false,
-          isOwner: isSigmaDev,
-          os: getOS(),
-          lastActive: Date.now()
-        });
-      }
-    } catch (err: any) {
-      console.error(err);
-      setError("Failed to join chat: " + (err.message || String(err)));
-    }
+    setError("Chat is disabled right now, cuz every provider sucks and costs money >:(");
   };
 
   const handleSendMessage = async (e?: React.FormEvent | React.KeyboardEvent) => {
@@ -564,19 +576,32 @@ export default function ChatPage() {
     setContextMenu(null);
   };
 
-  const handleKickUser = async (targetNickname: string, is5Minutes: boolean = false) => {
+  const handleKickUser = async (targetNickname: string, kickDuration: 'soft' | '5m' | '1h' = 'soft') => {
     if (!isOwner || !userId) return;
-    const kickEnd = Date.now() + (is5Minutes ? 300000 : 5000);
+
+    let duration = 5000; // soft kick: 5s
+    if (kickDuration === '5m') {
+      duration = 300000;
+    } else if (kickDuration === '1h') {
+      duration = 3600000;
+    }
+
+    const kickEnd = Date.now() + duration;
 
     const targetUser = Object.values(usersMap).find(u => u.nickname.toLowerCase() === targetNickname.toLowerCase());
     const targetUserId = targetUser ? targetUser.id : null;
+    const targetMessageId = contextMenu?.messageId;
 
     try {
+      if (kickDuration === '1h' && targetMessageId) {
+        await handleDeleteMessage(targetMessageId, true, true);
+      }
+
       await publishEvent({
         type: 'user_kick',
         nickname: targetNickname,
         targetUserId,
-        kickType: is5Minutes ? '5m' : 'soft',
+        kickType: kickDuration,
         kickEnd,
         adminId: userId
       });
@@ -614,6 +639,12 @@ export default function ChatPage() {
   };
 
   const handleLogout = async () => {
+    if (userId) {
+      publishEvent({
+        type: 'user_presence_offline',
+        id: userId
+      });
+    }
     localStorage.removeItem('chat_nickname');
     localStorage.removeItem('chat_is_owner');
     setNickname(null);
@@ -625,10 +656,17 @@ export default function ChatPage() {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, nickname]);
 
-  // Derived active users list from usersMap
-  const users = Object.values(usersMap).filter(u => Date.now() - u.lastActive < 30000);
+  // Derived active users list from usersMap (excluding banned people who bypassed cache)
+  const users = Object.values(usersMap)
+    .filter(u => Date.now() - u.lastActive < 30000)
+    .filter(u => {
+      const bNick = bannedNicknames[u.nickname.toLowerCase()];
+      const bId = bannedUserIds[u.id];
+      const isBanned = (bNick && Date.now() < bNick) || (bId && Date.now() < bId);
+      return !isBanned;
+    });
 
   // Client-side mapping & filter
   const mappedMessages = messages.map(msg => {
@@ -646,7 +684,13 @@ export default function ChatPage() {
 
   const filteredMessages = mappedMessages.filter(msg => {
     const twoHoursAgo = Date.now() - 7200000; // Filter messages older than 2 hours
-    return msg.createdAt > twoHoursAgo;
+    if (msg.createdAt <= twoHoursAgo) return false;
+
+    // Filter out messages from any users who are currently banned locally
+    const bNick = bannedNicknames[msg.senderName.toLowerCase()];
+    const bId = bannedUserIds[msg.senderId];
+    const isBanned = (bNick && Date.now() < bNick) || (bId && Date.now() < bId);
+    return !isBanned;
   });
 
   const activeIdKickEnd = bannedUserIds[userId];
@@ -660,6 +704,21 @@ export default function ChatPage() {
     : isNickBanned
     ? Math.max(0, Math.ceil((activeNickKickEnd - Date.now()) / 1000))
     : null;
+
+  const formatBanTimeLeft = (seconds: number | null) => {
+    if (seconds === null || seconds <= 0) return "";
+    if (seconds >= 3600) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.ceil((seconds % 3600) / 60);
+      if (m === 0 || m === 60) return `${h} hour${h > 1 ? 's' : ''}`;
+      return `${h}h ${m}m`;
+    }
+    if (seconds >= 60) {
+      const m = Math.ceil(seconds / 60);
+      return `${m} minute${m > 1 ? 's' : ''}`;
+    }
+    return `${seconds} second${seconds > 1 ? 's' : ''}`;
+  };
 
   const isJoinDisabled = isIdBanned || (isNickBanned && inputNickname.trim().toLowerCase() !== "") || !inputNickname.trim();
 
@@ -709,81 +768,23 @@ export default function ChatPage() {
                 <p className="text-zinc-500 text-xs tracking-[0.2em] font-bold uppercase animate-pulse">Initializing authentications...</p>
               </div>
             ) : !nickname ? (
-              <div className="absolute inset-0 flex items-center justify-center p-4 md:p-8 text-center">
-                <form 
-                  onSubmit={handleJoinChat}
-                  className="w-full max-w-sm flex flex-col items-center space-y-8"
-                >
+              <div className="absolute inset-0 flex items-center justify-center p-4 md:p-8 text-center bg-zinc-950/40 backdrop-blur-sm">
+                <div className="w-full max-w-md flex flex-col items-center space-y-6 bg-zinc-900/90 border border-red-500/30 p-8 rounded-2xl shadow-2xl relative z-20">
                   <motion.div 
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
-                    className="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center border border-zinc-700 shadow-xl"
+                    className="w-16 h-16 rounded-full bg-red-950/40 border border-red-500/20 flex items-center justify-center shadow-lg"
                   >
-                    <UserIcon size={40} className="text-zinc-500" />
+                    <X size={32} className="text-red-500" />
                   </motion.div>
                   
-                  <div className="space-y-2">
-                    <h3 className="text-2xl font-bold text-white tracking-tight uppercase">Enter Chatroom</h3>
+                  <div className="space-y-3">
+                    <h3 className="text-2xl font-bold text-red-500 tracking-tight uppercase">Chat Disabled</h3>
+                    <p className="text-zinc-200 font-mono text-sm leading-relaxed max-w-sm mx-auto p-4 bg-zinc-950/60 rounded-xl border border-zinc-800">
+                      Chat is disabled right now, cuz every provider sucks and costs money &gt;:(
+                    </p>
                   </div>
-                  
-                  <div className="w-full space-y-4">
-                    <div className="space-y-4 text-left">
-                      <div>
-                        <input
-                          type="text"
-                          value={inputNickname}
-                          onChange={(e) => setInputNickname(e.target.value)}
-                          placeholder="CHOOSE A NICKNAME..."
-                          maxLength={25}
-                          autoFocus
-                          className="w-full bg-zinc-800/50 border border-zinc-700 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-zinc-500 transition-all font-mono tracking-wider text-center"
-                        />
-                      </div>
-
-                      <AnimatePresence>
-                        {inputNickname.trim().toLowerCase() === "sigma dev" && (
-                          <motion.div 
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: 'auto' }}
-                            exit={{ opacity: 0, height: 0 }}
-                            className="overflow-hidden"
-                          >
-                            <label className="block text-[10px] font-bold text-zinc-500 uppercase tracking-widest mb-2">Enter Recon Password</label>
-                            <input
-                              type="password"
-                              value={inputPassword}
-                              onChange={(e) => setInputPassword(e.target.value)}
-                              placeholder="PASSWORD..."
-                              className="w-full bg-zinc-800/50 border border-zinc-800 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-red-500 transition-all font-mono tracking-wider text-center"
-                            />
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-
-                    <button
-                      type="submit"
-                      disabled={isJoinDisabled}
-                      className={`w-full py-4 rounded-xl font-bold text-lg transition-all ${colors.primaryBg} text-black hover:scale-[1.02] active:scale-95 disabled:opacity-50 uppercase tracking-tighter shadow-lg ${colors.shadow}`}
-                      style={{ color: '#000000' }}
-                    >
-                      Join Chatroom
-                    </button>
-                    {error ? (
-                      <p className="text-red-500 text-xs font-bold uppercase tracking-widest mt-2 max-w-xs mx-auto text-center animate-pulse">
-                        {error}
-                      </p>
-                    ) : isIdBanned && currentBanTimeLeft !== null ? (
-                      <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center mt-2">
-                        You were kicked for {currentBanTimeLeft} seconds
-                      </p>
-                    ) : isNickBanned && currentBanTimeLeft !== null && inputNickname.trim().toLowerCase() !== "" ? (
-                      <p className="text-red-500 text-xs font-bold uppercase tracking-widest text-center mt-2">
-                        This nickname is currently kicked. Try again in {currentBanTimeLeft} seconds
-                      </p>
-                    ) : null}
-                  </div>
-                </form>
+                </div>
               </div>
             ) : (
               <>
@@ -994,18 +995,25 @@ export default function ChatPage() {
               Admin Remove
             </button>
             <button
-              onClick={() => handleKickUser(contextMenu.nickname, false)}
-              className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-500 hover:bg-red-500/10 transition-all uppercase tracking-wider"
+              onClick={() => handleKickUser(contextMenu.nickname, 'soft')}
+              className="w-full flex items-center gap-4 px-4 py-2 text-sm font-bold text-zinc-400 hover:bg-zinc-800 transition-all uppercase tracking-wider"
             >
-              <LogOut size={20} />
-              Kick User
+              <LogOut size={16} />
+              Soft Kick (Evict)
             </button>
             <button
-              onClick={() => handleKickUser(contextMenu.nickname, true)}
-              className="w-full flex items-center gap-4 px-4 py-3 text-base font-bold text-red-600 hover:bg-red-500/10 transition-all uppercase tracking-wider"
+              onClick={() => handleKickUser(contextMenu.nickname, '5m')}
+              className="w-full flex items-center gap-4 px-4 py-2 text-sm font-bold text-red-400 hover:bg-red-500/10 transition-all uppercase tracking-wider"
             >
-              <LogOut size={20} />
-              Kick User (5m)
+              <LogOut size={16} className="text-red-400" />
+              Timeout (5 Mins)
+            </button>
+             <button
+              onClick={() => handleKickUser(contextMenu.nickname, '1h')}
+              className="w-full flex items-center gap-4 px-4 py-2 text-sm font-bold text-red-500 hover:bg-red-500/10 transition-all uppercase tracking-wider"
+            >
+              <LogOut size={16} className="text-red-500" />
+              Ban (1 Hour)
             </button>
           </motion.div>
         )}

@@ -56,7 +56,7 @@ export const games: Game[] = [
   },
   {
     id: 'noah',
-    title: "Noah's Hub Games",
+    title: "Noah's Hub Games (Old)",
     description: "Browse the Noah's Hub collection of 385 games.",
     icon: Box,
     type: 'folder',

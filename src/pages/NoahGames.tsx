@@ -65,7 +65,7 @@ export default function NoahGames() {
   const displayedGames = filteredGames.slice(0, visibleCount);
 
   return (
-    <PageLayout title="Noah's Hub Games">
+    <PageLayout title="Noah's Hub Games (Old)">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
