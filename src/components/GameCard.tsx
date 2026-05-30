@@ -123,7 +123,7 @@ export default function GameCard({ game, to }: GameCardProps) {
       )}
       <div className="relative z-10 w-full">
         <h3 className={`text-lg font-semibold text-zinc-100 ${titleHoverText} transition-colors`}>{game.title}</h3>
-        <p className="text-sm text-zinc-500 mt-1 line-clamp-2">{game.description}</p>
+        <p className="text-sm text-zinc-500 mt-1 whitespace-normal break-words">{game.description}</p>
       </div>
       </Link>
     </>

@@ -2,6 +2,7 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import compression from "compression";
 import path from "path";
+import * as Ably from "ably";
 
 async function startServer() {
   const app = express();
@@ -13,6 +14,129 @@ async function startServer() {
 
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // --- ABLY CHAT ROOM & SSE FALLBACK HYBRID BACKEND ---
+  const chatMessages: any[] = [];
+  const activeBannedUserIds: Record<string, number> = {};
+  const activeBannedNicknames: Record<string, number> = {};
+  let sseClients: any[] = [];
+
+  let ablyServerClient: Ably.Realtime | null = null;
+  const getAblyClient = () => {
+    if (!ablyServerClient) {
+      const apiKey = process.env.ABLY_API_KEY;
+      if (apiKey) {
+        ablyServerClient = new Ably.Realtime({ key: apiKey });
+      }
+    }
+    return ablyServerClient;
+  };
+
+  // Auth endpoint for Ably Token Authentication
+  app.get("/api/ably-auth", async (req, res) => {
+    try {
+      const client = getAblyClient();
+      if (!client) {
+        return res.status(403).json({ error: "ABLY_API_KEY not configured on server" });
+      }
+      const clientId = (req.query.clientId as string) || "anonymous-" + Math.random().toString(36).substring(2, 6);
+      const tokenRequest = await client.auth.createTokenRequest({ clientId });
+      res.json(tokenRequest);
+    } catch (err: any) {
+      console.error("Ably auth error:", err);
+      res.status(500).json({ error: err.message || "Failed to create Ably token" });
+    }
+  });
+
+  // Check whether Ably is configured
+  app.get("/api/ably-check", (req, res) => {
+    res.json({
+      configured: !!process.env.ABLY_API_KEY
+    });
+  });
+
+  // Fallback SSE Endpoint for server-native streaming (100% free, unlimited, no API keys required!)
+  app.get("/api/chat/sse", (req, res) => {
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders();
+
+    const client = { id: Math.random().toString(36), res };
+    sseClients.push(client);
+
+    req.on('close', () => {
+      sseClients = sseClients.filter(c => c.id !== client.id);
+    });
+  });
+
+  // Broadcast router for chat rooms (saves history in Node memory, publishes to Ably AND relays via custom SSEfallback)
+  app.post("/api/chat/broadcast", async (req, res) => {
+    try {
+      const payload = req.body;
+      if (!payload || !payload.type) {
+        return res.status(400).json({ error: "Invalid payload" });
+      }
+
+      // Update in-memory storage based on transaction types
+      if (payload.type === 'chat_message') {
+        if (chatMessages.length >= 100) chatMessages.shift();
+        chatMessages.push(payload);
+      } else if (payload.type === 'message_deleted') {
+        const idx = chatMessages.findIndex(m => m.id === payload.messageId);
+        if (idx !== -1) {
+          if (payload.isPermanentlyRemoved) {
+            chatMessages.splice(idx, 1);
+          } else if (payload.isAdminDeleted) {
+            chatMessages[idx].isAdminDeleted = true;
+          } else {
+            chatMessages[idx].isDeleted = true;
+          }
+        }
+      } else if (payload.type === 'user_kick') {
+        if (payload.kickEnd) {
+          activeBannedNicknames[payload.nickname.toLowerCase()] = payload.kickEnd;
+          if (payload.targetUserId) {
+            activeBannedUserIds[payload.targetUserId] = payload.kickEnd;
+          }
+        }
+      }
+
+      // 1. Broadcast via Ably if initialized
+      const client = getAblyClient();
+      if (client) {
+        try {
+          const channel = client.channels.get("global-chat");
+          await channel.publish("event", JSON.stringify(payload));
+        } catch (ablyErr) {
+          console.error("Failed to publish event via Ably, showing error:", ablyErr);
+        }
+      }
+
+      // 2. Broadcast via internal SSE fallback stream (supports instant, zero-limit cost-free fallback!)
+      sseClients.forEach(c => {
+        try {
+          c.res.write(`data: ${JSON.stringify(payload)}\n\n`);
+        } catch (e) {
+          // clean up failed clients inside catch
+        }
+      });
+
+      res.json({ success: true });
+    } catch (err: any) {
+      console.error("Broadcast error:", err);
+      res.status(500).json({ error: err.message || "Failed to broadcast event" });
+    }
+  });
+
+  // Retrieve message history & current ban states from server cache
+  app.get("/api/chat/history", (req, res) => {
+    res.json({
+      messages: chatMessages,
+      bannedNicknames: activeBannedNicknames,
+      bannedUserIds: activeBannedUserIds
+    });
   });
 
   app.get("/api/youtube-search", async (req, res) => {

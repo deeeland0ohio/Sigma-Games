@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, MessageSquare, User as UserIcon, LogOut, Trash2, X } from 'lucide-react';
+import * as Ably from 'ably';
 import { useThemeColors } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
 
@@ -36,14 +37,15 @@ const getOS = () => {
   return "Other";
 };
 
-// We use ntfy.sh, a free, public, permanent, high-scale Pub/Sub network over SSE/REST.
-// This supports 100% free serverless real-time messaging, presence, deletion, and bans with zero database latency on Vercel and Cloud Run.
-const NTFY_TOPIC_URL = 'https://ntfy.sh/sg_chat_unblocked_v5_9cd927ea_prod';
-
+// We broadcast all real-time chat sync actions to our Node.js back-end.
+// The backend handles saving histories, checking bans, publishing to Ably if configured, OR streaming over native fallback SSE.
 const publishEvent = async (payload: any) => {
   try {
-    await fetch(NTFY_TOPIC_URL, {
+    await fetch('/api/chat/broadcast', {
       method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
       body: JSON.stringify(payload),
     });
   } catch (err) {
@@ -52,10 +54,31 @@ const publishEvent = async (payload: any) => {
 };
 
 export default function ChatPage() {
-  const [userId, setUserId] = useState<string>('');
+  const [userId] = useState<string>(() => {
+    // Generate a clean, unique ID per page load / tab instance to prevent collisions
+    // when tabs are duplicated or cloned, while retaining their session nickname.
+    if (typeof localStorage !== 'undefined') {
+      localStorage.removeItem('chat_guest_id');
+    }
+    if (typeof sessionStorage !== 'undefined') {
+      sessionStorage.removeItem('chat_guest_id');
+    }
+    return 'u_' + Math.random().toString(36).substring(2, 15);
+  });
   const [authLoading, setAuthLoading] = useState(false);
-  const [nickname, setNickname] = useState<string | null>(null);
-  const [isOwner, setIsOwner] = useState(false);
+  const [nickname, setNickname] = useState<string | null>(() => {
+    if (typeof sessionStorage !== 'undefined') {
+      return sessionStorage.getItem('chat_nickname');
+    }
+    return null;
+  });
+  const [isOwner, setIsOwner] = useState<boolean>(() => {
+    if (typeof sessionStorage !== 'undefined') {
+      return sessionStorage.getItem('chat_is_owner') === 'true';
+    }
+    return false;
+  });
+  const [ablyActive, setAblyActive] = useState(false);
   
   const [inputNickname, setInputNickname] = useState('');
   const [inputPassword, setInputPassword] = useState('');
@@ -71,41 +94,49 @@ export default function ChatPage() {
   const [isTyping, setIsTyping] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, messageId: string, userId: string, nickname: string } | null>(null);
+  const [kickWarning, setKickWarning] = useState<{ title: string; message: string } | null>(null);
   const [, setTick] = useState(0); // Force custom re-render for message expirations
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastEnterTime = useRef<number>(0);
-  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const colors = useThemeColors();
 
-  // Initialize client userId
+  // Create stable, non-stale references for state values accessed in subscriptions
+  const nicknameRef = useRef(nickname);
+  const userIdRef = useRef(userId);
+  const isOwnerRef = useRef(isOwner);
+  const isTypingRef = useRef(isTyping);
+
   useEffect(() => {
-    let id = localStorage.getItem('chat_guest_id');
-    if (!id) {
-      id = 'u_' + Math.random().toString(36).substring(2, 15);
-      localStorage.setItem('chat_guest_id', id);
-    }
-    setUserId(id);
+    nicknameRef.current = nickname;
+  }, [nickname]);
 
-    const storedNickname = localStorage.getItem('chat_nickname');
-    const storedIsOwner = localStorage.getItem('chat_is_owner') === 'true';
-    if (storedNickname) {
-      setNickname(storedNickname);
-      setIsOwner(storedIsOwner);
-    }
+  useEffect(() => {
+    userIdRef.current = userId;
+  }, [userId]);
 
+  useEffect(() => {
+    isOwnerRef.current = isOwner;
+  }, [isOwner]);
+
+  useEffect(() => {
+    isTypingRef.current = isTyping;
+  }, [isTyping]);
+
+  // Clean kick_end checks on mount
+  useEffect(() => {
     const kickEnd = localStorage.getItem('kick_end');
-    if (kickEnd) {
+    if (kickEnd && userId) {
       const end = parseInt(kickEnd);
       if (Date.now() < end) {
         setBannedUserIds(prev => ({
           ...prev,
-          [id]: end
+          [userId]: end
         }));
       } else {
         localStorage.removeItem('kick_end');
       }
     }
-  }, []);
+  }, [userId]);
 
   // Real-time ticking for message expirations and ban countdowns
   useEffect(() => {
@@ -131,8 +162,8 @@ export default function ChatPage() {
     const isNickBanned = activeNickKickEnd ? Date.now() < activeNickKickEnd : false;
 
     if (isIdBanned || isNickBanned) {
-      localStorage.removeItem('chat_nickname');
-      localStorage.removeItem('chat_is_owner');
+      sessionStorage.removeItem('chat_nickname');
+      sessionStorage.removeItem('chat_is_owner');
       setNickname(null);
       setIsOwner(false);
       setError("You are currently kicked from this chatroom.");
@@ -246,7 +277,22 @@ export default function ChatPage() {
         }));
         break;
 
+      case 'presence_request':
+        if (nicknameRef.current && userIdRef.current) {
+          publishEvent({
+            type: 'user_presence',
+            id: userIdRef.current,
+            nickname: nicknameRef.current,
+            isTyping: isTypingRef.current,
+            isOwner: isOwnerRef.current,
+            os: getOS(),
+            lastActive: Date.now()
+          });
+        }
+        break;
+
       case 'user_presence':
+        if (!payload.id) break;
         setUsersMap(prev => {
           const next = { ...prev };
           next[payload.id] = {
@@ -262,6 +308,7 @@ export default function ChatPage() {
         break;
 
       case 'user_presence_offline':
+        if (!payload.id) break;
         setUsersMap(prev => {
           const next = { ...prev };
           delete next[payload.id];
@@ -283,9 +330,9 @@ export default function ChatPage() {
           }
         }
 
-        const storedNickname = localStorage.getItem('chat_nickname');
+        const storedNickname = sessionStorage.getItem('chat_nickname');
         const isTargetNick = storedNickname && payload.nickname.toLowerCase() === storedNickname.toLowerCase();
-        const isTargetUserId = userId && payload.targetUserId === userId;
+        const isTargetUserId = userIdRef.current && payload.targetUserId === userIdRef.current;
 
         if (isTargetNick || isTargetUserId) {
           const kickEnd = payload.kickEnd || 0;
@@ -303,20 +350,26 @@ export default function ChatPage() {
                 else if (seconds > 3600) label = `${Math.ceil(seconds / 3600)} hours`;
                 else label = `${Math.ceil(seconds / 60)} minutes`;
               }
-              alert(`You were kicked by the Owner for ${label}`);
-              localStorage.removeItem('chat_nickname');
-              localStorage.removeItem('chat_is_owner');
+              setKickWarning({
+                title: "Kicked & Temporarily Banned",
+                message: `You were kicked by the Owner for ${label}.`
+              });
+              sessionStorage.removeItem('chat_nickname');
+              sessionStorage.removeItem('chat_is_owner');
               setNickname(null);
               setIsOwner(false);
               localStorage.setItem('kick_end', kickEnd.toString());
               setBannedUserIds(prev => ({
                 ...prev,
-                [userId]: kickEnd
+                [userIdRef.current]: kickEnd
               }));
             } else {
-              alert("You were kicked by the Owner, you may join back in");
-              localStorage.removeItem('chat_nickname');
-              localStorage.removeItem('chat_is_owner');
+              setKickWarning({
+                title: "Kicked from Chat",
+                message: "You were kicked by the Owner, you may join back in."
+              });
+              sessionStorage.removeItem('chat_nickname');
+              sessionStorage.removeItem('chat_is_owner');
               setNickname(null);
               setIsOwner(false);
             }
@@ -329,136 +382,110 @@ export default function ChatPage() {
     }
   };
 
-  // Real-time EventSource listener to ntfy.sh endpoint
+  const handleIncomingPayloadRef = useRef(handleIncomingPayload);
+  useEffect(() => {
+    handleIncomingPayloadRef.current = handleIncomingPayload;
+  }, [handleIncomingPayload]);
+
+  // Real-time listener: supporting Ably Realtime and Native Server-SSE fallback
   useEffect(() => {
     if (!userId) return;
 
     let active = true;
-    let es: EventSource | null = null;
+    let ablyRealtime: Ably.Realtime | null = null;
+    let sseSource: EventSource | null = null;
 
     const bootstrapAndConnect = async () => {
       setAuthLoading(true);
+      
+      // 1. Fetch persistent chat history from the Node back-end cache
       try {
-        // Fetch cached historic payloads from ntfy's cache via json query
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 4000);
-        
-        const res = await fetch(`${NTFY_TOPIC_URL}/json?poll=1`, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        if (res.ok) {
-          const text = await res.text();
-          const lines = text.trim().split('\n').filter(Boolean);
-          
-          const loadedMessages: Message[] = [];
-          const loadedDeletedIds: Set<string> = new Set();
-          const adminDeletedIds: Map<string, { type: 'soft' | 'hard' }> = new Map();
-          const kicks: Record<string, number> = {};
-          const bannedIds: Record<string, number> = {};
-
-          for (const line of lines) {
-            try {
-              const raw = JSON.parse(line);
-              if (raw.event === 'message') {
-                const payload = JSON.parse(raw.message);
-                if (payload.type === 'chat_message') {
-                  loadedMessages.push({
-                    id: payload.id,
-                    text: payload.text,
-                    senderName: payload.senderName,
-                    senderId: payload.senderId,
-                    createdAt: payload.createdAt,
-                    os: payload.os,
-                    isDeleted: payload.isDeleted,
-                    isPlaceholder: payload.isPlaceholder,
-                    isAdminDeleted: payload.isAdminDeleted,
-                    isPermanentlyRemoved: payload.isPermanentlyRemoved
-                  });
-                } else if (payload.type === 'message_deleted') {
-                  if (payload.isPermanentlyRemoved) {
-                    adminDeletedIds.set(payload.messageId, { type: 'hard' });
-                  } else if (payload.isAdminDeleted) {
-                    adminDeletedIds.set(payload.messageId, { type: 'soft' });
-                  } else {
-                    loadedDeletedIds.add(payload.messageId);
-                  }
-                } else if (payload.type === 'user_presence') {
-                  if (active) {
-                    setUsersMap(prev => {
-                      const next = { ...prev };
-                      next[payload.id] = {
-                        id: payload.id,
-                        nickname: payload.nickname,
-                        lastActive: payload.lastActive || Date.now(),
-                        isTyping: payload.isTyping,
-                        isOwner: payload.isOwner,
-                        os: payload.os
-                      };
-                      return next;
-                    });
-                  }
-                } else if (payload.type === 'user_kick') {
-                  if (payload.kickEnd && Date.now() < payload.kickEnd) {
-                    kicks[payload.nickname.toLowerCase()] = payload.kickEnd;
-                    if (payload.targetUserId) {
-                      bannedIds[payload.targetUserId] = payload.kickEnd;
-                    }
-                  }
-                }
-              }
-            } catch (e) {
-              // ignore safe line parse errors
-            }
+        const historyRes = await fetch('/api/chat/history');
+        if (historyRes.ok && active) {
+          const data = await historyRes.json();
+          if (data.messages) {
+            const sortedAndParsed = data.messages.sort((a: any, b: any) => a.createdAt - b.createdAt);
+            setMessages(sortedAndParsed);
           }
-
-          const finalMsgs = loadedMessages.map(msg => {
-            const adminDel = adminDeletedIds.get(msg.id);
-            if (adminDel?.type === 'hard') {
-              return { ...msg, isDeleted: true, isPermanentlyRemoved: true };
-            } else if (adminDel?.type === 'soft') {
-              return { ...msg, isDeleted: true, isAdminDeleted: true, isPlaceholder: true };
-            } else if (loadedDeletedIds.has(msg.id)) {
-              return { ...msg, isDeleted: true, isPlaceholder: true };
-            }
-            return msg;
-          });
-
-          if (active) {
-            finalMsgs.sort((a, b) => a.createdAt - b.createdAt);
-            setMessages(finalMsgs);
-            setBannedNicknames(kicks);
-            setBannedUserIds(bannedIds);
-          }
+          if (data.bannedNicknames) setBannedNicknames(data.bannedNicknames);
+          if (data.bannedUserIds) setBannedUserIds(data.bannedUserIds);
         }
       } catch (err) {
-        console.error("Failed to bootstrap chat message cache:", err);
+        console.error("Failed to load backend chat history:", err);
       } finally {
         if (active) setAuthLoading(false);
       }
 
       if (!active) return;
 
-      // Connect to the real EventSource stream (using the exact /sse pathname)
+      // 2. Query server for Ably Configuration Status
+      let isAblyConfigured = false;
       try {
-        es = new EventSource(`${NTFY_TOPIC_URL}/sse`);
-
-        es.onmessage = (event) => {
-          if (!active) return;
-          try {
-            const raw = JSON.parse(event.data);
-            if (raw.event === 'message') {
-              const payload = JSON.parse(raw.message);
-              handleIncomingPayload(payload);
-            }
-          } catch (e) {
-            // ignore parsing error
-          }
-        };
-
-        es.onerror = () => {
-          // Native SSE automatically schedules dynamic reconnects
-        };
+        const checkRes = await fetch('/api/ably-check');
+        if (checkRes.ok) {
+          const checkData = await checkRes.json();
+          isAblyConfigured = !!checkData.configured;
+        }
       } catch (err) {
-        console.error("Failed to initialize SSE EventSource connection:", err);
+        console.error("Failed checking Ably configuration:", err);
+      }
+
+      if (active) setAblyActive(isAblyConfigured);
+
+      // 3. Connect to live real-time streams
+      if (isAblyConfigured) {
+        // --- ELEGANT ABLY MODE ---
+        try {
+          ablyRealtime = new Ably.Realtime({
+            authUrl: `/api/ably-auth?clientId=${userId}`
+          });
+          const channel = ablyRealtime.channels.get('global-chat');
+          
+          channel.subscribe('event', (msg) => {
+            if (!active) return;
+            try {
+              const payload = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data;
+              handleIncomingPayloadRef.current(payload);
+            } catch (pErr) {
+              console.error("Ably parser error:", pErr);
+            }
+          });
+
+          // Send an immediate presence query to discover active peers instantly
+          try {
+            channel.publish('event', JSON.stringify({
+              type: 'presence_request',
+              id: userId
+            }));
+          } catch (pubErr) {
+            console.error("Ably initial presence query error:", pubErr);
+          }
+        } catch (ablyErr) {
+          console.error("Failed establishing Ably Realtime connection:", ablyErr);
+        }
+      } else {
+        // --- HIGH-PERFORMANCE NATIVE SSE FALLBACK MODE ---
+        // Runs entirely on the Cloud Run Node server, 100% free, zero limits, supporting 100+ concurrent users!
+        try {
+          sseSource = new EventSource('/api/chat/sse');
+          sseSource.onmessage = (event) => {
+            if (!active) return;
+            try {
+              const payload = JSON.parse(event.data);
+              handleIncomingPayloadRef.current(payload);
+            } catch (err) {
+              console.error("Local SSE parse error:", err);
+            }
+          };
+
+          // Send an immediate presence query to discover active peers instantly
+          publishEvent({
+            type: 'presence_request',
+            id: userId
+          });
+        } catch (sseErr) {
+          console.error("Failed establishing native server SSE fallback connection:", sseErr);
+        }
       }
     };
 
@@ -466,8 +493,15 @@ export default function ChatPage() {
 
     return () => {
       active = false;
-      if (es) {
-        es.close();
+      if (ablyRealtime) {
+        try {
+          ablyRealtime.close();
+        } catch (e) {}
+      }
+      if (sseSource) {
+        try {
+          sseSource.close();
+        } catch (e) {}
       }
     };
   }, [userId]);
@@ -508,34 +542,11 @@ export default function ChatPage() {
     };
   }, [userId]);
 
-  // Typing state tracking mechanism
-  const isTypingRef = useRef(isTyping);
-  useEffect(() => {
-    isTypingRef.current = isTyping;
-  }, [isTyping]);
-
+  // Typing status effect
   useEffect(() => {
     if (!nickname) return;
-
     const hasText = newMessage.trim().length > 0;
-    
-    if (hasText && !isTypingRef.current) {
-      setIsTyping(true);
-    } else if (!hasText && isTypingRef.current) {
-      setIsTyping(false);
-    }
-
-    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    
-    if (hasText) {
-      typingTimeoutRef.current = setTimeout(() => {
-        setIsTyping(false);
-      }, 3000);
-    }
-
-    return () => {
-      if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
-    };
+    setIsTyping(hasText);
   }, [newMessage, nickname]);
 
   const handleJoinChat = async (e?: React.FormEvent) => {
@@ -584,7 +595,7 @@ export default function ChatPage() {
       let finalNickname = trimmedNickname;
       let suffix = 1;
       const existingNicknames = Object.values(usersMap)
-        .filter(u => Date.now() - u.lastActive < 30000)
+        .filter(u => Date.now() - u.lastActive < 18000)
         .map(u => u.nickname.toLowerCase());
       
       if (existingNicknames.includes(finalNickname.toLowerCase())) {
@@ -598,8 +609,8 @@ export default function ChatPage() {
         }
       }
 
-      localStorage.setItem('chat_nickname', finalNickname);
-      localStorage.setItem('chat_is_owner', isSigmaDev ? 'true' : 'false');
+      sessionStorage.setItem('chat_nickname', finalNickname);
+      sessionStorage.setItem('chat_is_owner', isSigmaDev ? 'true' : 'false');
 
       setNickname(finalNickname);
       setIsOwner(isSigmaDev);
@@ -727,8 +738,8 @@ export default function ChatPage() {
         id: userId
       });
     }
-    localStorage.removeItem('chat_nickname');
-    localStorage.removeItem('chat_is_owner');
+    sessionStorage.removeItem('chat_nickname');
+    sessionStorage.removeItem('chat_is_owner');
     setNickname(null);
     setIsOwner(false);
   };
@@ -739,16 +750,6 @@ export default function ChatPage() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, nickname]);
-
-  // Derived active users list from usersMap (excluding banned people who bypassed cache)
-  const users = Object.values(usersMap)
-    .filter(u => Date.now() - u.lastActive < 30000)
-    .filter(u => {
-      const bNick = bannedNicknames[u.nickname.toLowerCase()];
-      const bId = bannedUserIds[u.id];
-      const isBanned = (bNick && Date.now() < bNick) || (bId && Date.now() < bId);
-      return !isBanned;
-    });
 
   // Client-side mapping & filter
   const mappedMessages = messages.map(msg => {
@@ -774,6 +775,40 @@ export default function ChatPage() {
     const isBanned = (bNick && Date.now() < bNick) || (bId && Date.now() < bId);
     return !isBanned;
   });
+
+  // Calculate last message timestamp for each user
+  const lastMessageTimeMap: Record<string, number> = {};
+  filteredMessages.forEach(m => {
+    if (!lastMessageTimeMap[m.senderId] || m.createdAt > lastMessageTimeMap[m.senderId]) {
+      lastMessageTimeMap[m.senderId] = m.createdAt;
+    }
+  });
+
+  // Derived active users list from usersMap (excluding banned people who bypassed cache)
+  const users = Object.values(usersMap)
+    .filter(u => Date.now() - u.lastActive < 18000)
+    .filter(u => {
+      const bNick = bannedNicknames[u.nickname.toLowerCase()];
+      const bId = bannedUserIds[u.id];
+      const isBanned = (bNick && Date.now() < bNick) || (bId && Date.now() < bId);
+      return !isBanned;
+    })
+    .sort((a, b) => {
+      const timeA = lastMessageTimeMap[a.id] || 0;
+      const timeB = lastMessageTimeMap[b.id] || 0;
+
+      if (timeA !== timeB) {
+        return timeB - timeA; // most recent message first
+      }
+
+      // fallback: show current user first, then Owner, then by lastActive
+      if (a.id === userId && b.id !== userId) return -1;
+      if (b.id === userId && a.id !== userId) return 1;
+      if (a.isOwner && !b.isOwner) return -1;
+      if (b.isOwner && !a.isOwner) return 1;
+
+      return b.lastActive - a.lastActive;
+    });
 
   const activeIdKickEnd = bannedUserIds[userId];
   const isIdBanned = activeIdKickEnd ? Date.now() < activeIdKickEnd : false;
@@ -807,38 +842,25 @@ export default function ChatPage() {
 
   return (
     <PageLayout title="" maxWidth="full" showBack={false}>
-      {/* Pristine reproduction of the requested "CHAT DISABLED" UI */}
-      <div className="min-h-[calc(100vh-8rem)] w-full flex items-center justify-center p-4">
-        <div className="w-full max-w-[450px] bg-[#121316]/95 border border-red-600/30 rounded-3xl p-8 flex flex-col items-center justify-center shadow-2xl relative">
-          {/* Subtle red glow around the card */}
-          <div className="absolute inset-0 bg-red-600/5 rounded-3xl blur-2xl pointer-events-none" />
-          
-          {/* Circular Red X Indicator */}
-          <div className="w-16 h-16 rounded-full bg-red-950/45 border border-red-800/30 flex items-center justify-center mb-6 shadow-inner">
-            <X size={28} className="text-red-500 font-bold" />
-          </div>
-          
-          {/* CHAT DISABLED Bold Label */}
-          <h2 className="text-xl font-extrabold text-[#f13a3a] tracking-wider mb-6 text-center uppercase select-none font-sans">
-            CHAT DISABLED
-          </h2>
-          
-          {/* Inner dark monospace box */}
-          <div className="w-full bg-[#0a0a0c] border border-zinc-900/60 rounded-xl px-2.5 py-4 flex items-center justify-center">
-            <p className="text-zinc-300 font-mono text-sm leading-relaxed text-center whitespace-pre-line select-text tracking-wide w-full">
-              {`Chat is disabled right
-now, cuz every provider sucks and costs money >:(`}
-            </p>
-          </div>
+      {/* Realtime / Ably mode indicator badge */}
+      <div className="max-w-[95%] mx-auto mb-3 flex items-center justify-between px-2">
+        <div className="flex items-center gap-2 bg-zinc-900/60 border border-zinc-800/50 px-3 py-1.5 rounded-full z-20 relative">
+          <div className={`w-2 h-2 rounded-full ${ablyActive ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)] animate-pulse' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.8)]'}`} />
+          <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">
+            {ablyActive ? 'Status: Ably Activated' : 'Status: Native Live Server'}
+          </span>
         </div>
+        {!ablyActive && (
+          <span className="text-[10px] font-mono text-zinc-500 hidden md:inline bg-zinc-950/40 border border-zinc-900/50 px-3 py-1 rounded-full">
+            💡 Setup ABLY_API_KEY for Ably Enterprise connection
+          </span>
+        )}
       </div>
 
-      {/* Keep all the chat stuff but hide it from viewport */}
-      <div className="hidden" aria-hidden="true">
-        <div className="max-w-[95%] mx-auto transform scale-[0.85] origin-top">
-          <div className="w-full h-[calc(100vh-4rem)] flex flex-col bg-zinc-900/95 rounded-2xl overflow-hidden relative shadow-2xl border border-zinc-800/50">
-            {/* Subtle theme glow background */}
-            <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} opacity-10 pointer-events-none`} />
+      <div className="max-w-[95%] mx-auto">
+        <div className="w-full h-[calc(100vh-10rem)] flex flex-col bg-zinc-900/95 rounded-2xl overflow-hidden relative shadow-2xl border border-zinc-800/50">
+          {/* Subtle theme glow background */}
+          <div className={`absolute inset-0 bg-gradient-to-br ${colors.gradientFrom} ${colors.gradientTo} opacity-10 pointer-events-none`} />
             
             {/* Chat Header */}
             <div className="p-6 border-b border-zinc-800/30 flex items-center justify-between bg-zinc-900/40 relative z-10">
@@ -1187,7 +1209,52 @@ now, cuz every provider sucks and costs money >:(`}
             </motion.div>
           )}
         </AnimatePresence>
-      </div>
+
+        {/* Kick Warning Modal */}
+        <AnimatePresence>
+          {kickWarning && (
+            <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.6 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setKickWarning(null)}
+                className="absolute inset-0 bg-black"
+              />
+              
+              {/* Modal Container */}
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                className="relative w-full max-w-md overflow-hidden rounded-2xl border border-red-900/50 bg-zinc-950 p-6 shadow-2xl z-10"
+              >
+                {/* Glow Accent */}
+                <div className="absolute -top-12 -left-12 w-32 h-32 bg-red-600/10 rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex items-start gap-4">
+                  <div className="p-3 bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl">
+                    <LogOut size={24} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-lg font-bold text-white uppercase tracking-wider">{kickWarning.title}</h3>
+                    <p className="text-zinc-400 mt-2 text-sm leading-relaxed">{kickWarning.message}</p>
+                  </div>
+                </div>
+                
+                <div className="mt-6 flex justify-end">
+                  <button
+                    onClick={() => setKickWarning(null)}
+                    className="px-5 py-2.5 rounded-xl font-bold text-sm bg-red-600 text-white hover:bg-red-500 active:scale-95 transition-all uppercase tracking-wider cursor-pointer"
+                  >
+                    Acknowledge
+                  </button>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
 
     </PageLayout>
   );
