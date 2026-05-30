@@ -67,6 +67,10 @@ export default function NoahGames() {
   return (
     <PageLayout title="Noah's Hub Games (Old)">
       <div className="space-y-6">
+        <div className="text-sm text-zinc-500 font-mono tracking-wide -mt-2 bg-zinc-900/40 border border-zinc-800/40 px-4 py-2 rounded-xl inline-block">
+          💡 Browse the Noah's Hub collection of {games.length} unblocked games.
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
