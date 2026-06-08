@@ -188,22 +188,14 @@
             try {
                 const res = await fetch('https://cdn.jsdelivr.net/gh/deeeland0ohio/Noahs-Hub-Games-js@main/games.js');
                 const text = await res.text();
-                const match = text.match(/const games = (\[.*?\]);/s);
-                let fetched = [];
-                if (match) {
-                    const str = match[1];
-                    const regex = /{ title: "(.*?)", desc: "(.*?)", url: "(.*?)", image: "(.*?)" }/g;
-                    let m;
-                    while ((m = regex.exec(str)) !== null) {
-                        fetched.push({
-                            title: m[1].replace(/\\"/g, '"'),
-                            url: m[3].replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com'),
-                            image: m[4],
-                            source: 'noah'
-                        });
-                    }
-                }
-                return fetched;
+                const fnText = text.replace(/const games\s*=/, "return");
+                const gamesArray = (new Function(fnText))();
+                return gamesArray.map(g => ({
+                    title: g.title,
+                    url: g.url.replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com'),
+                    image: g.image,
+                    source: 'noah'
+                }));
             } catch(e) {
                 console.error("Noah error", e);
                 return [];
