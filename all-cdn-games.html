@@ -186,7 +186,7 @@
 
         async function fetchNoah() {
             try {
-                const res = await fetch('https://cdn.jsdelivr.net/gh/deeeland0ohio/Noahs-Hub-Games-js@main/games.js');
+                const res = await fetch('https://raw.githubusercontent.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor/master/games.js');
                 const text = await res.text();
                 const fnText = text.replace(/const games\s*=/, "return");
                 const gamesArray = (new Function(fnText))();

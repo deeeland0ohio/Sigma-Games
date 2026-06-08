@@ -1,20 +1,46 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Maximize, Box, Heart } from 'lucide-react';
+import { Search, X, Maximize, Box, Heart, Loader2 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { noahGames as initialNoahGames } from '../data/noah';
 import { useFavorites } from '../context/FavoritesContext';
 
 export default function NoahGames() {
+  const [games, setGames] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [games] = useState(() => 
-    [...initialNoahGames].sort((a, b) => 
-      (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' })
-    )
-  );
   const [selectedGame, setSelectedGame] = useState<{ url: string, title: string, desc: string, image: string } | null>(null);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
+
+  useEffect(() => {
+    async function loadGames() {
+      setLoading(true);
+      try {
+        const res = await fetch('https://cdn.jsdelivr.net/gh/deeeland0ohio/Noahs-Hub-Games-js@main/games.js');
+        const text = await res.text();
+        const fnText = text.replace(/const games\s*=/, "return");
+        const gamesArray = (new Function(fnText))();
+        if (Array.isArray(gamesArray) && gamesArray.length > 0) {
+          const sorted = [...gamesArray].sort((a, b) => 
+            (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' })
+          );
+          setGames(sorted);
+        } else {
+          throw new Error("Invalid games array format");
+        }
+      } catch (e) {
+        console.error("Failed to fetch Noah games from CDN, falling back to local list:", e);
+        const sorted = [...initialNoahGames].sort((a, b) => 
+          (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' })
+        );
+        setGames(sorted);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadGames();
+  }, []);
 
   const formatFileName = (raw: string) => {
     if (!raw) return '';
@@ -33,6 +59,17 @@ export default function NoahGames() {
     (g.title || g.url).toLowerCase().includes(search.toLowerCase())
   );
   const displayedGames = filteredGames.slice(0, visibleCount);
+
+  if (loading) {
+    return (
+      <PageLayout title="Noah's Hub Games">
+        <div className="flex flex-col items-center justify-center py-20 min-h-[50vh]">
+          <Loader2 className="w-8 h-8 animate-spin text-orange-500 mb-4" />
+          <p className="text-zinc-500 font-medium animate-pulse">Loading games collection...</p>
+        </div>
+      </PageLayout>
+    );
+  }
 
   return (
     <PageLayout title="Noah's Hub Games">
