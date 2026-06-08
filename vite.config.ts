@@ -19,6 +19,7 @@ export default defineConfig(({mode}) => {
       alias: {
         '@': path.resolve(__dirname, '.'),
       },
+      dedupe: ['react', 'react-dom'],
     },
     server: {
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
