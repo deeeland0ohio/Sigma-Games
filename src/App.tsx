@@ -16,6 +16,7 @@ import UgsFiles from './pages/UgsFiles';
 import SeraphGames from './pages/SeraphGames';
 import Threekh0Games from './pages/Threekh0Games';
 import NoahGames from './pages/NoahGames';
+import AlexrGames from './pages/AlexrGames';
 import ExternalPlayer from './pages/ExternalPlayer';
 import NotFound from './pages/NotFound';
 import Entertainment from './pages/Entertainment';
@@ -61,6 +62,7 @@ export default function App() {
               <Route path="/seraph" element={<SeraphGames />} />
               <Route path="/3kh0" element={<Threekh0Games />} />
               <Route path="/noah" element={<NoahGames />} />
+              <Route path="/alexr" element={<AlexrGames />} />
               <Route path="/entertainment" element={<Entertainment />} />
               <Route path="/external-player" element={<ExternalPlayer />} />
               <Route path="*" element={<NotFound />} />

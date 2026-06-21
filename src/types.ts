@@ -14,4 +14,5 @@ export type Game = {
   keywords?: string[];
   image?: string;
   isExternal?: boolean;
+  source?: string;
 };
