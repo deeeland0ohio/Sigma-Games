@@ -7,6 +7,6 @@ export const buildNowGg: Game = {
   description: 'BuildNow GG Battle Royale',
   icon: Gamepad2,
   type: 'iframe',
-  url: '/games/buildnow-gg.html',
+  url: '/games/buildnow-gg/index.html',
   popularity: 90,
 };

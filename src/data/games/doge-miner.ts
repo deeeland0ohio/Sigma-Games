@@ -7,6 +7,6 @@ export const dogeMiner: Game = {
   description: 'The Dogecoin Mining Simulator',
   icon: Zap,
   type: 'iframe',
-  url: '/games/doge-miner.html',
+  url: '/games/doge-miner/index.html',
   popularity: 90,
 };
