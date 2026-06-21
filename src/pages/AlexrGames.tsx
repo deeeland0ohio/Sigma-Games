@@ -154,7 +154,7 @@ export default function AlexrGames() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: (index % 50) * 0.01 }}
+                  transition={{ delay: (index % 20) * 0.005 }}
                   key={`${g.title}-${index}`}
                   className="group relative aspect-square overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800"
                 >
@@ -210,15 +210,15 @@ export default function AlexrGames() {
 
         {/* Load More Button */}
         {filteredGames.length > visibleCount && (
-          <div className="flex justify-center mt-6">
-            <button
-              onClick={() => setVisibleCount(prev => prev + 100)}
-              className="px-6 py-3 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 text-white font-medium transition-colors"
-            >
-              Load More Games
-            </button>
-          </div>
-        )}
+           <div className="flex justify-center mt-6">
+             <button
+               onClick={() => setVisibleCount(prev => prev + 100)}
+               className="px-6 py-3 bg-zinc-900 border border-zinc-800 rounded-lg hover:bg-zinc-800 text-white font-medium transition-colors"
+             >
+               Load More ({filteredGames.length - visibleCount} Remaining)
+             </button>
+           </div>
+         )}
       </div>
 
       {/* Fullscreen Overlay Component */}

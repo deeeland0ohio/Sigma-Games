@@ -1,0 +1,1034 @@
+[
+  {
+    "title": "GTA Vice City",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Grand Theft Auto: Vice City",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/gta-vice-city/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Totally Accurate Battle Simulator",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "TABS is a wacky physics-based tactics game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/totally-accurate-battle-simulator/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Stardew Valley",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A relaxing country-life RPG.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/stardew-valley/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "20 Minutes Till Dawn",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A rogue-lite, shoot'em up where you mow down endless hordes of monsters.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/20-minutes-till-dawn/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Undertale",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The RPG game where you don't have to destroy anyone.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/undertale/index.html",
+    "category": "Undertale",
+    "iframe": true
+  },
+  {
+    "title": "Deltarune Chapters 1-4",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A different world, a different story.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/deltarune-1-4/index.html",
+    "category": "Deltarune",
+    "iframe": true
+  },
+  {
+    "title": "Hollow Knight",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Descend into the dark.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/hollow-knight/index.html",
+    "category": "Hollow Knight",
+    "iframe": true
+  },
+  {
+    "title": "Hollow Knight: Silksong",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The epic sequel to Hollow Knight. Explore a vast, haunted kingdom of bugs and heroes.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/hollow-knight-silksong/index.html",
+    "category": "Hollow Knight",
+    "iframe": true
+  },
+  {
+    "title": "Buckshot Roulette",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Play Russian roulette with a 12-gauge shotgun.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/buckshot-roulette/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "BitLife",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Live your virtual life.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/bit-life/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Survive the night shift.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-1/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "New animatronics, no doors.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-2/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's 3",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Thirty years later.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-3/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's 4",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "What have you brought home?",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-4/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's 4 Halloween",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Halloween edition.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-4-halloween/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's Sister Location",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Welcome to Circus Baby's Pizza World.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-sl/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's World",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fantasy role-playing game featuring the entire cast from the Five Nights at Freddy's series.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-world/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's World Refreshed",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A refreshed version of the RPG spin-off of the Five Nights at Freddy's series.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-world-refreshed/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's Pizza Simulator",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A business simulation game where you manage your own Freddy Fazbear's Pizza.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-pizza-simulator/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Five Nights at Freddy's Ultimate Custom Night",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The ultimate FNAF mashup, featuring 50 selectable animatronic characters and near-infinite options for customizable difficulty.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnaf-ucn/index.html",
+    "category": "FNAF",
+    "iframe": true
+  },
+  {
+    "title": "Balatro",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Poker roguelike.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/balatro/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Solar Smash",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Planet destruction simulator.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/solar-smash/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "They're Coming",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Survive the endless waves.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/theyre-coming/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Iron Lung",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A short horror game set in a blood ocean.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/iron-lung/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Brotato: New Dawn",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A top-down arena shooter roguelite where you play a potato wielding up to 6 weapons at a time to fight off hordes of aliens.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/brotato/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "OMORI",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Explore a strange world full of colorful friends and foes.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/omori/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Bad Parenting 1",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A psychological horror game where you experience the terrifying consequences of bad parenting.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/bad-parenting/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "ULTRAKILL",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fast-paced ultraviolent retro FPS combining skill-based style scoring with rapid movement.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/ultrakill/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Ragdoll Archers",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Shoot arrows and defeat enemies with ragdoll physics.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/ragdoll-archers/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Ragdoll Hit",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Hit and smash ragdoll enemies in this physics-based action game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/ragdoll-hit/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Baldi's Basics",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A surreal meta-horror game disguised as a 90s educational edutainment game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/baldis-basics/index.html",
+    "category": "Baldi's Basics",
+    "iframe": true
+  },
+  {
+    "title": "Baldi's Basics Classic Remastered",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A remastered version of the surreal meta-horror educational game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/baldis-basics-classic-remastered/index.html",
+    "category": "Baldi's Basics",
+    "iframe": true
+  },
+  {
+    "title": "Baldi's Basics Plus",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A procedurally generated roguelike horror game set in a school.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/baldis-basics-plus/index.html",
+    "category": "Baldi's Basics",
+    "iframe": true
+  },
+  {
+    "title": "Vex 4",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Navigate through deadly traps in this classic Vex installment.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/vex-4/index.html",
+    "category": "Vex",
+    "iframe": true
+  },
+  {
+    "title": "Vex 5",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Test your reflexes in the fifth chapter of the Vex series.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/vex-5/index.html",
+    "category": "Vex",
+    "iframe": true
+  },
+  {
+    "title": "Vex 6",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Master complex jumps and avoid hazards in Vex 6.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/vex-6/index.html",
+    "category": "Vex",
+    "iframe": true
+  },
+  {
+    "title": "Vex 7",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Experience new mechanics and intense levels in Vex 7.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/vex-7/index.html",
+    "category": "Vex",
+    "iframe": true
+  },
+  {
+    "title": "Vex 8",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The latest and most difficult Vex challenge yet.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/vex-8/index.html",
+    "category": "Vex",
+    "iframe": true
+  },
+  {
+    "title": "Vex Challenges",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Take on a series of specialized challenges designed to test your skills.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/vex-challenges/index.html",
+    "category": "Vex",
+    "iframe": true
+  },
+  {
+    "title": "Vex X3M",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "High-speed Vex action with a focus on quick movement.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/vex-x3m/index.html",
+    "category": "Vex",
+    "iframe": true
+  },
+  {
+    "title": "Vex X3M 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The sequel to the fast-paced Vex X3M experience.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/vex-x3m-2/index.html",
+    "category": "Vex",
+    "iframe": true
+  },
+  {
+    "title": "Sky Riders",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A high-speed racing game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/sky-riders/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Endoparasitic",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A challenging survival game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/endoparasitic-1/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Endoparasitic 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A challenging survival game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/endoparasitic-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "R.E.P.O.",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A tense, atmospheric survival horror experience set in a mysterious facility.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/repo/index.html",
+    "category": "R.E.P.O.",
+    "iframe": true
+  },
+  {
+    "title": "OvO",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fast-paced, challenging platformer where you control a stick figure navigating through intricate levels.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/ovo/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "OvO 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The sequel to the fast-paced platformer OvO, featuring even more challenging levels, new mechanics, and improved gameplay.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/ovo2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "OvO 3 Dimensions",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The third installment in the OvO series, bringing the fast-paced platforming action into new dimensions.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/ovo3/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Poly Track",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fast-paced, low-poly racing game with custom tracks and intense drifting mechanics.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/poly-track/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Gladihoppers",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fast-paced 2D physics gladiator combat game where you battle to the death in the arena.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/gladihoppers/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Bad Piggies",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Build makeshift contraptions from a huge collection of parts and make it to the goal without blowing your vehicle to pieces!",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/bad-piggies/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Basket Bros",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Online multiplayer basketball! Dunk all over your bros!",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/basket-bros/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Clover Pit",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A psychological horror/adventure game by Panik Arcade.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/clover-pit/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Cluster Rush",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fast-paced first-person platformer where you jump between moving trucks.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/cluster-rush/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Crazy Cars",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A wild and chaotic racing game where you perform stunts and navigate through challenging tracks.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/crazy-cars/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Crazy Cattle 3D",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A chaotic 3D adventure where you control a crazy cow on a rampage.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/crazy-cattle-3d/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Crazy Chickens 3D",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fun 3D game featuring crazy chickens in a chaotic environment.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/crazy-chickens-3d/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Crazy Kitty 3D",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A chaotic 3D adventure where you control a crazy kitty on a rampage.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/crazy-kitty-3d/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "GDWeb+",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Jump and fly your way through danger in this rhythm-based action platformer! Features 29 levels.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/geometry-dash/index.html",
+    "category": "Geometry Dash",
+    "iframe": true
+  },
+  {
+    "title": "Geometry Dash Lite [15 Levels]",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Jump and fly your way through danger in this rhythm-based action platformer. Features 15 levels.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/geometry-dash-lite/index.html",
+    "category": "Geometry Dash",
+    "iframe": true
+  },
+  {
+    "title": "Webfishing",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A relaxing fishing game where you can catch various fish and explore the waters.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/webfishing/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Granny",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A survival horror game where you must escape from a creepy house while being hunted by Granny.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/granny/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Cuphead",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A classic run and gun action game heavily focused on boss battles. Inspired by cartoons of the 1930s, the visuals and audio are painstakingly created with the same techniques of the era.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/cuphead/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "A Small World Cup",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fun and simple soccer game where you control a single player. Aim, jump, and kick your way to victory in this small-scale world cup tournament.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/a-small-world-cup/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Idle Breakout",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A unique twist on the classic breakout genre. Buy different types of balls to break bricks automatically and upgrade them to increase your efficiency in this addictive idle game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/idle-breakout/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Basket Random",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fun and chaotic 2-player basketball game with physics-based gameplay. Score baskets by jumping and shooting in various environments with changing rules and characters.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/basket-random/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Block Blast",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fun and addictive block puzzle game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/block-blast/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Black Jack",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Play blackjack game online made using vanilla Javascript.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/black-jack/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Tomb of the Mask",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fast-paced arcade game where you navigate through procedurally generated labyrinths, avoiding traps and collecting coins.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/tomb-of-the-mask/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Soccer Random",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A hilarious and fast-paced soccer game with ragdoll physics and unpredictable gameplay.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/soccer-random/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Granny 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Escape the terrifying house in this sequel to the popular horror game. Solve puzzles and stay quiet to survive.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/granny-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Granny 3",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The third installment of the horror series. Explore the new house, avoid Granny and Grandpa, and find a way to escape.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/granny-3/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Escape Road",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Drive as fast as you can to escape the police in this high-speed car chase game. Avoid obstacles and collect coins to upgrade your vehicle.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/escape-road/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Escape Road 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The high-speed chase continues! Escape Road 2 brings more intense action, new cars, and even more challenging roads. Can you outrun the police again?",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/escape-road-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Escape Road City 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The city streets are more dangerous than ever! Escape Road City 2 brings new challenges and high-speed thrills in an urban environment. Can you survive the escape?",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/escape-road-city-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Doge Miner",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The Dogecoin Mining Simulator",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/doge-miner/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "BuildNow GG",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "BuildNow GG Battle Royale",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/buildnow-gg/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Boxing Random",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Boxing Random Battle",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/boxing-random/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Rooftop Snipers",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Rooftop Snipers is a pixel-style shooting game where you have to shoot famous characters off of the roof.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/rooftop-snipers/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Rooftop Snipers 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Rooftop Snipers 2 is a pixel-style shooting game where you have to shoot famous characters off of the roof.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/rooftop-snipers-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Football Bros",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Online multiplayer football! Bone crushing hits, long bombs, and tons more!",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/football-bros/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Baseball Bros",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Online multiplayer baseball! Strikeouts, steals, and grand slams! Hit Nukes!",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/baseball-bros/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Temple Run 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Run, jump, turn and slide your way through the dangerous temple.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/temple-run-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Retro Bowl",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The perfect game for the armchair quarterback to finally prove a point.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/retro-bowl/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Retro Bowl College",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Take control of your favorite college football team and lead them to victory in this retro-style sports game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/retro-bowl-college/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Gun Spin",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Shoot your gun to spin it and travel as far as possible.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/gun-spin/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Friday Night Funkin'",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A rhythm game where you battle in musical duels to win over your girlfriend's father.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/friday-night-funkin/index.html",
+    "category": "FNF",
+    "iframe": true
+  },
+  {
+    "title": "Friday Night Funkin' vs Hex",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A popular mod for Friday Night Funkin' featuring Hex, the basketball-playing robot.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnf-vs-hex/index.html",
+    "category": "FNF",
+    "iframe": true
+  },
+  {
+    "title": "Friday Night Funkin' vs Garcello",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A popular mod for Friday Night Funkin' featuring Garcello, a mysterious smoker.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnf-vs-garcello/index.html",
+    "category": "FNF",
+    "iframe": true
+  },
+  {
+    "title": "Friday Night Funkin': Sarvente's Mid-Fight Masses",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A popular mod for Friday Night Funkin' featuring Sarvente and Ruv in a musical duel.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnf-sarvente/index.html",
+    "category": "FNF",
+    "iframe": true
+  },
+  {
+    "title": "Friday Night Funkin' vs Whitty",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A legendary mod for Friday Night Funkin' featuring Whitty, the hot-headed rockstar.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnf-vs-whitty/index.html",
+    "category": "FNF",
+    "iframe": true
+  },
+  {
+    "title": "Friday Night Funkin' vs Sonic.exe",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A terrifying mod for Friday Night Funkin' featuring Sonic.exe.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnf-vs-sonic-exe/index.html",
+    "category": "FNF",
+    "iframe": true
+  },
+  {
+    "title": "Friday Night Funkin' vs Impostor v4",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A massive FNF mod featuring Among Us characters with multiple weeks and songs.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/fnf-vs-impostor-v4/index.html",
+    "category": "FNF",
+    "iframe": true
+  },
+  {
+    "title": "Short Life",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A physics-based platformer where you must survive various deadly traps and obstacles.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/short-life/index.html",
+    "category": "Short Life",
+    "iframe": true
+  },
+  {
+    "title": "Drive Mad",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Drive Mad is a car game where you drive on a track filled with obstacles. Your goal is to reach the finish line in one piece.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/drive-mad/index.html",
+    "category": "Drive Mad",
+    "iframe": true
+  },
+  {
+    "title": "Drift Boss",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A simple but addictive drifting game where you must time your turns perfectly to stay on the track.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/drift-boss/index.html",
+    "category": "Drift Boss",
+    "iframe": true
+  },
+  {
+    "title": "10 Minutes Until Dawn",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Survive the onslaught of eldritch monsters for 10 minutes in this roguelite survival game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/10-minutes-until-dawn/index.html",
+    "category": "10 Minutes Until Dawn",
+    "iframe": true
+  },
+  {
+    "title": "1v1.lol",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A highly competitive third-person shooter and building simulator. Practice your 90s and battle opponents!",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/1v1-lol/index.html",
+    "category": "1v1.lol",
+    "iframe": true
+  },
+  {
+    "title": "Kart Bros",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A free kart racing game packed with wild antics! Drift around tracks and hurl powerups with friends.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/kart-bros/index.html",
+    "category": "Bros",
+    "iframe": true
+  },
+  {
+    "title": "Ice Dodo",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Ice Dodo is a popular 3D obstacle game. The controls are simple but the maps are terribly complex! The game is free and all levels are unlocked.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/ice-dodo/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "A Bite at Freddy's",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A terrifying Five Nights at Freddy's fan game. Can you survive the night against the animatronics?",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/abaf/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Mountain Bike Racer",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Race your mountain bike across challenging terrain and perform stunts.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/mountain-bike-racer/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Needy Streamer Overload",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Manage a streamer's daily life and help her become the #1 Internet Angel.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/needy-streamer-overload/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Bank Robbery",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Pull off the ultimate heist in this thrilling bank robbery game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/bank-robbery/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Bank Robbery 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The sequel to the ultimate heist game. Pull off bigger and better robberies.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/bank-robbery-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Bank Robbery 3",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The third installment in the Bank Robbery series. Can you pull off the biggest heist yet?",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/bank-robbery-3/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Peaks of Yore: Demo",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Scale the first cliff in this challenging climbing simulator demo.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/peaks-of-yore/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Hotline Miami",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A high-octane action game overflowing with raw brutality, hard-boiled gunplay and skull crushing close combat.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/hotline-miami/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "SUPERHOT",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Time moves only when you move in this innovative first-person shooter.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/superhot/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Time Shooter",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Time moves only when you move in this action-packed shooter.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/time-shooter/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Time Shooter 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The sequel to the popular time-bending shooter.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/time-shooter-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Time Shooter 3: SWAT",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Join the SWAT team in this third installment of the time-bending shooter.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/time-shooter-3/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Bendy and the Ink Machine",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Explore the creepy animation studio and survive the ink demon in this first-person puzzle action horror game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/bendy-and-the-ink-machine/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Half-Life",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The classic sci-fi first-person shooter that redefined the genre.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/half-life/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Half-Life: Opposing Force",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Return to Black Mesa as a Marine in this official expansion to Half-Life.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/half-life-opposing-force/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Volley Random",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fun and unpredictable physics-based volleyball game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/volley-random/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Slope",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Roll down the slope for as long as possible without falling off the edge or hitting obstacles.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/slope/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Slope 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The sequel to the popular Slope game. Roll down the slope, avoid obstacles, and survive as long as possible!",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/slope-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Tiny Fishing",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Cast your line, catch fish, and upgrade your gear in this relaxing idle game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/tiny-fishing/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Sandboxels",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Sandboxels is an in-browser falling sand simulator, with mechanics such as heat simulation, electricity, density, chemical reactions, fire, and over 500 unique elements to play with.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/sandboxels/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Funny Shooter 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Funny Shooter 2 is a fun 3D shooter game where you fight against hordes of funny enemies.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/funny-shooter-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Funny Battle Simulator",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A funny battle simulator where you can place units and watch them fight.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/funny-battle-simulator/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Funny Battle Simulator 2",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "The sequel to the funny battle simulator with more units and fun.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/funny-battle-simulator-2/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Wrestle Bros",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Online multiplayer PRO WRESTLING! Beat up your bros!",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/wrestle-bros/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Slope 3",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Drive a ball down a never-ending slope, avoid obstacles, and survive as long as possible.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/slope-3/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Snow Rider 3D",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Ride down a snowy mountain, dodge obstacles, and collect gifts in this fast-paced 3D snowboarding game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/snow-rider-3d/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Soccer Bros",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Fun, fast-paced 1 on 1 soccer game with lots of action! Pick from a variety of characters and let the play begin.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/soccer-bros/index.html",
+    "category": "Bros",
+    "iframe": true
+  },
+  {
+    "title": "Stickman Hook",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Swing through the levels with your grappling hook in this physics-based skill game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/stick-man-hook/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Tunnel Rush",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Blaze through caves and tunnels. Dodge obstacles and survive as long as you can in this fast-paced game.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/tunnel-rush/index.html",
+    "category": "Arcade",
+    "iframe": true
+  }
+]
