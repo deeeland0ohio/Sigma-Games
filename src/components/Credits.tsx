@@ -19,11 +19,18 @@ export default function Credits() {
 
       <AnimatePresence>
         {isOpen && (
-          <div className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-20 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setIsOpen(false)}
+            className="fixed inset-0 z-[100] flex items-start justify-center p-4 pt-20 bg-transparent"
+          >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9, y: -20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.9, y: -20 }}
+              initial={{ scale: 0.9, y: -20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: -20 }}
+              onClick={(e) => e.stopPropagation()}
               className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full relative shadow-2xl"
             >
               <button
@@ -40,7 +47,6 @@ export default function Credits() {
 
               <div className="space-y-6">
                 <div>
-                  <h3 className="text-xs uppercase tracking-widest text-zinc-500 font-bold mb-2">Development</h3>
                   <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
                     <p className="text-zinc-300">
                       <span className="text-zinc-500">Games:</span> <span className={colors.textGradient || colors.primary}>
@@ -48,8 +54,9 @@ export default function Credits() {
                         <a href="https://docs.google.com/document/d/1_FmH3BlSBQI7FGgAQL59-ZPe8eCxs35wel6JUyVaG8Q/edit?tab=t.0" target="_blank" rel="noopener noreferrer" className="hover:underline">UGS</a>,{' '}
                         <a href="https://github.com/a456pur/seraph" target="_blank" rel="noopener noreferrer" className="hover:underline">Seraph</a>,{' '}
                         <a href="https://truffled.lol/" target="_blank" rel="noopener noreferrer" className="hover:underline">Truffled</a>,{' '}
-                        <a href="https://3kh0.net/" target="_blank" rel="noopener noreferrer" className="hover:underline">3kh0</a>, and{' '}
-                        <a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" className="hover:underline">Noah's Hub</a>
+                        <a href="https://3kh0.net/" target="_blank" rel="noopener noreferrer" className="hover:underline">3kh0</a>,{' '}
+                        <a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" className="hover:underline">Noah's Hub</a>, and{' '}
+                        <a href="https://dskjfoisjfsjio.github.io/" target="_blank" rel="noopener noreferrer" className="hover:underline">Alexr</a>
                       </span>
                     </p>
                     <p className="text-zinc-300 mt-2">
@@ -69,7 +76,7 @@ export default function Credits() {
                 Close
               </button>
             </motion.div>
-          </div>
+          </motion.div>
         )}
       </AnimatePresence>
     </>
