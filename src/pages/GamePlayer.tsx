@@ -145,7 +145,7 @@ export default function GamePlayer() {
           {game.type === 'iframe' && (iframeUrl || game.srcdoc) ? (
             <iframe 
               key={reloadKey}
-              src={iframeUrl ? `${iframeUrl}${iframeUrl.includes('?') ? '&' : '?'}v=${Date.now()}_${reloadKey}` : undefined}
+              src={iframeUrl}
               srcDoc={game.srcdoc}
               title={game.title}
               className="w-full h-full border-none" 
