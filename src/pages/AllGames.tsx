@@ -7,7 +7,7 @@ import SearchBar from '../components/SearchBar';
 export default function AllGames() {
   const [searchQuery, setSearchQuery] = useState('');
   const [games, setGames] = useState<any[]>([]);
-  const [visibleCount, setVisibleCount] = useState(120);
+  const [visibleCount, setVisibleCount] = useState(100);
 
   useEffect(() => {
     // Populate with only our local games list
@@ -58,10 +58,10 @@ export default function AllGames() {
       {filteredGames.length > visibleCount && (
         <div className="flex justify-center mt-12 mb-6">
           <button
-            onClick={() => setVisibleCount(prev => prev + 120)}
+            onClick={() => setVisibleCount(prev => prev + 100)}
             className="px-6 py-3 bg-zinc-900 hover:bg-zinc-800 text-white border border-zinc-800 rounded-lg font-medium transition-colors cursor-pointer"
           >
-            Load More Games
+            Load More ({filteredGames.length - visibleCount} Remaining)
           </button>
         </div>
       )}

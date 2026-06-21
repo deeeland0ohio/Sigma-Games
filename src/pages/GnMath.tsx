@@ -21,6 +21,7 @@ export default function GnMath() {
   const [selectedTag, setSelectedTag] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
+  const [visibleCount, setVisibleCount] = useState(100);
   
   const { toggleFavorite, isFavorite } = useFavorites();
 
@@ -50,6 +51,10 @@ export default function GnMath() {
     loadZones();
   }, []);
 
+  useEffect(() => {
+    setVisibleCount(100);
+  }, [search, selectedTag]);
+
   const openZone = (zone: Zone) => {
     setSelectedZone(zone);
   };
@@ -59,6 +64,8 @@ export default function GnMath() {
     const matchTag = selectedTag ? z.tags.includes(selectedTag) : true;
     return matchSearch && matchTag;
   });
+
+  const displayedZones = filteredZones.slice(0, visibleCount);
 
   return (
     <PageLayout title="GN-Math">
@@ -101,13 +108,13 @@ export default function GnMath() {
           </div>
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {filteredZones.map((z, index) => {
+            {displayedZones.map((z, index) => {
               const gameId = `gnmath:${z.name}`;
               return (
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: index * 0.02 }}
+                transition={{ delay: (index % 20) * 0.01 }}
                 key={`${z.name}-${index}`}
                 className="group relative aspect-square overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800"
               >
@@ -139,6 +146,18 @@ export default function GnMath() {
                 </div>
               </motion.div>
             )})}
+            
+            {visibleCount < filteredZones.length && (
+              <div className="col-span-full flex justify-center mt-6">
+                <button
+                  onClick={() => setVisibleCount(c => c + 100)}
+                  className="px-6 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700 cursor-pointer"
+                >
+                  Load More ({filteredZones.length - visibleCount} Remaining)
+                </button>
+              </div>
+            )}
+
             {filteredZones.length === 0 && (
               <div className="col-span-full flex flex-col items-center justify-center py-20 text-zinc-500">
                 <Box className="w-12 h-12 mb-4 opacity-20" />

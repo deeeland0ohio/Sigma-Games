@@ -100,7 +100,7 @@ export default function NoahGames() {
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: (index % 50) * 0.01 }}
+                  transition={{ delay: (index % 20) * 0.005 }}
                   key={`${g.url}-${index}`}
                   className="group relative aspect-square overflow-hidden flex flex-col justify-center items-center rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all text-center"
                 >
@@ -155,10 +155,10 @@ export default function NoahGames() {
             {visibleCount < filteredGames.length && (
               <div className="col-span-full flex justify-center mt-6">
                 <button
-                  onClick={() => setVisibleCount(c => c + 150)}
+                  onClick={() => setVisibleCount(c => c + 100)}
                   className="px-6 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
                 >
-                  Load More ({filteredGames.length - visibleCount} remaining)
+                  Load More ({filteredGames.length - visibleCount} Remaining)
                 </button>
               </div>
             )}
