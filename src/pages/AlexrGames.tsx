@@ -142,7 +142,7 @@ export default function AlexrGames() {
         </div>
 
         {/* Display Grid - Matched Exactly to GN-Math */}
-        {loading && games.length === 0 ? (
+        {loading ? (
           <div className="flex items-center justify-center py-20">
             <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
           </div>
