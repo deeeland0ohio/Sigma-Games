@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Search, X, Maximize, Box, Heart } from 'lucide-react';
+import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -78,8 +78,9 @@ export default function UgsFiles() {
           
           <button
             onClick={loadFiles}
-            className="w-full sm:w-auto px-4 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700"
+            className="w-full sm:w-auto px-4 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700 flex items-center justify-center gap-2"
           >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
             Refresh
           </button>
         </div>
