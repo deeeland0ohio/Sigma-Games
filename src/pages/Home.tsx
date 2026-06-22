@@ -75,9 +75,11 @@ export default function Home() {
         }).catch(() => {});
 
       // 5. Noah's Hub Games
-      fetch('https://cdn.jsdelivr.net/gh/deeeland0ohio/Noahs-Hub-Games-js@main/games.js')
-        .then(res => res.text())
-        .then(text => {
+      fetch('https://raw.githubusercontent.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor/master/games.js')
+        .then(async (res) => {
+          if (!res.ok) throw new Error("Fetch failed");
+          const text = await res.text();
+          if (!text || !text.includes('games')) throw new Error("Invalid format");
           const fnText = text.replace(/const games\s*=/, "return");
           const gamesArray = (new Function(fnText))();
           if (Array.isArray(gamesArray) && gamesArray.length > 0) {
