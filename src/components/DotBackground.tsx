@@ -1,5 +1,40 @@
 import React, { useEffect, useRef } from 'react';
 
+function parseToRgba(colorStr: string, alpha: number): string {
+  if (!colorStr) return `rgba(255, 255, 255, ${alpha})`;
+  
+  colorStr = colorStr.trim();
+  
+  if (colorStr.startsWith('rgba')) {
+    const match = colorStr.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (match) {
+      return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
+    }
+  }
+  
+  if (colorStr.startsWith('rgb')) {
+    const match = colorStr.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+    if (match) {
+      return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
+    }
+  }
+  
+  if (colorStr.startsWith('#')) {
+    let hex = colorStr.slice(1);
+    if (hex.length === 3) {
+      hex = hex.split('').map(char => char + char).join('');
+    }
+    if (hex.length === 6) {
+      const r = parseInt(hex.slice(0, 2), 16);
+      const g = parseInt(hex.slice(2, 4), 16);
+      const b = parseInt(hex.slice(4, 6), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+  }
+
+  return colorStr;
+}
+
 export default function DotBackground({ color1, color2, color3, color4, power = 1.0, config }: { color1: string, color2: string, color3?: string, color4?: string, power?: number, config: { speed: number, size: number, density: number } }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
@@ -116,8 +151,49 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       const speed = speedPercentage / 1000;
       
       ctx.clearRect(0, 0, width, height);
+
+      // Draw the fluid liquid drifting background blobs directly on the canvas
+      // This is extremely high-performance (completely hardware-accelerated, zero DOM blur filters or layout thrashing)
+      const driftTime = Date.now() * 0.0000195; // Beautiful slow, flowing drift (1.3x faster than before)
+
+      // Blob 1: color1 (drifting top-left area)
+      const bx1 = width * 0.25 + Math.sin(driftTime * 0.5) * width * 0.15;
+      const by1 = height * 0.25 + Math.cos(driftTime * 0.4) * height * 0.15;
+      const r1 = Math.max(width, height) * 0.5;
+
+      // Blob 2: color2 (drifting bottom-right area)
+      const bx2 = width * 0.75 + Math.sin(driftTime * -0.4) * width * 0.15;
+      const by2 = height * 0.75 + Math.cos(driftTime * 0.5) * height * 0.15;
+      const r2 = Math.max(width, height) * 0.5;
+
+      // Blob 3: color3 || color1 (drifting middle-right area)
+      const bx3 = width * 0.7 + Math.sin(driftTime * 0.6) * width * 0.15;
+      const by3 = height * 0.3 + Math.cos(driftTime * -0.5) * height * 0.15;
+      const r3 = Math.max(width, height) * 0.45;
+
+      // Blob 4: color4 || color2 (drifting bottom-left area)
+      const bx4 = width * 0.3 + Math.sin(driftTime * -0.6) * width * 0.15;
+      const by4 = height * 0.7 + Math.cos(driftTime * 0.4) * height * 0.15;
+      const r4 = Math.max(width, height) * 0.5;
+
+      const drawBlob = (cx: number, cy: number, radius: number, col: string, maxAlpha: number) => {
+        if (radius <= 0) return;
+        const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+        gradient.addColorStop(0, parseToRgba(col, maxAlpha));
+        gradient.addColorStop(0.5, parseToRgba(col, maxAlpha * 0.4));
+        gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+        ctx.fill();
+      };
+
+      drawBlob(bx1, by1, r1, color1, 0.065);
+      drawBlob(bx2, by2, r2, color2, 0.055);
+      drawBlob(bx3, by3, r3, color3 || color1, 0.06);
+      drawBlob(bx4, by4, r4, color4 || color2, 0.055);
       
-      // Draw faint grid behind everything
+      // Draw faint grid on top of background
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
       ctx.lineWidth = 0.4;
@@ -180,9 +256,9 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
           }
           
           // 3. Spring back to original position (with slight sway)
-          const time = Date.now() * 0.0008;
-          const swayX = Math.sin(time + dot.baseX * 0.01) * 6.0;
-          const swayY = Math.cos(time + dot.baseY * 0.01) * 6.0;
+          const timeVal = Date.now() * 0.0008;
+          const swayX = Math.sin(timeVal + dot.baseX * 0.01) * 6.0;
+          const swayY = Math.cos(timeVal + dot.baseY * 0.01) * 6.0;
           
           dot.vx += (dot.baseX + swayX - dot.x) * speed;
           dot.vy += (dot.baseY + swayY - dot.y) * speed;
@@ -220,7 +296,6 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
             const brightMult = (ringThickness - Math.abs(sdist - sw.radius)) / ringThickness;
             const fadeOut = Math.max(0, 1 - (sw.radius / sw.maxRadius));
             brightness = Math.max(brightness, 1 + brightMult * 2.5 * fadeOut);
-            // Optionally make shockwave scale up the dots too, or just brightness
             scale = Math.max(scale, 1 + brightMult * 0.75 * fadeOut);
           }
         }
@@ -259,7 +334,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
   return (
     <canvas 
       ref={canvasRef} 
-      className="fixed inset-0 -z-10 pointer-events-none bg-zinc-950"
+      className="fixed inset-0 -z-10 pointer-events-none bg-[#09090b]"
     />
   );
 }
