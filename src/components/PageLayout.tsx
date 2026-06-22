@@ -37,7 +37,7 @@ export default function PageLayout({
   return (
     <div className={`flex flex-col min-h-[100dvh] text-zinc-300 font-sans ${colors.selection}`}>
       {/* Header */}
-      <header className="border-b border-zinc-800 bg-zinc-950/32 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-zinc-800 bg-zinc-950/25 backdrop-blur-md sticky top-0 z-50">
         <div className={`${maxWidthClass} mx-auto px-6 h-20 flex items-center justify-between`}>
           {showBack ? (
             <Link to={backTo} className={`flex items-center gap-2 text-zinc-400 hover:${colors.primary} transition-colors font-medium`}>
