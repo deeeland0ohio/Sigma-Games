@@ -16,8 +16,18 @@ export default function NoahGames() {
   const loadGames = async () => {
     setLoading(true);
     try {
-      const res = await fetch('https://cdn.githuback.com/deeeland0ohio/Noahs-Hub-Games-js@main/games.js').catch(() => fetch('https://cdn.jsdelivr.net/gh/deeeland0ohio/Noahs-Hub-Games-js@main/games.js'));
+      let res = await fetch('https://raw.githubusercontent.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor/master/games.js')
+        .catch(() => fetch('https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games.js'));
+      
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      
       const text = await res.text();
+      if (!text || !text.includes('games')) {
+        throw new Error("Invalid response content: does not contain games array");
+      }
+      
       const fnText = text.replace(/const games\s*=/, "return");
       const gamesArray = (new Function(fnText))();
       if (Array.isArray(gamesArray) && gamesArray.length > 0) {
