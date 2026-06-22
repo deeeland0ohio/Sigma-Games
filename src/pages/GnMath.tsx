@@ -114,7 +114,7 @@ export default function GnMath() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: (index % 20) * 0.01 }}
+                transition={{ delay: (index % 20) * 0.002 }}
                 key={`${z.name}-${index}`}
                 className="group relative aspect-square overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800"
               >

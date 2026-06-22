@@ -77,7 +77,7 @@
                     <i data-lucide="globe" class="text-zinc-400"></i>
                     Sigma G*mes Static
                 </h1>
-                <p class="text-zinc-500 mt-1 text-sm">Play g*mes from GN-Math, UGS, Seraph, Noah's, 3kh0, and Alexr all in one place.</p>
+                <p class="text-zinc-500 mt-1 text-sm">Play g*mes from GN-Math, UGS, Seraph, Noah's, 3kh0, Alexr, and Sigma G*mes all in one place.</p>
             </div>
             <div class="mt-4 sm:mt-0 flex gap-2">
                 <button onclick="window.location.href='https://sigma-games.dev'" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2">
@@ -90,10 +90,11 @@
         <div class="flex flex-col md:flex-row gap-4 mb-8">
             <div class="relative flex-1">
                 <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-500"></i>
-                <input type="text" id="searchInput" placeholder="Search 4.6k+ G*mes!" class="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors">
+                <input type="text" id="searchInput" placeholder="Search G*mes!" class="w-full bg-zinc-900/80 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-600 transition-colors">
             </div>
             <select id="sourceFilter" class="bg-zinc-900/80 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-zinc-600 transition-colors">
                 <option value="all">All Sources</option>
+                <option value="sigma">Sigma G*mes</option>
                 <option value="gnmath">GN-Math</option>
                 <option value="seraph">Seraph</option>
                 <option value="noah">Noah's</option>
@@ -298,6 +299,34 @@
             }
         }
 
+        async function fetchSigma() {
+            try {
+                const res = await fetch("https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games.json");
+                const raw = await res.json();
+                if (!Array.isArray(raw)) return [];
+                return raw.map(g => {
+                    let path = g.path;
+                    if (path) {
+                        if (path.includes('cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/')) {
+                            path = path.replace('cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/', 'raw.githack.com/deeeland0ohio/Sigma-Games/main/public/');
+                        } else if (path.includes('raw.githubusercontent.com/deeeland0ohio/Sigma-Games/main/public/')) {
+                            path = path.replace('raw.githubusercontent.com/deeeland0ohio/Sigma-Games/main/public/', 'raw.githack.com/deeeland0ohio/Sigma-Games/main/public/');
+                        }
+                    }
+                    // Take away the category (we only map title, url, image, and source - dropping category)
+                    return {
+                        title: g.title,
+                        url: path,
+                        image: g.img,
+                        source: 'sigma'
+                    };
+                });
+            } catch (e) {
+                console.error("Sigma error:", e);
+                return [];
+            }
+        }
+
         function renderGames() {
             const grid = document.getElementById('gamesGrid');
             grid.innerHTML = '';
@@ -316,6 +345,7 @@
                 if(g.source === 'ugs') sourceColor = "text-blue-500";
                 if(g.source === '3kh0') sourceColor = "text-yellow-500";
                 if(g.source === 'alexr') sourceColor = "text-emerald-400";
+                if(g.source === 'sigma') sourceColor = "text-rose-500";
 
                 if (g.image) {
                     div.innerHTML = `
@@ -402,12 +432,12 @@
             }
         }
 
-        async function init() {
-            const [gn, seraph, noah, ugs, threekh0, alexr] = await Promise.all([
-                fetchGNMath(), fetchSeraph(), fetchNoah(), fetchUGS(), fetch3kh0(), fetchAlexr()
+         async function init() {
+            const [gn, seraph, noah, ugs, threekh0, alexr, sigma] = await Promise.all([
+                fetchGNMath(), fetchSeraph(), fetchNoah(), fetchUGS(), fetch3kh0(), fetchAlexr(), fetchSigma()
             ]);
             
-            allGames = [...gn, ...seraph, ...noah, ...ugs, ...threekh0, ...alexr].filter(g => g && g.title);
+            allGames = [...gn, ...seraph, ...noah, ...ugs, ...threekh0, ...alexr, ...sigma].filter(g => g && g.title);
             
             // Sort array alphabetically by title
             allGames.sort((a, b) => {
@@ -424,7 +454,7 @@
             }
             const tagline = document.querySelector('header p');
             if (tagline) {
-                tagline.innerText = `Play all ${count} g*mes from GN-Math, UGS, Seraph, Noah's, 3kh0, and Alexr in one place.`;
+                tagline.innerText = `Play all ${count} g*mes from GN-Math, UGS, Seraph, Noah's, 3kh0, Alexr, and Sigma G*mes in one place.`;
             }
             
             document.getElementById('loading').style.display = 'none';
