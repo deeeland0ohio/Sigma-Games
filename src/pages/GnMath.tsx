@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { useFavorites } from '../context/FavoritesContext';
+import { isEvasionActive, launchEvasion } from '../utils/evasion';
 
 const COVER_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
 const HTML_BASE = "https://rawcdn.githack.com/freebuisness/html/main";
@@ -56,7 +57,11 @@ export default function GnMath() {
   }, [search, selectedTag]);
 
   const openZone = (zone: Zone) => {
-    setSelectedZone(zone);
+    if (isEvasionActive()) {
+      launchEvasion(zone.url, zone.name);
+    } else {
+      setSelectedZone(zone);
+    }
   };
 
   const filteredZones = zones.filter(z => {

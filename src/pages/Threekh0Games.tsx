@@ -4,6 +4,7 @@ import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-reac
 import PageLayout from '../components/PageLayout';
 import { threekh0Games as initialThreekh0Games } from '../data/3kh0';
 import { useFavorites } from '../context/FavoritesContext';
+import { isEvasionActive, launchEvasion } from '../utils/evasion';
 
 export default function Threekh0Games() {
   const [games, setGames] = useState(initialThreekh0Games);
@@ -62,7 +63,11 @@ export default function Threekh0Games() {
   };
 
   const openGame = (game: { link: string, title?: string }) => {
-    setSelectedGame(game);
+    if (isEvasionActive()) {
+      launchEvasion(getUrl(game.link), game.title || formatFileName(game.link));
+    } else {
+      setSelectedGame(game);
+    }
   };
 
   const getUrl = (link: string) => {

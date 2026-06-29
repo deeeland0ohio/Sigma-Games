@@ -4,6 +4,7 @@ import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-reac
 import PageLayout from '../components/PageLayout';
 import { seraphGames as initialSeraphGames } from '../data/seraph';
 import { useFavorites } from '../context/FavoritesContext';
+import { isEvasionActive, launchEvasion } from '../utils/evasion';
 
 export default function SeraphGames() {
   const [games, setGames] = useState(initialSeraphGames);
@@ -55,7 +56,11 @@ export default function SeraphGames() {
   };
 
   const openFile = (file: string) => {
-    setSelectedFile(file);
+    if (isEvasionActive()) {
+      launchEvasion(getUrl(file), formatFileName(file));
+    } else {
+      setSelectedFile(file);
+    }
   };
 
   const getUrl = (file: string) => {

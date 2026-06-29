@@ -73,6 +73,8 @@ interface ThemeContextType {
   setCloakingIcon: (icon: string) => void;
   runnerMode: RunnerMode;
   setRunnerMode: (mode: RunnerMode) => void;
+  closePrevention: boolean;
+  setClosePrevention: (prevent: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -166,6 +168,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     return (localStorage.getItem('app-runner-mode') as RunnerMode) || 'none';
   });
 
+  const [closePrevention, setClosePrevention] = useState<boolean>(() => {
+    return localStorage.getItem('app-close-prevention') === 'true';
+  });
+
   useEffect(() => {
     localStorage.setItem('app-cloaking-title', cloakingTitle);
     
@@ -244,6 +250,26 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('app-runner-mode', runnerMode);
   }, [runnerMode]);
 
+  useEffect(() => {
+    localStorage.setItem('app-close-prevention', closePrevention.toString());
+
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = 'You have unsaved changes. Are you sure you want to close?';
+      return 'You have unsaved changes. Are you sure you want to close?';
+    };
+
+    if (closePrevention) {
+      window.addEventListener('beforeunload', handleBeforeUnload);
+    } else {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    }
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, [closePrevention]);
+
   return (
     <ThemeContext.Provider value={{ 
       theme, setTheme, 
@@ -257,7 +283,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       customColors, setCustomColors,
       cloakingTitle, setCloakingTitle,
       cloakingIcon, setCloakingIcon,
-      runnerMode, setRunnerMode
+      runnerMode, setRunnerMode,
+      closePrevention, setClosePrevention
     }}>
       <style>
         {`
