@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme, useThemeColors, Theme, BackgroundStyle } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
-import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus, Terminal } from 'lucide-react';
+import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus, Terminal, ShieldAlert } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export function SettingsContent() {
@@ -17,7 +17,8 @@ export function SettingsContent() {
     customColors, setCustomColors,
     cloakingTitle, setCloakingTitle,
     cloakingIcon, setCloakingIcon,
-    runnerMode, setRunnerMode
+    runnerMode, setRunnerMode,
+    closePrevention, setClosePrevention
   } = useTheme();
   const colors = useThemeColors();
   const navigate = useNavigate();
@@ -113,6 +114,56 @@ export function SettingsContent() {
   const [showWarning, setShowWarning] = useState(false);
   const [tempColors, setTempColors] = useState(customColors);
 
+  const [evasionEnabled, setEvasionEnabled] = useState(() => {
+    return localStorage.getItem('lightspeed-evasion') === 'true';
+  });
+  const [showLightspeedModal, setShowLightspeedModal] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('lightspeed-evasion', evasionEnabled.toString());
+  }, [evasionEnabled]);
+
+  useEffect(() => {
+    const checkLightspeed = async () => {
+      if (localStorage.getItem('lightspeed-popup-shown') === 'true') {
+        return;
+      }
+
+      const extensionId = 'ehnniokiiebpinnfegpkdlcamgdcaaje';
+      let detected = false;
+
+      try {
+        const response = await fetch(`chrome-extension://${extensionId}/manifest.json`);
+        if (response.ok) {
+          detected = true;
+        }
+      } catch (e) {
+        // Fetch failed or blocked
+      }
+
+      const checkExtensionInstalled = () => {
+        return new Promise<boolean>((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(true);
+          img.onerror = () => {
+            fetch(`chrome-extension://${extensionId}/manifest.json`)
+              .then(() => resolve(true))
+              .catch(() => resolve(false)) as any;
+          };
+          img.src = `chrome-extension://${extensionId}/icon-128.png`;
+          setTimeout(() => resolve(false), 1200);
+        });
+      };
+
+      const isInstalled = await checkExtensionInstalled();
+      if (isInstalled || detected) {
+        setShowLightspeedModal(true);
+      }
+    };
+
+    checkLightspeed();
+  }, []);
+
   useEffect(() => {
     setTempColors(customColors);
   }, [customColors]);
@@ -184,6 +235,46 @@ export function SettingsContent() {
         </div>,
         document.body
       )}
+
+      {showLightspeedModal && createPortal(
+        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
+          <div className="bg-zinc-950 border border-red-500/30 p-8 rounded-3xl max-w-lg w-full text-center space-y-6 shadow-2xl shadow-red-500/5">
+            <div className="mx-auto w-16 h-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center animate-pulse">
+              <ShieldAlert size={32} />
+            </div>
+            <div className="space-y-2">
+              <h2 className="text-2xl font-extrabold text-white tracking-tight">It seems you have Lightspeed filter agent</h2>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Do you want to turn on about:blank launching? (prevents 'page blocked by chrome' when running games, caused by the lightspeed blocker)
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 pt-2">
+              <button
+                onClick={() => {
+                  setEvasionEnabled(true);
+                  localStorage.setItem('lightspeed-popup-shown', 'true');
+                  setShowLightspeedModal(false);
+                }}
+                className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-red-600/20 active:scale-[0.98]"
+              >
+                Yes
+              </button>
+              <span className="text-xs text-red-400/80 font-medium -mt-1 block text-center font-bold">Highly recommended</span>
+              <button
+                onClick={() => {
+                  setEvasionEnabled(false);
+                  localStorage.setItem('lightspeed-popup-shown', 'true');
+                  setShowLightspeedModal(false);
+                }}
+                className="w-full py-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 font-medium rounded-xl transition-all border border-zinc-800"
+              >
+                No
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
       
       <div className="flex items-center justify-between border-b border-zinc-800 pb-6 flex-wrap gap-4">
         <div>
@@ -192,27 +283,31 @@ export function SettingsContent() {
         </div>
         <button
           onClick={() => {
-            setTheme('red-green');
-            setBackground('dots');
-            setSimulationPower(40);
-            setBackgroundConfig({
+            localStorage.setItem('app-theme', 'red-green');
+            localStorage.setItem('app-background', 'dots');
+            localStorage.setItem('app-energy-level', '40');
+            localStorage.setItem('app-background-config', JSON.stringify({
               dots: { speed: 40, size: 2, density: 35 },
               vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
               matrix: { speed: 40, size: 40, density: 40 },
               blackHole: { speed: 40, size: 40, density: 40 },
               lightspeed: { speed: 40, size: 40, density: 40 }
-            });
-            setSettingsViewMode('page');
-            setSettingsBoxSize({ width: 1000, height: 700 });
-            setSettingsBoxPosition({ x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 });
-            setIsAdvanced(false);
-            setCustomColors(['#ffffff', '#ffffff', '#ffffff', '#ffffff']);
-            setTempColors(['#ffffff', '#ffffff', '#ffffff', '#ffffff']);
-            setCloakingTitle('Sigma Games');
-            setCloakingIcon('/favicon.svg?v=2');
-            setRunnerMode('none');
+            }));
+            localStorage.setItem('app-settings-view-mode', 'page');
+            localStorage.setItem('app-settings-box-size', JSON.stringify({ width: 1000, height: 700 }));
+            localStorage.setItem('app-settings-box-position', JSON.stringify({ x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 }));
+            localStorage.setItem('app-custom-colors', JSON.stringify(['#ffffff', '#ffffff', '#ffffff', '#ffffff']));
+            localStorage.setItem('app-cloaking-title', 'Sigma Games');
+            localStorage.setItem('app-cloaking-icon', '/favicon.svg?v=2');
+            localStorage.setItem('app-runner-mode', 'none');
+            localStorage.setItem('app-close-prevention', 'false');
+            localStorage.setItem('lightspeed-evasion', 'false');
+            localStorage.removeItem('lightspeed-popup-shown');
+
+            // Force visual page reload so settings are cleanly re-applied and visible
+            window.location.reload();
           }}
-          className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all font-medium flex-shrink-0"
+          className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all font-medium flex-shrink-0 cursor-pointer"
         >
           <RefreshCw size={18} />
           Reset Defaults
@@ -406,6 +501,47 @@ export function SettingsContent() {
                   />
                 </div>
               </label>
+            </div>
+          </section>
+
+          {/* Lightspeed Evasion */}
+          <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
+            <div className="flex items-center gap-3 text-zinc-100">
+              <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
+                <ShieldAlert size={20} style={{ color: colors.hexPrimary }} />
+              </div>
+              <h2 className="text-xl font-bold">Lightspeed Evasion</h2>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-zinc-500">
+                Launches games code in about:blank to bypass 'blocked by chrome' caused by lightspeed.
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setEvasionEnabled(true)}
+                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                    evasionEnabled 
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/10 border border-emerald-500' 
+                      : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${evasionEnabled ? 'bg-white font-bold' : 'bg-zinc-600'}`} />
+                  Turn On
+                </button>
+                <button
+                  onClick={() => setEvasionEnabled(false)}
+                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                    !evasionEnabled 
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-600/10 border border-red-500' 
+                      : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${!evasionEnabled ? 'bg-white' : 'bg-zinc-600'}`} />
+                  Turn Off
+                </button>
+              </div>
             </div>
           </section>
         </div>
@@ -659,19 +795,19 @@ export function SettingsContent() {
             </section>
           )}
 
-          <section className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-3xl space-y-4 min-w-[300px]">
-            <h3 className="font-bold text-white flex items-center gap-2">
-              <Bug size={18} style={{ color: colors.hexPrimary }} className="flex-shrink-0" />
-              Feedback & Support
+          <section className="p-10 bg-zinc-900/50 border border-zinc-800 rounded-3xl space-y-6 min-w-[300px]">
+            <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+              <Bug size={24} style={{ color: colors.hexPrimary }} className="flex-shrink-0" />
+              Forms
             </h3>
-            <p className="text-sm text-zinc-500">
-              Found a bug or have a game suggestion? Let us know through our feedback form.
+            <p className="text-base text-zinc-400">
+              Found a bug, or want to request a game? Use the feedback form!
             </p>
             <a
               href="https://docs.google.com/forms/d/e/1FAIpQLSf5xlht7GbZtnMizaUe8bXjO4cp3k0Y0MDJ2zy9fEiPsxLkkg/viewform"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-all flex-shrink-0"
+              className="inline-flex items-center gap-2 px-8 py-4 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-semibold text-base transition-all flex-shrink-0"
             >
               Open Feedback Form
             </a>
@@ -707,6 +843,46 @@ export function SettingsContent() {
                 <Square size={18} />
                 <span className="font-medium">Box View</span>
               </button>
+            </div>
+          </section>
+
+          <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
+            <div className="flex items-center gap-3 text-zinc-100">
+              <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
+                <ShieldAlert size={20} style={{ color: colors.hexPrimary }} />
+              </div>
+              <h2 className="text-xl font-bold">Close Prevention</h2>
+            </div>
+
+            <div className="space-y-4">
+              <p className="text-sm text-zinc-500">
+                Stops your tab from being forcefully closed by goguardian, etc..
+              </p>
+
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => setClosePrevention(true)}
+                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                    closePrevention 
+                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/10 border border-emerald-500' 
+                      : 'bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${closePrevention ? 'bg-white font-bold' : 'bg-zinc-600'}`} />
+                  Turn On
+                </button>
+                <button
+                  onClick={() => setClosePrevention(false)}
+                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
+                    !closePrevention 
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-600/10 border border-red-500' 
+                      : 'bg-zinc-900/50 border border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                  }`}
+                >
+                  <span className={`w-2 h-2 rounded-full ${!closePrevention ? 'bg-white' : 'bg-zinc-600'}`} />
+                  Turn Off
+                </button>
+              </div>
             </div>
           </section>
 

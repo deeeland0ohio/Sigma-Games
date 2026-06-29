@@ -4,6 +4,7 @@ import { Search, X, Maximize, Box, Heart, Loader2, RefreshCw } from 'lucide-reac
 import PageLayout from '../components/PageLayout';
 import { noahGames as initialNoahGames } from '../data/noah';
 import { useFavorites } from '../context/FavoritesContext';
+import { isEvasionActive, launchEvasion } from '../utils/evasion';
 
 export default function NoahGames() {
   const [games, setGames] = useState<any[]>([]);
@@ -63,7 +64,12 @@ export default function NoahGames() {
   };
 
   const openGame = (game: any) => {
-    setSelectedGame(game);
+    if (isEvasionActive()) {
+      const runnableUrl = game.url.replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com');
+      launchEvasion(runnableUrl, game.title || formatFileName(game.url.split('/').pop() || game.url));
+    } else {
+      setSelectedGame(game);
+    }
   };
 
   const filteredGames = games.filter(g => 

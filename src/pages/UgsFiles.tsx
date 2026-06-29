@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { useFavorites } from '../context/FavoritesContext';
+import { isEvasionActive, launchEvasion } from '../utils/evasion';
 
 export default function UgsFiles() {
   const [files, setFiles] = useState<string[]>([]);
@@ -46,7 +47,11 @@ export default function UgsFiles() {
   };
 
   const openFile = (file: string) => {
-    setSelectedFile(file);
+    if (isEvasionActive()) {
+      launchEvasion(getUrl(file), formatFileName(file));
+    } else {
+      setSelectedFile(file);
+    }
   };
 
   const getUrl = (file: string) => {

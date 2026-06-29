@@ -4,6 +4,7 @@ import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-reac
 import PageLayout from '../components/PageLayout';
 import { alexrGames as initialAlexrGames } from '../data/alexr';
 import { useFavorites } from '../context/FavoritesContext';
+import { isEvasionActive, launchEvasion } from '../utils/evasion';
 
 export interface AlexrGame {
   title: string;
@@ -81,8 +82,12 @@ export default function AlexrGames() {
   }, []);
 
   const openGame = (game: AlexrGame) => {
-    setSelectedGame(game);
-    setReloadKey(0); // Reset reload key upon opening new game
+    if (isEvasionActive()) {
+      launchEvasion(game.path, game.title);
+    } else {
+      setSelectedGame(game);
+      setReloadKey(0); // Reset reload key upon opening new game
+    }
   };
 
   const filteredGames = games.filter(g => {

@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
-import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle, MessageSquare, Shield } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import SettingsMenu from '../components/SettingsMenu';
 import Credits from '../components/Credits';
@@ -18,6 +18,57 @@ export default function GamePlayer() {
   const [showPopup, setShowPopup] = useState(false);
   const [iframeUrl, setIframeUrl] = useState<string | undefined>(game?.url);
   const navigate = useNavigate();
+
+  const [forceNormalPlay, setForceNormalPlay] = useState(false);
+  const isEvasionEnabled = localStorage.getItem('lightspeed-evasion') === 'true';
+
+  const handleLaunchEvasion = () => {
+    try {
+      const win = window.open('about:blank', '_blank');
+      if (win) {
+        win.document.title = game?.title || 'Sigma Games';
+        const fav = win.document.createElement('link');
+        fav.rel = 'icon';
+        const savedIcon = localStorage.getItem('app-cloaking-icon');
+        if (savedIcon) {
+          fav.type = 'image/png';
+          fav.href = savedIcon;
+        } else {
+          fav.type = 'image/svg+xml';
+          fav.href = 'https://sigma-sigma-rizz.vercel.app/favicon.svg';
+        }
+        win.document.head.appendChild(fav);
+
+        const iframe = win.document.createElement('iframe');
+        iframe.src = iframeUrl || game?.url || '';
+        iframe.style.position = 'fixed';
+        iframe.style.top = '0';
+        iframe.style.left = '0';
+        iframe.style.width = '100vw';
+        iframe.style.height = '100vh';
+        iframe.style.border = 'none';
+        iframe.style.margin = '0';
+        iframe.style.padding = '0';
+        iframe.setAttribute('allow', 'autoplay; fullscreen; pointer-lock; keyboard-map');
+        iframe.setAttribute('allowfullscreen', 'true');
+        
+        win.document.body.style.margin = '0';
+        win.document.body.style.overflow = 'hidden';
+        win.document.body.style.backgroundColor = '#000000';
+        win.document.body.appendChild(iframe);
+      } else {
+        alert("Popup blocked! Please allow popups for this site to use secure evasion launching.");
+      }
+    } catch (e) {
+      console.error("Failed to launch evasion about:blank", e);
+    }
+  };
+
+  useEffect(() => {
+    if (isEvasionEnabled && game) {
+      handleLaunchEvasion();
+    }
+  }, [isEvasionEnabled, game]);
 
   useEffect(() => {
     const popupGames = ['crazy-cattle-3d', 'basket-random', 'soccer-random', 'boxing-random', 'geometry-dash', 'basket-bros', 'baseball-bros', 'football-bros', 'wrestle-bros', 'kart-bros', 'soccer-bros'];
@@ -93,6 +144,16 @@ export default function GamePlayer() {
               <game.icon size={18} />
             </div>
             <h1 className="font-bold text-white tracking-tight">{game.title}</h1>
+            {isEvasionEnabled && (
+              <button
+                onClick={handleLaunchEvasion}
+                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer ml-2"
+                title="Relaunch Secure Game Tab"
+              >
+                <Shield size={14} />
+                <span className="hidden sm:inline">Relaunch Evasion</span>
+              </button>
+            )}
             <button 
               onClick={() => game && toggleFavorite(game.id)}
               className={`p-1.5 rounded-lg transition-all ${
