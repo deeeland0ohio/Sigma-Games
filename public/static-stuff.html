@@ -79,11 +79,14 @@
                 </h1>
                 <p class="text-zinc-500 mt-1 text-sm">Play g*mes from GN-Math, UGS, Seraph, Noah's, 3kh0, Alexr, and Sigma G*mes all in one place.</p>
             </div>
-            <div class="mt-4 sm:mt-0 flex gap-2">
+            <div class="mt-4 sm:mt-0 flex gap-2 flex-wrap justify-center sm:justify-end">
+                <button id="reloadSourcesBtn" onclick="reloadSources()" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2 text-zinc-300 cursor-pointer">
+                    <i data-lucide="refresh-cw" class="w-4 h-4 text-zinc-400"></i> <span>Reload Sources</span>
+                </button>
                 <button id="evasionBtn" onclick="toggleEvasion()" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2 text-zinc-300">
                     <i data-lucide="shield-alert" class="w-4 h-4 text-zinc-500" id="evasionIcon"></i> <span id="evasionText">Enable lightspeed evasion?</span>
                 </button>
-                <button onclick="window.location.href='https://sigma-games.dev'" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2">
+                <button onclick="window.location.href='/'" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2 cursor-pointer">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Sigma G*mes
                 </button>
             </div>
@@ -328,7 +331,19 @@
 
         async function fetchSigma() {
             try {
-                const res = await fetch("https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games.json");
+                let res;
+                try {
+                    // Try fetching locally first to get instant updates without CDN caching delays
+                    const localRes = await fetch("/games.json");
+                    if (localRes.ok) {
+                        res = localRes;
+                    } else {
+                        throw new Error("Local fetch failed");
+                    }
+                } catch(e) {
+                    // Fallback to CDN with a cache-buster query parameter
+                    res = await fetch("https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games.json?t=" + Date.now());
+                }
                 const raw = await res.json();
                 if (!Array.isArray(raw)) return [];
                 return raw.map(g => {
@@ -576,6 +591,26 @@
                 setTimeout(() => {
                     iframe.src = originalSrc;
                 }, 10);
+            }
+        }
+
+        async function reloadSources() {
+            try {
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.style.display = 'flex';
+                }
+                const gridEl = document.getElementById('gamesGrid');
+                if (gridEl) {
+                    gridEl.innerHTML = '';
+                }
+                await init();
+            } catch(e) {
+                console.error("Reload error:", e);
+                const loadingEl = document.getElementById('loading');
+                if (loadingEl) {
+                    loadingEl.style.display = 'none';
+                }
             }
         }
 
