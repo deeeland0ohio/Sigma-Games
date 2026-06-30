@@ -1,6 +1,6 @@
 import { gtaViceCity } from "./gta-vice-city";
 import { undertale } from "./undertale";
-import { deltarune14 } from "./deltarune-1-4";
+import { deltarune15 } from "./deltarune-1-5";
 import { hollowKnight } from "./hollow-knight";
 import { hollowKnightSilksong } from "./hollow-knight-silksong";
 import { buckshotRoulette } from "./buckshot-roulette";
@@ -135,7 +135,7 @@ export const allGames: Game[] = [
   stardew,
   twentyMins,
   undertale,
-  deltarune14,
+  deltarune15,
   hollowKnight,
   hollowKnightSilksong,
   buckshotRoulette,
