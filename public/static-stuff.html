@@ -341,8 +341,18 @@
                         throw new Error("Local fetch failed");
                     }
                 } catch(e) {
-                    // Fallback to CDN with a cache-buster query parameter
-                    res = await fetch("https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games.json?t=" + Date.now());
+                    try {
+                        // Fallback to raw GitHub usercontent with cache-buster (extremely fast updates, bypasses CDN cache)
+                        const rawRes = await fetch("https://raw.githubusercontent.com/deeeland0ohio/Sigma-Games/main/public/games.json?t=" + Date.now());
+                        if (rawRes.ok) {
+                            res = rawRes;
+                        } else {
+                            throw new Error("Raw fetch failed");
+                        }
+                    } catch(err) {
+                        // Fallback to CDN with a cache-buster query parameter
+                        res = await fetch("https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games.json?t=" + Date.now());
+                    }
                 }
                 const raw = await res.json();
                 if (!Array.isArray(raw)) return [];
