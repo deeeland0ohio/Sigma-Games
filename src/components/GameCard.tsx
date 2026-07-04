@@ -47,17 +47,18 @@ export default function GameCard({ game, to }: GameCardProps) {
   const isTeal = game.id === '3kh0';
   const isOrange = game.id === 'noah';
   const isGray = game.id === 'alexr';
+  const isCyan = game.id === 'hydra';
 
-  const cardHoverBorder = isRed ? 'hover:border-red-500' : isBlue ? 'hover:border-blue-500' : isPurple ? 'hover:border-purple-500' : isTeal ? 'hover:border-teal-500' : isOrange ? 'hover:border-orange-500' : isGray ? 'hover:border-zinc-500' : colors.hoverBorder;
-  const cardHoverShadow = isRed ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' : isBlue ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]' : isPurple ? 'hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]' : isTeal ? 'hover:shadow-[0_0_15px_rgba(20,184,166,0.2)]' : isOrange ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.2)]' : isGray ? 'hover:shadow-[0_0_15px_rgba(113,113,122,0.2)]' : colors.hoverShadow;
-  const cardGradientFrom = isRed ? 'from-red-500/10' : isBlue ? 'from-blue-500/10' : isPurple ? 'from-purple-500/10' : isTeal ? 'from-teal-500/10' : isOrange ? 'from-orange-500/10' : isGray ? 'from-zinc-500/10' : colors.gradientFrom;
-  const cardGradientVia = (isRed || isBlue || isPurple || isTeal || isOrange || isGray) ? '' : (colors.gradientVia || '');
-  const cardGradientTo = (isRed || isBlue || isPurple || isTeal || isOrange || isGray) ? 'to-transparent' : colors.gradientTo;
-  const cardTertiary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : isGray ? 'text-zinc-400' : (colors.tertiary || colors.secondary);
-  const cardGroupHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : isGray ? 'group-hover:text-zinc-300' : (colors.groupHoverQuaternary || colors.groupHoverText);
-  const cardGroupHoverBorder = isRed ? 'group-hover:border-red-500/50' : isBlue ? 'group-hover:border-blue-500/50' : isPurple ? 'group-hover:border-purple-500/50' : isTeal ? 'group-hover:border-teal-500/50' : isOrange ? 'group-hover:border-orange-500/50' : isGray ? 'group-hover:border-zinc-500/50' : colors.groupHoverBorder;
-  const titleHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : isGray ? 'group-hover:text-zinc-300' : colors.groupHoverText;
-  const cardQuaternary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : isGray ? 'text-zinc-400' : (colors.quaternary || colors.secondary);
+  const cardHoverBorder = isRed ? 'hover:border-red-500' : isBlue ? 'hover:border-blue-500' : isPurple ? 'hover:border-purple-500' : isTeal ? 'hover:border-teal-500' : isOrange ? 'hover:border-orange-500' : isGray ? 'hover:border-zinc-500' : isCyan ? 'hover:border-cyan-500' : colors.hoverBorder;
+  const cardHoverShadow = isRed ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' : isBlue ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]' : isPurple ? 'hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]' : isTeal ? 'hover:shadow-[0_0_15px_rgba(20,184,166,0.2)]' : isOrange ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.2)]' : isGray ? 'hover:shadow-[0_0_15px_rgba(113,113,122,0.2)]' : isCyan ? 'hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]' : colors.hoverShadow;
+  const cardGradientFrom = isRed ? 'from-red-500/10' : isBlue ? 'from-blue-500/10' : isPurple ? 'from-purple-500/10' : isTeal ? 'from-teal-500/10' : isOrange ? 'from-orange-500/10' : isGray ? 'from-zinc-500/10' : isCyan ? 'from-cyan-500/10' : colors.gradientFrom;
+  const cardGradientVia = (isRed || isBlue || isPurple || isTeal || isOrange || isGray || isCyan) ? '' : (colors.gradientVia || '');
+  const cardGradientTo = (isRed || isBlue || isPurple || isTeal || isOrange || isGray || isCyan) ? 'to-transparent' : colors.gradientTo;
+  const cardTertiary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : isGray ? 'text-zinc-400' : isCyan ? 'text-cyan-500' : (colors.tertiary || colors.secondary);
+  const cardGroupHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : isGray ? 'group-hover:text-zinc-300' : isCyan ? 'group-hover:text-cyan-400' : (colors.groupHoverQuaternary || colors.groupHoverText);
+  const cardGroupHoverBorder = isRed ? 'group-hover:border-red-500/50' : isBlue ? 'group-hover:border-blue-500/50' : isPurple ? 'group-hover:border-purple-500/50' : isTeal ? 'group-hover:border-teal-500/50' : isOrange ? 'group-hover:border-orange-500/50' : isGray ? 'group-hover:border-zinc-500/50' : isCyan ? 'group-hover:border-cyan-500/50' : colors.groupHoverBorder;
+  const titleHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : isGray ? 'group-hover:text-zinc-300' : isCyan ? 'group-hover:text-cyan-400' : colors.groupHoverText;
+  const cardQuaternary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : isGray ? 'text-zinc-400' : isCyan ? 'text-cyan-500' : (colors.quaternary || colors.secondary);
 
   return (
     <>

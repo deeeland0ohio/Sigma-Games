@@ -107,6 +107,7 @@
                 <option value="ugs">UGS</option>
                 <option value="3kh0">3kh0</option>
                 <option value="alexr">Alexr</option>
+                <option value="hydra">Hydra Games</option>
             </select>
         </div>
 
@@ -142,30 +143,6 @@
         </div>
         <div class="flex-1 w-full bg-black relative">
             <iframe id="player-iframe" class="w-full h-full border-none bg-black" allow="autoplay; fullscreen; pointer-lock; keyboard-map" allowfullscreen></iframe>
-        </div>
-    </div>
-
-    <!-- Lightspeed Extension Alert Modal -->
-    <div id="lightspeed-modal" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/85 backdrop-blur-sm hidden px-4">
-        <div class="bg-zinc-950 border border-red-500/30 p-8 rounded-3xl max-w-lg w-full text-center space-y-6 shadow-2xl shadow-red-500/5">
-            <div class="mx-auto w-16 h-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center">
-                <i data-lucide="shield-alert" class="w-8 h-8 animate-pulse"></i>
-            </div>
-            <div class="space-y-2">
-                <h2 class="text-2xl font-extrabold text-white tracking-tight">It seems you have Lightspeed filter agent</h2>
-                <p class="text-zinc-400 text-sm leading-relaxed">
-                    Do you want to turn on about:blank launching? (prevents 'page blocked by chrome' when running games, caused by the lightspeed blocker)
-                </p>
-            </div>
-            <div class="flex flex-col gap-3 pt-2">
-                <button id="btn-evasion-yes" class="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-red-600/20 active:scale-[0.98]">
-                    Yes
-                </button>
-                <span class="text-xs text-red-400/80 font-medium -mt-1 block text-center">Highly recommended</span>
-                <button id="btn-evasion-no" class="w-full py-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 font-medium rounded-xl transition-all border border-zinc-800">
-                    No
-                </button>
-            </div>
         </div>
     </div>
 
@@ -379,6 +356,47 @@
             }
         }
 
+        async function fetchHydra() {
+            try {
+                const res = await fetch("https://raw.githubusercontent.com/zennedu/hydra/main/gmes.json");
+                if (!res.ok) throw new Error("GitHub fetch failed: " + res.status);
+                const raw = await res.json();
+                if (!Array.isArray(raw)) return [];
+                
+                return raw.map(g => {
+                    const title = g.title || "Untitled Game";
+                    
+                    let gameUrl = '';
+                    if (g.file_name) {
+                        let path = g.file_name;
+                        if (!path.startsWith('gmes/')) {
+                            path = 'gmes/' + path;
+                        }
+                        gameUrl = `https://raw.githack.com/zennedu/hydra/main/${path}`;
+                    }
+
+                    let imageUrl = '';
+                    if (g.thumb) {
+                        let path = g.thumb;
+                        if (!path.startsWith('thumbs/')) {
+                            path = 'thumbs/' + path;
+                        }
+                        imageUrl = `https://raw.githack.com/zennedu/hydra/main/${path}`;
+                    }
+                    
+                    return {
+                        title: title,
+                        url: gameUrl,
+                        image: imageUrl,
+                        source: 'hydra'
+                    };
+                }).filter(g => g.url);
+            } catch (e) {
+                console.error("Hydra error:", e);
+                return [];
+            }
+        }
+
         function renderGames() {
             const grid = document.getElementById('gamesGrid');
             grid.innerHTML = '';
@@ -398,6 +416,7 @@
                 if(g.source === '3kh0') sourceColor = "text-yellow-500";
                 if(g.source === 'alexr') sourceColor = "text-emerald-400";
                 if(g.source === 'sigma') sourceColor = "text-rose-500";
+                if(g.source === 'hydra') sourceColor = "text-cyan-400";
 
                 if (g.image) {
                     div.innerHTML = `
@@ -493,43 +512,6 @@
             updateEvasionButtonUI();
         }
 
-        async function checkLightspeedExtension() {
-            if (localStorage.getItem('lightspeed-popup-shown') === 'true') {
-                return;
-            }
-
-            const extensionId = 'ehnniokiiebpinnfegpkdlcamgdcaaje';
-            let detected = false;
-
-            try {
-                const response = await fetch(`chrome-extension://${extensionId}/manifest.json`);
-                if (response.ok) {
-                    detected = true;
-                }
-            } catch (e) {
-                // Fetch failed or blocked
-            }
-
-            const isInstalled = await new Promise((resolve) => {
-                const img = new Image();
-                img.onload = () => resolve(true);
-                img.onerror = () => {
-                    fetch(`chrome-extension://${extensionId}/manifest.json`)
-                        .then(() => resolve(true))
-                        .catch(() => resolve(false));
-                };
-                img.src = `chrome-extension://${extensionId}/icon-128.png`;
-                setTimeout(() => resolve(false), 1200);
-            });
-
-            if (isInstalled || detected) {
-                const modal = document.getElementById('lightspeed-modal');
-                if (modal) {
-                    modal.classList.remove('hidden');
-                }
-            }
-        }
-
         function openPlayer(game) {
             const evasionEnabled = localStorage.getItem('lightspeed-evasion') === 'true';
 
@@ -537,38 +519,53 @@
                 try {
                     const win = window.open('about:blank', '_blank');
                     if (win) {
-                        // Set title and cloaking favicon
-                        win.document.title = game.title;
-                        const fav = win.document.createElement('link');
-                        fav.rel = 'icon';
-                        const savedIcon = localStorage.getItem('app-cloaking-icon');
-                        if (savedIcon) {
-                            fav.type = 'image/png';
-                            fav.href = savedIcon;
-                        } else {
-                            fav.type = 'image/svg+xml';
-                            fav.href = 'https://sigma-sigma-rizz.vercel.app/favicon.svg';
-                        }
-                        win.document.head.appendChild(fav);
+                        const savedTitle = localStorage.getItem('app-cloaking-title') || game.title || 'Sigma Games';
+                        const savedIcon = localStorage.getItem('app-cloaking-icon') || 'https://images.squarespace-cdn.com/content/v1/5aa8af1fc3c16a54bcbb0415/1564754301251-MJVM1PU59EMR6IK42DDO/LAUSD.png?format=2500w';
 
-                        // Create full-screen iframe pointing to the game url
-                        const iframe = win.document.createElement('iframe');
-                        iframe.src = game.url;
-                        iframe.style.position = 'fixed';
-                        iframe.style.top = '0';
-                        iframe.style.left = '0';
-                        iframe.style.width = '100vw';
-                        iframe.style.height = '100vh';
-                        iframe.style.border = 'none';
-                        iframe.style.margin = '0';
-                        iframe.style.padding = '0';
-                        iframe.setAttribute('allow', 'autoplay; fullscreen; pointer-lock; keyboard-map');
-                        iframe.setAttribute('allowfullscreen', 'true');
-                        
-                        win.document.body.style.margin = '0';
-                        win.document.body.style.overflow = 'hidden';
-                        win.document.body.style.backgroundColor = '#000000';
-                        win.document.body.appendChild(iframe);
+                        // Resolve relative URLs to absolute URLs
+                        let targetUrl = game.url;
+                        if (game.url.startsWith('./') || game.url.startsWith('/') || (!game.url.startsWith('http://') && !game.url.startsWith('https://'))) {
+                            const a = document.createElement('a');
+                            a.href = game.url;
+                            targetUrl = a.href;
+                        }
+
+                        win.document.open();
+                        win.document.write(`
+                            <!DOCTYPE html>
+                            <html lang="en">
+                            <head>
+                                <meta charset="UTF-8">
+                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                                <title>${savedTitle}</title>
+                                <link rel="icon" type="image/png" href="${savedIcon}" />
+                                <style>
+                                    body, html {
+                                        margin: 0;
+                                        padding: 0;
+                                        width: 100%;
+                                        height: 100%;
+                                        overflow: hidden;
+                                        background-color: #000000;
+                                    }
+                                    iframe {
+                                        border: none;
+                                        width: 100vw;
+                                        height: 100vh;
+                                        position: fixed;
+                                        top: 0;
+                                        left: 0;
+                                        margin: 0;
+                                        padding: 0;
+                                    }
+                                </style>
+                            </head>
+                            <body>
+                                <iframe src="${targetUrl}" allow="autoplay; fullscreen; pointer-lock; keyboard-map" allowfullscreen="true"></iframe>
+                            </body>
+                            </html>
+                        `);
+                        win.document.close();
                         return;
                     } else {
                         throw new Error("Popup blocked");
@@ -624,12 +621,12 @@
             }
         }
 
-         async function init() {
-            const [gn, seraph, noah, ugs, threekh0, alexr, sigma] = await Promise.all([
-                fetchGNMath(), fetchSeraph(), fetchNoah(), fetchUGS(), fetch3kh0(), fetchAlexr(), fetchSigma()
+          async function init() {
+            const [gn, seraph, noah, ugs, threekh0, alexr, sigma, hydra] = await Promise.all([
+                fetchGNMath(), fetchSeraph(), fetchNoah(), fetchUGS(), fetch3kh0(), fetchAlexr(), fetchSigma(), fetchHydra()
             ]);
             
-            allGames = [...gn, ...seraph, ...noah, ...ugs, ...threekh0, ...alexr, ...sigma].filter(g => g && g.title);
+            allGames = [...gn, ...seraph, ...noah, ...ugs, ...threekh0, ...alexr, ...sigma, ...hydra].filter(g => g && g.title);
             
             // Sort array alphabetically by title
             allGames.sort((a, b) => {
@@ -646,37 +643,13 @@
             }
             const tagline = document.querySelector('header p');
             if (tagline) {
-                tagline.innerText = `Play all ${count} g*mes from GN-Math, UGS, Seraph, Noah's, 3kh0, Alexr, and Sigma G*mes in one place.`;
+                tagline.innerText = `Play all ${count} g*mes from GN-Math, UGS, Seraph, Noah's, 3kh0, Alexr, Sigma G*mes, and Hydra Games in one place.`;
             }
             
             document.getElementById('loading').style.display = 'none';
             filterGames();
 
-            // Bind Lightspeed modal buttons
-            const btnYes = document.getElementById('btn-evasion-yes');
-            if (btnYes) {
-                btnYes.addEventListener('click', () => {
-                    localStorage.setItem('lightspeed-evasion', 'true');
-                    localStorage.setItem('lightspeed-popup-shown', 'true');
-                    const modal = document.getElementById('lightspeed-modal');
-                    if (modal) modal.classList.add('hidden');
-                    updateEvasionButtonUI();
-                });
-            }
-
-            const btnNo = document.getElementById('btn-evasion-no');
-            if (btnNo) {
-                btnNo.addEventListener('click', () => {
-                    localStorage.setItem('lightspeed-evasion', 'false');
-                    localStorage.setItem('lightspeed-popup-shown', 'true');
-                    const modal = document.getElementById('lightspeed-modal');
-                    if (modal) modal.classList.add('hidden');
-                    updateEvasionButtonUI();
-                });
-            }
-
             updateEvasionButtonUI();
-            checkLightspeedExtension();
         }
 
         init();

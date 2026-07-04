@@ -68,6 +68,13 @@ export const games: Game[] = [
     icon: Box,
     type: 'folder',
   },
+  {
+    id: 'hydra',
+    title: 'Hydra Games',
+    description: "Browse the Hydra Games collection of games.",
+    icon: Box,
+    type: 'folder',
+  },
 ];
 
 export const allGamesList = [...allGames].sort((a, b) => {

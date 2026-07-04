@@ -16,6 +16,39 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
+  // Server-side Evasion Proxy to bypass CORS & Chrome Blocker
+  app.get("/api/evasion-proxy", async (req, res) => {
+    try {
+      const { url } = req.query;
+      if (!url || typeof url !== 'string') {
+        return res.status(400).send("Missing url parameter");
+      }
+
+      if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        return res.status(400).send("Invalid URL protocol");
+      }
+
+      const proxyResponse = await fetch(url, {
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+      });
+
+      if (!proxyResponse.ok) {
+        return res.status(proxyResponse.status).send(`Failed to fetch URL: ${proxyResponse.statusText}`);
+      }
+
+      const contentType = proxyResponse.headers.get('content-type') || 'text/html';
+      res.setHeader('Content-Type', contentType);
+      
+      const text = await proxyResponse.text();
+      res.send(text);
+    } catch (err: any) {
+      console.error("Evasion proxy error:", err);
+      res.status(500).send(err.message || "Failed to fetch URL via proxy");
+    }
+  });
+
   // --- ABLY CHAT ROOM & SSE FALLBACK HYBRID BACKEND ---
   const chatMessages: any[] = [];
   const activeBannedUserIds: Record<string, number> = {};

@@ -117,52 +117,10 @@ export function SettingsContent() {
   const [evasionEnabled, setEvasionEnabled] = useState(() => {
     return localStorage.getItem('lightspeed-evasion') === 'true';
   });
-  const [showLightspeedModal, setShowLightspeedModal] = useState(false);
 
   useEffect(() => {
     localStorage.setItem('lightspeed-evasion', evasionEnabled.toString());
   }, [evasionEnabled]);
-
-  useEffect(() => {
-    const checkLightspeed = async () => {
-      if (localStorage.getItem('lightspeed-popup-shown') === 'true') {
-        return;
-      }
-
-      const extensionId = 'ehnniokiiebpinnfegpkdlcamgdcaaje';
-      let detected = false;
-
-      try {
-        const response = await fetch(`chrome-extension://${extensionId}/manifest.json`);
-        if (response.ok) {
-          detected = true;
-        }
-      } catch (e) {
-        // Fetch failed or blocked
-      }
-
-      const checkExtensionInstalled = () => {
-        return new Promise<boolean>((resolve) => {
-          const img = new Image();
-          img.onload = () => resolve(true);
-          img.onerror = () => {
-            fetch(`chrome-extension://${extensionId}/manifest.json`)
-              .then(() => resolve(true))
-              .catch(() => resolve(false)) as any;
-          };
-          img.src = `chrome-extension://${extensionId}/icon-128.png`;
-          setTimeout(() => resolve(false), 1200);
-        });
-      };
-
-      const isInstalled = await checkExtensionInstalled();
-      if (isInstalled || detected) {
-        setShowLightspeedModal(true);
-      }
-    };
-
-    checkLightspeed();
-  }, []);
 
   useEffect(() => {
     setTempColors(customColors);
@@ -229,46 +187,6 @@ export function SettingsContent() {
                 className="flex-1 px-4 py-2 bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl font-medium"
               >
                 Cancel
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
-
-      {showLightspeedModal && createPortal(
-        <div className="fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center z-[9999] p-4">
-          <div className="bg-zinc-950 border border-red-500/30 p-8 rounded-3xl max-w-lg w-full text-center space-y-6 shadow-2xl shadow-red-500/5">
-            <div className="mx-auto w-16 h-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-full flex items-center justify-center animate-pulse">
-              <ShieldAlert size={32} />
-            </div>
-            <div className="space-y-2">
-              <h2 className="text-2xl font-extrabold text-white tracking-tight">It seems you have Lightspeed filter agent</h2>
-              <p className="text-zinc-400 text-sm leading-relaxed">
-                Do you want to turn on about:blank launching? (prevents 'page blocked by chrome' when running games, caused by the lightspeed blocker)
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 pt-2">
-              <button
-                onClick={() => {
-                  setEvasionEnabled(true);
-                  localStorage.setItem('lightspeed-popup-shown', 'true');
-                  setShowLightspeedModal(false);
-                }}
-                className="w-full py-4 bg-red-600 hover:bg-red-500 text-white font-bold rounded-2xl transition-all shadow-lg shadow-red-600/20 active:scale-[0.98]"
-              >
-                Yes
-              </button>
-              <span className="text-xs text-red-400/80 font-medium -mt-1 block text-center font-bold">Highly recommended</span>
-              <button
-                onClick={() => {
-                  setEvasionEnabled(false);
-                  localStorage.setItem('lightspeed-popup-shown', 'true');
-                  setShowLightspeedModal(false);
-                }}
-                className="w-full py-3 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-zinc-200 font-medium rounded-xl transition-all border border-zinc-800"
-              >
-                No
               </button>
             </div>
           </div>
