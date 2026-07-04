@@ -39,7 +39,7 @@
   </div>
   <audio id="drone" controls loop autoplay hidden>
     <source src="audios/AUDIO_DRONE.ogg" type="audio/ogg">
-    why does ur browser not support audio??
+    your slow ass browser doesnt support AUDIO?
   </audio>
   <button id="mute">🔊</button>
   <script>
@@ -63,49 +63,57 @@
     updateButton();
 
     function loadChapter(chapter) {
-      fetch(`chapter${chapter}/index.html`).then(res => res.text()).then(html => {
-        gamestarted = true;
-        
-        let targetBase = '';
-        if (chapter >= 1 && chapter <= 4) {
-          targetBase = `https://cdn.jsdelivr.net/gh/technonyte00/deltarune@main/chapter${chapter}/`;
-        } else if (chapter === 5) {
-          targetBase = `https://cdn.jsdelivr.net/gh/Katsugachi/deltarune@main/chapter5/`;
-        }
-        
-        if (targetBase) {
-          html = html.replace(/<base\s+href="[^"]*"/gi, `<base href="${targetBase}"`);
-        }
-
-        document.documentElement.innerHTML = html;
-        document.documentElement.querySelectorAll('script').forEach(oldScript => {
-          const newScript = document.createElement('script');
-          if (oldScript.src) {
-            newScript.src = oldScript.src;
-          } else {
-            newScript.textContent = oldScript.textContent;
+      fetch(`chapter${chapter}/index.html`)
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+          return res.text();
+        })
+        .then(html => {
+          gamestarted = true;
+          
+          let targetBase = '';
+          if (chapter >= 1 && chapter <= 4) {
+            targetBase = `https://cdn.jsdelivr.net/gh/technonyte00/deltarune@main/chapter${chapter}/`;
+          } else if (chapter === 5) {
+            targetBase = `https://cdn.jsdelivr.net/gh/Katsugachi/deltarune@main/chapter5/`;
           }
-          document.body.appendChild(newScript);
-        });
-      });
-    }
+          
+          if (targetBase) {
+            if (/<base\s+href="[^"]*"/gi.test(html)) {
+              html = html.replace(/<base\s+href="[^"]*"/gi, `<base href="${targetBase}"`);
+            } else {
+              if (/<head>/i.test(html)) {
+                html = html.replace(/<head>/i, `<head>\n  <base href="${targetBase}">`);
+              } else {
+                html = `<base href="${targetBase}">\n` + html;
+              }
+            }
+          }
 
-    const hoverSound = document.getElementById('hover-sound');
+          document.open();
+          document.write(html);
+          document.close();
+        })
+        .catch(err => {
+          console.error("Error loading chapter:", err);
+          alert(`Failed to load Chapter ${chapter}. Please try again.`);
+        });
+    }
 
     const menumoveaudio = new Audio('audios/snd_menumove.mp3');
     const menuselectaudio = new Audio('audios/snd_select.mp3');
     document.querySelectorAll('.row').forEach(row => {
       row.addEventListener('mouseenter', () => {
         if (!gamestarted) {
-          menumoveaudio.play();
-          if (selectedChapter) {
+          menumoveaudio.play().catch(e => console.log('Playback prevented:', e));
+          if (selectedChapter !== null) {
             document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
           }
         }
       });
       row.addEventListener('click', () => {
         if (!gamestarted) {
-          menuselectaudio.play();
+          menuselectaudio.play().catch(e => console.log('Playback prevented:', e));
         }
       });
     });
@@ -117,7 +125,7 @@
         if (selectedChapter === null) {
           selectedChapter = 0;
           document.querySelectorAll('.row')[0].classList.add("selected");
-          menumoveaudio.play();
+          menumoveaudio.play().catch(e => console.log('Playback prevented:', e));
         } else {
           document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
           selectedChapter--;
@@ -125,30 +133,30 @@
             selectedChapter = document.querySelectorAll('.row').length - 1;
           }
           document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
-          menumoveaudio.play();
+          menumoveaudio.play().catch(e => console.log('Playback prevented:', e));
         }
       } else if (event.key === 'ArrowDown') {
         if (selectedChapter === null) {
           selectedChapter = 0;
           document.querySelectorAll('.row')[0].classList.add("selected");
-          menumoveaudio.play();
+          menumoveaudio.play().catch(e => console.log('Playback prevented:', e));
         } else {
           if (selectedChapter+1 >= document.querySelectorAll('.row').length) {
             document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
             selectedChapter = 0;
             document.querySelectorAll('.row')[0].classList.add("selected");
-            menumoveaudio.play();
+            menumoveaudio.play().catch(e => console.log('Playback prevented:', e));
           } else {
             document.querySelectorAll('.row')[selectedChapter].classList.remove("selected");
             selectedChapter++;
             document.querySelectorAll('.row')[selectedChapter].classList.add("selected");
-            menumoveaudio.play();
+            menumoveaudio.play().catch(e => console.log('Playback prevented:', e));
           }
         }
       } else if (event.key === 'Enter') {
         if (selectedChapter !== null) {
-          window.location.href = document.querySelectorAll('.row')[selectedChapter].href;
-          menuselectaudio.play();
+          menuselectaudio.play().catch(e => console.log('Playback prevented:', e));
+          loadChapter(selectedChapter + 1);
         } 
       }
       }

@@ -96,6 +96,15 @@ export default function Home() {
             setDynamicGames(prev => prev.map(g => g.id === 'alexr' ? { ...g, description: `Browse the Alexr Games collection of ${count} games.` } : g));
           }
         }).catch(() => {});
+
+      // 7. Hydra Games
+      fetch("https://raw.githubusercontent.com/zennedu/hydra/main/gmes.json")
+        .then(res => res.json())
+        .then((raw: any) => {
+          if (Array.isArray(raw)) {
+            setDynamicGames(prev => prev.map(g => g.id === 'hydra' ? { ...g, description: `Browse the Hydra Games collection of ${raw.length} games.` } : g));
+          }
+        }).catch(() => {});
     };
 
     fetchCounts();
@@ -381,6 +390,7 @@ builtins.input = custom_input
                   game.id === '3kh0' ? '/3kh0' :
                   game.id === 'noah' ? '/noah' :
                   game.id === 'alexr' ? '/alexr' :
+                  game.id === 'hydra' ? '/hydra' :
                   undefined
                 }
               />
