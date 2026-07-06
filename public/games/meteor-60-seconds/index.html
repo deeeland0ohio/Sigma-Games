@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+  <base href="https://cdn.jsdelivr.net/gh/ThatWirdGuy/Meteor-60-Seconds-Web@main/Build/">
+  <meta charset="utf-8">
+  <title>Meteor 60 Seconds!</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400&display=swap" rel="stylesheet">
+  <script>
+    window.onerror = function() { return true; };
+    window.onunhandledrejection = function() { return true; };
+    window.alert = function() {};
+    window.confirm = function() { return true; };
+
+    // Same-origin Worker proxy to allow cross-origin Unity WebGL Web Workers
+    (function() {
+        const OriginalWorker = window.Worker;
+        window.Worker = function(scriptURL, options) {
+            const urlStr = scriptURL ? scriptURL.toString() : '';
+            if (urlStr.startsWith('http') && !urlStr.startsWith(window.location.origin)) {
+                const blobCode = "importScripts(" + JSON.stringify(urlStr) + ");";
+                const blob = new Blob([blobCode], { type: 'application/javascript' });
+                const blobURL = URL.createObjectURL(blob);
+                return new OriginalWorker(blobURL, options);
+            }
+            return new OriginalWorker(scriptURL, options);
+        };
+        window.Worker.prototype = OriginalWorker.prototype;
+    })();
+  </script>
+  <script src="UnityLoader.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { overflow: hidden; background: black; }
+    #gameContainer { width: 100vw; height: 100vh; }
+    #loadingScreen {
+      position: fixed;
+      inset: 0;
+      background: black;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 10;
+      font-family: 'Inter', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 300;
+      letter-spacing: 0.1em;
+    }
+  </style>
+</head>
+<body>
+  <div id="loadingScreen">Loading <span id="loadMB">0.0</span> / 17.7 MB</div>
+  <div id="gameContainer"></div>
+  <script>
+    var TOTAL_MB = 17.7;
+    function myProgress(gameInstance, progress) {
+      document.getElementById('loadMB').innerText = (progress * TOTAL_MB).toFixed(1);
+      if (progress === 1) {
+        document.getElementById('loadingScreen').style.display = 'none';
+      }
+    }
+    try {
+      var gameInstance = UnityLoader.instantiate(
+        "gameContainer",
+        "FIles.json",
+        { onProgress: myProgress }
+      );
+    } catch(e) {
+      console.error(e);
+    }
+  </script>
+</body>
+</html>

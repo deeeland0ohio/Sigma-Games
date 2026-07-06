@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
@@ -18,6 +18,7 @@ export default function HydraGames() {
   const [selectedGame, setSelectedGame] = useState<HydraGame | null>(null);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
+  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const loadGames = async () => {
     setLoading(true);
@@ -35,7 +36,7 @@ export default function HydraGames() {
             if (!path.startsWith('gmes/')) {
               path = 'gmes/' + path;
             }
-            gameUrl = `https://raw.githack.com/zennedu/hydra/main/${path}`;
+            gameUrl = `https://cdn.jsdelivr.net/gh/zennedu/hydra@main/${path}`;
           }
 
           let imageUrl = '';
@@ -44,7 +45,7 @@ export default function HydraGames() {
             if (!path.startsWith('thumbs/')) {
               path = 'thumbs/' + path;
             }
-            imageUrl = `https://raw.githack.com/zennedu/hydra/main/${path}`;
+            imageUrl = `https://cdn.jsdelivr.net/gh/zennedu/hydra@main/${path}`;
           }
 
           return {
@@ -66,6 +67,49 @@ export default function HydraGames() {
   useEffect(() => {
     loadGames();
   }, []);
+
+  useEffect(() => {
+    if (selectedGame && iframeRef.current) {
+      const iframe = iframeRef.current;
+      const targetUrl = selectedGame.url;
+
+      const loadIframeContent = async () => {
+        try {
+          const response = await fetch(targetUrl);
+          if (response.ok) {
+            let html = await response.text();
+            const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
+            const baseTag = `<base href="${baseUrl}">`;
+            
+            if (!html.includes('<base ')) {
+              if (html.includes('<head>')) {
+                html = html.replace('<head>', `<head>${baseTag}`);
+              } else if (html.includes('<html>')) {
+                html = html.replace('<html>', `<html><head>${baseTag}</head>`);
+              } else {
+                html = baseTag + html;
+              }
+            }
+            
+            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (doc) {
+              doc.open();
+              doc.write(html);
+              doc.close();
+              return;
+            }
+          }
+        } catch (err) {
+          console.warn("Failed to fetch game content for inline iframe, falling back to direct src:", err);
+        }
+        
+        // Fallback: set src directly if fetch fails
+        iframe.src = targetUrl;
+      };
+
+      loadIframeContent();
+    }
+  }, [selectedGame]);
 
   const openGame = (game: HydraGame) => {
     if (isEvasionActive()) {
@@ -237,7 +281,7 @@ export default function HydraGames() {
             <div className="flex-1 w-full bg-black relative">
               <iframe
                 id="hydra-iframe"
-                src={selectedGame.url}
+                ref={iframeRef}
                 className="w-full h-full border-none bg-black"
                 allow="autoplay; fullscreen; pointer-lock; keyboard-map"
                 allowFullScreen

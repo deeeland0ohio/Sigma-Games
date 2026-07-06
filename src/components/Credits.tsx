@@ -55,8 +55,9 @@ export default function Credits() {
                         <a href="https://github.com/a456pur/seraph" target="_blank" rel="noopener noreferrer" className="hover:underline">Seraph</a>,{' '}
                         <a href="https://truffled.lol/" target="_blank" rel="noopener noreferrer" className="hover:underline">Truffled</a>,{' '}
                         <a href="https://3kh0.net/" target="_blank" rel="noopener noreferrer" className="hover:underline">3kh0</a>,{' '}
-                        <a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" className="hover:underline">Noah's Hub</a>, and{' '}
-                        <a href="https://dskjfoisjfsjio.github.io/" target="_blank" rel="noopener noreferrer" className="hover:underline">Alexr</a>
+                        <a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" className="hover:underline">Noah's Hub</a>,{' '}
+                        <a href="https://dskjfoisjfsjio.github.io/" target="_blank" rel="noopener noreferrer" className="hover:underline">Alexr</a>, and{' '}
+                        <a href="https://github.com/NOTAHACKER9999" target="_blank" rel="noopener noreferrer" className="hover:underline">Glitch</a>
                       </span>
                     </p>
                     <p className="text-zinc-300 mt-2">
