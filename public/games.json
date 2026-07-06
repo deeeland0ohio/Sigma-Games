@@ -1030,5 +1030,45 @@
     "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/tunnel-rush/index.html",
     "category": "Arcade",
     "iframe": true
+  },
+  {
+    "title": "SCP: Refinarium",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Navigate and survive the SCP Refinarium facility.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/scp-refinarium/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "BB Mod: The Math Is Leaking",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A Baldi's Basics mod where you have to survive glitchy math lessons.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/bb-mod-the-math-is-leaking/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "War the Knights",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "Control powerful knights and engage in epic arena battles.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/war-the-knights/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Meteor 60 Seconds",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "A fun, action-packed comic-like game that simulates your life if there was a meteor heading for Earth and you only had 60 seconds to live.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/meteor-60-seconds/index.html",
+    "category": "Arcade",
+    "iframe": true
+  },
+  {
+    "title": "Doomori",
+    "img": "https://cdn.jsdelivr.net/gh/deeeland0ohio/sigma_games_favicon@main/sigma-favicon.png",
+    "description": "An action-packed fan game combining the worlds of DOOM and OMORI.",
+    "path": "https://cdn.jsdelivr.net/gh/deeeland0ohio/Sigma-Games@main/public/games/doomori/index.html",
+    "category": "Arcade",
+    "iframe": true
   }
 ]

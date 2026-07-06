@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+<meta charset="utf-8">
+<title>Glitches | The Math Is Leaking</title>
+	<base href="https://raw.githack.com/NOTAHACKER9999/My-Ports/refs/heads/main/The Math is Leaking/">
+<link rel="shortcut icon" href="TemplateData/favicon.ico">
+<link rel="stylesheet" href="TemplateData/style.css">
+<script src="TemplateData/UnityProgress.js"></script>
+<script src="Build/UnityLoader.js"></script>
+
+<style>
+html, body {
+  margin: 0; padding: 0; overflow: hidden; width: 100%; height: 100%; background: black;
+}
+#unityContainer {
+  position: fixed; top:0; left:0; width:100vw; height:100vh;
+}
+#progressWrapper {
+  position: fixed; top:50%; left:50%; transform: translate(-50%,-50%);
+  width: 400px; height: 30px; background: #222; border-radius:5px; overflow:hidden; z-index:1000;
+}
+#progressBar { height:100%; width:0%; background:red; transition: width 0.2s; }
+#progressText {
+  position:absolute; width:100%; text-align:center; color:white; line-height:30px; font-family:sans-serif;
+}
+</style>
+</head>
+
+<body>
+<div id="unityContainer"></div>
+<div id="progressWrapper">
+  <div id="progressBar"></div>
+  <div id="progressText">Loading 0%</div>
+</div>
+
+<script>
+const PARTS = [
+  "Build/tts.data.unityweb.part1",
+  "Build/tts.data.unityweb.part2",
+  "Build/tts.data.unityweb.part3",
+  "Build/tts.data.unityweb.part4",
+  "Build/tts.data.unityweb.part5"
+];
+
+let mergedBuffer = null;
+const progressBar = document.getElementById('progressBar');
+const progressText = document.getElementById('progressText');
+
+async function loadAndMerge() {
+  if (mergedBuffer) return mergedBuffer;
+
+  const buffers = [];
+  let totalSize = 0;
+
+  for (let i = 0; i < PARTS.length; i++) {
+    const res = await fetch(PARTS[i]);
+    const ab = await res.arrayBuffer();
+    buffers.push(ab);
+    totalSize += ab.byteLength;
+
+    // update progress per part
+    const percent = Math.floor(((i+1)/PARTS.length)*100);
+    progressBar.style.width = percent + "%";
+    progressText.innerText = `Loading ${percent}%`;
+  }
+
+  let merged = new Uint8Array(totalSize);
+  let offset = 0;
+  for (let b of buffers) {
+    merged.set(new Uint8Array(b), offset);
+    offset += b.byteLength;
+  }
+
+  mergedBuffer = merged.buffer;
+  progressBar.parentElement.style.display = 'none';
+  return mergedBuffer;
+}
+
+// --- XHR OVERRIDE ---
+(function() {
+  const origOpen = XMLHttpRequest.prototype.open;
+  const origSend = XMLHttpRequest.prototype.send;
+
+  XMLHttpRequest.prototype.open = function(method, url, async=true) {
+    this._url = url;
+    return origOpen.apply(this, arguments);
+  };
+
+  XMLHttpRequest.prototype.send = function() {
+    if (this._url && this._url.includes("tts.data.unityweb")) {
+      this.responseType = "arraybuffer"; // critical
+      loadAndMerge().then(buffer => {
+        const blob = new Blob([buffer]);
+        const reader = new FileReader();
+        reader.onload = () => {
+          Object.defineProperty(this, 'response', { value: reader.result });
+          if (typeof this.onload === "function") this.onload();
+          if (typeof this.onreadystatechange === "function") this.onreadystatechange();
+        };
+        reader.readAsArrayBuffer(blob);
+      });
+    } else {
+      origSend.apply(this, arguments);
+    }
+  };
+})();
+
+// --- START UNITY ---
+window.onload = function() {
+  UnityLoader.instantiate("unityContainer", "Build/tts.json", { onProgress: UnityProgress });
+};
+</script>
+</body>
+</html>

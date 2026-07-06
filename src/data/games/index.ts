@@ -127,6 +127,11 @@ import { tunnelRush } from "./tunnel-rush";
 import { tabs } from "./tabs";
 import { stardew } from "./stardew";
 import { twentyMins } from "./twenty-mins";
+import { scpRefinarium } from "./scp-refinarium";
+import { bbMod } from "./bb-mod";
+import { warTheKnights } from "./war-the-knights";
+import { meteor60Seconds } from "./meteor-60-seconds";
+import { doomori } from "./doomori";
 import { Game } from "../../types";
 
 export const allGames: Game[] = [
@@ -259,4 +264,9 @@ export const allGames: Game[] = [
   soccerBros,
   stickManHook,
   tunnelRush,
+  scpRefinarium,
+  bbMod,
+  warTheKnights,
+  meteor60Seconds,
+  doomori,
 ];
