@@ -8,10 +8,10 @@ import { Play } from 'lucide-react';
 
 const BOOT_LINES = [
   '</ SYSTEM STARTING',
-  "</ WELCOME TO SIGMA GAMES.",
-  '</ CONNECTING',
-  '</ GAMES LOADING...',
-  '</ READY TO PLAY...'
+  "</ WELCOME TO SIGMA GAMES!",
+  '</ LOADING...',
+  '</ AURA INCRESING...',
+  '</ DONE! :]'
 ];
 
 export default function Home() {
