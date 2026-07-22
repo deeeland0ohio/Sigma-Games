@@ -114,14 +114,6 @@ export function SettingsContent() {
   const [showWarning, setShowWarning] = useState(false);
   const [tempColors, setTempColors] = useState(customColors);
 
-  const [evasionEnabled, setEvasionEnabled] = useState(() => {
-    return localStorage.getItem('lightspeed-evasion') === 'true';
-  });
-
-  useEffect(() => {
-    localStorage.setItem('lightspeed-evasion', evasionEnabled.toString());
-  }, [evasionEnabled]);
-
   useEffect(() => {
     setTempColors(customColors);
   }, [customColors]);
@@ -419,47 +411,6 @@ export function SettingsContent() {
                   />
                 </div>
               </label>
-            </div>
-          </section>
-
-          {/* Lightspeed Evasion */}
-          <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
-            <div className="flex items-center gap-3 text-zinc-100">
-              <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
-                <ShieldAlert size={20} style={{ color: colors.hexPrimary }} />
-              </div>
-              <h2 className="text-xl font-bold">Lightspeed Evasion</h2>
-            </div>
-
-            <div className="space-y-4">
-              <p className="text-sm text-zinc-500">
-                Launches games code in about:blank to bypass 'blocked by chrome' caused by lightspeed.
-              </p>
-
-              <div className="flex flex-col sm:flex-row gap-3">
-                <button
-                  onClick={() => setEvasionEnabled(true)}
-                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                    evasionEnabled 
-                      ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-600/10 border border-emerald-500' 
-                      : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
-                  }`}
-                >
-                  <span className={`w-2 h-2 rounded-full ${evasionEnabled ? 'bg-white font-bold' : 'bg-zinc-600'}`} />
-                  Turn On
-                </button>
-                <button
-                  onClick={() => setEvasionEnabled(false)}
-                  className={`flex-1 px-4 py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2 ${
-                    !evasionEnabled 
-                      ? 'bg-red-600 text-white shadow-lg shadow-red-600/10 border border-red-500' 
-                      : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
-                  }`}
-                >
-                  <span className={`w-2 h-2 rounded-full ${!evasionEnabled ? 'bg-white' : 'bg-zinc-600'}`} />
-                  Turn Off
-                </button>
-              </div>
             </div>
           </section>
         </div>

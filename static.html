@@ -83,9 +83,6 @@
                 <button id="reloadSourcesBtn" onclick="reloadSources()" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2 text-zinc-300 cursor-pointer">
                     <i data-lucide="refresh-cw" class="w-4 h-4 text-zinc-400"></i> <span>Reload Sources</span>
                 </button>
-                <button id="evasionBtn" onclick="toggleEvasion()" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2 text-zinc-300">
-                    <i data-lucide="shield-alert" class="w-4 h-4 text-zinc-500" id="evasionIcon"></i> <span id="evasionText">Enable lightspeed evasion?</span>
-                </button>
                 <button onclick="window.location.href='/'" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-medium hover:bg-zinc-800 transition-colors flex items-center gap-2 cursor-pointer">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Sigma Games
                 </button>
@@ -481,192 +478,13 @@
             renderGames();
         });
 
-        function updateEvasionButtonUI() {
-            const btn = document.getElementById('evasionBtn');
-            if (!btn) return;
-            const textSpan = document.getElementById('evasionText');
-            const icon = document.getElementById('evasionIcon');
-            const isEnabled = localStorage.getItem('lightspeed-evasion') === 'true';
-
-            if (isEnabled) {
-                textSpan.innerText = 'Disable lightspeed evasion?';
-                btn.classList.add('border-red-500/50', 'text-red-400');
-                btn.classList.remove('border-zinc-800', 'text-zinc-300');
-                if (icon) {
-                    icon.setAttribute('data-lucide', 'shield-off');
-                    icon.className = 'w-4 h-4 text-red-500';
-                }
-            } else {
-                textSpan.innerText = 'Enable lightspeed evasion?';
-                btn.classList.remove('border-red-500/50', 'text-red-400');
-                btn.classList.add('border-zinc-800', 'text-zinc-300');
-                if (icon) {
-                    icon.setAttribute('data-lucide', 'shield-alert');
-                    icon.className = 'w-4 h-4 text-zinc-500';
-                }
-            }
-            if (window.lucide) {
-                lucide.createIcons();
-            }
-        }
-
-        function toggleEvasion() {
-            const isEnabled = localStorage.getItem('lightspeed-evasion') === 'true';
-            localStorage.setItem('lightspeed-evasion', (!isEnabled).toString());
-            updateEvasionButtonUI();
-        }
-
         function openPlayer(game) {
-            const evasionEnabled = localStorage.getItem('lightspeed-evasion') === 'true';
-
             // Resolve relative URLs to absolute URLs
             let targetUrl = game.url;
             if (game.url.startsWith('./') || game.url.startsWith('/') || (!game.url.startsWith('http://') && !game.url.startsWith('https://'))) {
                 const a = document.createElement('a');
                 a.href = game.url;
                 targetUrl = a.href;
-            }
-
-            if (evasionEnabled) {
-                try {
-                    const win = window.open('about:blank', '_blank');
-                    if (win) {
-                        const savedTitle = localStorage.getItem('app-cloaking-title') || game.title || 'Sigma Games';
-                        const savedIcon = localStorage.getItem('app-cloaking-icon') || 'https://images.squarespace-cdn.com/content/v1/5aa8af1fc3c16a54bcbb0415/1564754301251-MJVM1PU59EMR6IK42DDO/LAUSD.png?format=2500w';
-
-                        // Write loader immediately
-                        win.document.open();
-                        win.document.write(`
-                            <!DOCTYPE html>
-                            <html lang="en">
-                            <head>
-                                <meta charset="UTF-8">
-                                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                <title>${savedTitle}</title>
-                                <link rel="icon" type="image/png" href="${savedIcon}" />
-                                <style>
-                                    body, html {
-                                        margin: 0;
-                                        padding: 0;
-                                        width: 100%;
-                                        height: 100%;
-                                        overflow: hidden;
-                                        background-color: #000000;
-                                        color: #ffffff;
-                                        display: flex;
-                                        align-items: center;
-                                        justify-content: center;
-                                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-                                    }
-                                    .loader {
-                                        text-align: center;
-                                    }
-                                    .spinner {
-                                        border: 4px solid rgba(255, 255, 255, 0.1);
-                                        width: 36px;
-                                        height: 36px;
-                                        border-radius: 50%;
-                                        border-left-color: #06b6d4;
-                                        animation: spin 1s linear infinite;
-                                        margin: 0 auto 15px auto;
-                                    }
-                                    @keyframes spin {
-                                        0% { transform: rotate(0deg); }
-                                        100% { transform: rotate(360deg); }
-                                    }
-                                </style>
-                            </head>
-                            <body>
-                                <div class="loader">
-                                    <div class="spinner"></div>
-                                    <div>Loading game securely...</div>
-                                </div>
-                            </body>
-                            </html>
-                        `);
-                        win.document.close();
-
-                        // Attempt to fetch HTML directly for injection
-                        const fetchUrl = targetUrl + (targetUrl.includes('?') ? '&' : '?') + 't=' + Date.now();
-                        fetch(fetchUrl)
-                            .then(res => {
-                                if (res.ok) return res.text();
-                                throw new Error("Fetch failed: " + res.status);
-                            })
-                            .then(fetchedHtml => {
-                                const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-                                let html = fetchedHtml;
-                                const baseTag = `<base href="${baseUrl}">`;
-                                
-                                if (!html.includes('<base ')) {
-                                    if (html.includes('<head>')) {
-                                        html = html.replace('<head>', `<head>${baseTag}`);
-                                    } else if (html.includes('<html>')) {
-                                        html = html.replace('<html>', `<html><head>${baseTag}</head>`);
-                                    } else {
-                                        html = baseTag + html;
-                                    }
-                                }
-
-                                const titleTag = `<title>${savedTitle}</title>`;
-                                const iconTag = `<link rel="icon" type="image/png" href="${savedIcon}" />`;
-                                html = html.replace(/<title>[^]*?<\/title>/gi, '');
-                                if (html.includes('<head>')) {
-                                    html = html.replace('<head>', `<head>${titleTag}${iconTag}`);
-                                } else {
-                                    html = titleTag + iconTag + html;
-                                }
-
-                                win.document.open();
-                                win.document.write(html);
-                                win.document.close();
-                            })
-                            .catch(err => {
-                                console.warn("Evasion fetch failed, using iframe wrapper fallback:", err);
-                                win.document.open();
-                                win.document.write(`
-                                    <!DOCTYPE html>
-                                    <html lang="en">
-                                    <head>
-                                        <meta charset="UTF-8">
-                                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                                        <title>${savedTitle}</title>
-                                        <link rel="icon" type="image/png" href="${savedIcon}" />
-                                        <style>
-                                            body, html {
-                                                margin: 0;
-                                                padding: 0;
-                                                width: 100%;
-                                                height: 100%;
-                                                overflow: hidden;
-                                                background-color: #000000;
-                                            }
-                                            iframe {
-                                                border: none;
-                                                width: 100vw;
-                                                height: 100vh;
-                                                position: fixed;
-                                                top: 0;
-                                                left: 0;
-                                                margin: 0;
-                                                padding: 0;
-                                            }
-                                        </style>
-                                    </head>
-                                    <body>
-                                        <iframe src="${targetUrl}" allow="autoplay; fullscreen; pointer-lock; keyboard-map" allowfullscreen="true"></iframe>
-                                    </body>
-                                    </html>
-                                `);
-                                win.document.close();
-                            });
-                        return;
-                    } else {
-                        throw new Error("Popup blocked");
-                    }
-                } catch (e) {
-                    console.warn("about:blank open failed or popup blocked, falling back to overlay player:", e);
-                }
             }
 
             // Normal in-browser player
@@ -775,8 +593,6 @@
             
             document.getElementById('loading').style.display = 'none';
             filterGames();
-
-            updateEvasionButtonUI();
         }
 
         init();
@@ -828,27 +644,43 @@
                 return `rgba(255, 255, 255, ${alpha})`;
             }
 
-            // Load config
-            let config = { speed: 40, size: 2, density: 35 };
-            const savedConfig = localStorage.getItem('app-background-config');
-            if (savedConfig) {
-                try {
-                    const parsed = JSON.parse(savedConfig);
-                    if (parsed && parsed.dots) {
-                        config = parsed.dots;
+            function parseToRgba(colorStr, alpha) {
+                if (!colorStr) return `rgba(255, 255, 255, ${alpha})`;
+                colorStr = colorStr.trim();
+                
+                if (colorStr.startsWith('rgba')) {
+                    const match = colorStr.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+                    if (match) {
+                        return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
                     }
-                } catch(e) {}
+                }
+                
+                if (colorStr.startsWith('rgb')) {
+                    const match = colorStr.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+                    if (match) {
+                        return `rgba(${match[1]}, ${match[2]}, ${match[3]}, ${alpha})`;
+                    }
+                }
+                
+                if (colorStr.startsWith('#')) {
+                    let hex = colorStr.slice(1);
+                    if (hex.length === 3) {
+                        hex = hex.split('').map(char => char + char).join('');
+                    }
+                    if (hex.length === 6) {
+                        const r = parseInt(hex.slice(0, 2), 16);
+                        const g = parseInt(hex.slice(2, 4), 16);
+                        const b = parseInt(hex.slice(4, 6), 16);
+                        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+                    }
+                }
+                return colorStr;
             }
 
-            // Setup power multiplier
-            const savedPower = localStorage.getItem('app-energy-level');
-            let powerMultiplier = 0.8;
-            if (savedPower) {
-                const parsedPower = parseInt(savedPower, 10);
-                if (!isNaN(parsedPower)) {
-                    powerMultiplier = parsedPower / 50;
-                }
-            }
+            // Forced settings: 40 global energy, 40 spring speed, 2px dots size, and 35 grid density
+            let config = { speed: 40, size: 2, density: 35 };
+            let powerMultiplier = 0.8; // 40 energy / 50 = 0.8
+
 
             let width = window.innerWidth;
             let height = window.innerHeight;
@@ -932,7 +764,49 @@
 
                 ctx.clearRect(0, 0, width, height);
 
+                // Draw the fluid liquid drifting background blobs directly on the canvas
+                const driftTime = Date.now() * 0.0000195;
+
+                const bx1 = width * 0.25 + Math.sin(driftTime * 0.5) * width * 0.15;
+                const by1 = height * 0.25 + Math.cos(driftTime * 0.4) * height * 0.15;
+                const r1 = Math.max(width, height) * 0.5;
+
+                const bx2 = width * 0.75 + Math.sin(driftTime * -0.4) * width * 0.15;
+                const by2 = height * 0.75 + Math.cos(driftTime * 0.5) * height * 0.15;
+                const r2 = Math.max(width, height) * 0.5;
+
+                const bx3 = width * 0.7 + Math.sin(driftTime * 0.6) * width * 0.15;
+                const by3 = height * 0.3 + Math.cos(driftTime * -0.5) * height * 0.15;
+                const r3 = Math.max(width, height) * 0.45;
+
+                const bx4 = width * 0.3 + Math.sin(driftTime * -0.6) * width * 0.15;
+                const by4 = height * 0.7 + Math.cos(driftTime * 0.4) * height * 0.15;
+                const r4 = Math.max(width, height) * 0.5;
+
+                const drawBlob = (cx, cy, radius, col, maxAlpha) => {
+                    if (radius <= 0) return;
+                    const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+                    gradient.addColorStop(0, parseToRgba(col, maxAlpha));
+                    gradient.addColorStop(0.5, parseToRgba(col, maxAlpha * 0.4));
+                    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.fill();
+                };
+
+                const color1 = colors[0] || 'rgba(239, 68, 68, 0.4)';
+                const color2 = colors[1] || 'rgba(16, 185, 129, 0.4)';
+                const color3 = colors[2] || color1;
+                const color4 = colors[3] || color2;
+
+                drawBlob(bx1, by1, r1, color1, 0.065);
+                drawBlob(bx2, by2, r2, color2, 0.055);
+                drawBlob(bx3, by3, r3, color3, 0.06);
+                drawBlob(bx4, by4, r4, color4, 0.055);
+
                 // Draw faint grid
+
                 ctx.beginPath();
                 ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
                 ctx.lineWidth = 0.4;
