@@ -1,3 +1,4 @@
+import { storage, session } from "../utils/storage";
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Send, MessageSquare, User as UserIcon, LogOut, Trash2, X } from 'lucide-react';
@@ -57,24 +58,24 @@ export default function ChatPage() {
   const [userId] = useState<string>(() => {
     // Generate a clean, unique ID per page load / tab instance to prevent collisions
     // when tabs are duplicated or cloned, while retaining their session nickname.
-    if (typeof localStorage !== 'undefined') {
-      localStorage.removeItem('chat_guest_id');
+    if (typeof storage !== 'undefined') {
+      storage.removeItem('chat_guest_id');
     }
-    if (typeof sessionStorage !== 'undefined') {
-      sessionStorage.removeItem('chat_guest_id');
+    if (typeof session !== 'undefined') {
+      session.removeItem('chat_guest_id');
     }
     return 'u_' + Math.random().toString(36).substring(2, 15);
   });
   const [authLoading, setAuthLoading] = useState(false);
   const [nickname, setNickname] = useState<string | null>(() => {
-    if (typeof sessionStorage !== 'undefined') {
-      return sessionStorage.getItem('chat_nickname');
+    if (typeof session !== 'undefined') {
+      return session.getItem('chat_nickname');
     }
     return null;
   });
   const [isOwner, setIsOwner] = useState<boolean>(() => {
-    if (typeof sessionStorage !== 'undefined') {
-      return sessionStorage.getItem('chat_is_owner') === 'true';
+    if (typeof session !== 'undefined') {
+      return session.getItem('chat_is_owner') === 'true';
     }
     return false;
   });
@@ -124,7 +125,7 @@ export default function ChatPage() {
 
   // Clean kick_end checks on mount
   useEffect(() => {
-    const kickEnd = localStorage.getItem('kick_end');
+    const kickEnd = storage.getItem('kick_end');
     if (kickEnd && userId) {
       const end = parseInt(kickEnd);
       if (Date.now() < end) {
@@ -133,7 +134,7 @@ export default function ChatPage() {
           [userId]: end
         }));
       } else {
-        localStorage.removeItem('kick_end');
+        storage.removeItem('kick_end');
       }
     }
   }, [userId]);
@@ -142,10 +143,10 @@ export default function ChatPage() {
   useEffect(() => {
     const interval = setInterval(() => {
       setTick(t => t + 1);
-      // Clean up localStorage kick_end when expired
-      const kickEnd = localStorage.getItem('kick_end');
+      // Clean up storage kick_end when expired
+      const kickEnd = storage.getItem('kick_end');
       if (kickEnd && Date.now() >= parseInt(kickEnd)) {
-        localStorage.removeItem('kick_end');
+        storage.removeItem('kick_end');
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -162,8 +163,8 @@ export default function ChatPage() {
     const isNickBanned = activeNickKickEnd ? Date.now() < activeNickKickEnd : false;
 
     if (isIdBanned || isNickBanned) {
-      sessionStorage.removeItem('chat_nickname');
-      sessionStorage.removeItem('chat_is_owner');
+      session.removeItem('chat_nickname');
+      session.removeItem('chat_is_owner');
       setNickname(null);
       setIsOwner(false);
       setError("You are currently kicked from this chatroom.");
@@ -330,7 +331,7 @@ export default function ChatPage() {
           }
         }
 
-        const storedNickname = sessionStorage.getItem('chat_nickname');
+        const storedNickname = session.getItem('chat_nickname');
         const isTargetNick = storedNickname && payload.nickname.toLowerCase() === storedNickname.toLowerCase();
         const isTargetUserId = userIdRef.current && payload.targetUserId === userIdRef.current;
 
@@ -354,11 +355,11 @@ export default function ChatPage() {
                 title: "Kicked & Temporarily Banned",
                 message: `You were kicked by the Owner for ${label}.`
               });
-              sessionStorage.removeItem('chat_nickname');
-              sessionStorage.removeItem('chat_is_owner');
+              session.removeItem('chat_nickname');
+              session.removeItem('chat_is_owner');
               setNickname(null);
               setIsOwner(false);
-              localStorage.setItem('kick_end', kickEnd.toString());
+              storage.setItem('kick_end', kickEnd.toString());
               setBannedUserIds(prev => ({
                 ...prev,
                 [userIdRef.current]: kickEnd
@@ -368,8 +369,8 @@ export default function ChatPage() {
                 title: "Kicked from Chat",
                 message: "You were kicked by the Owner, you may join back in."
               });
-              sessionStorage.removeItem('chat_nickname');
-              sessionStorage.removeItem('chat_is_owner');
+              session.removeItem('chat_nickname');
+              session.removeItem('chat_is_owner');
               setNickname(null);
               setIsOwner(false);
             }
@@ -618,8 +619,8 @@ export default function ChatPage() {
         }
       }
 
-      sessionStorage.setItem('chat_nickname', finalNickname);
-      sessionStorage.setItem('chat_is_owner', isSigmaDev ? 'true' : 'false');
+      session.setItem('chat_nickname', finalNickname);
+      session.setItem('chat_is_owner', isSigmaDev ? 'true' : 'false');
 
       setNickname(finalNickname);
       setIsOwner(isSigmaDev);
@@ -747,8 +748,8 @@ export default function ChatPage() {
         id: userId
       });
     }
-    sessionStorage.removeItem('chat_nickname');
-    sessionStorage.removeItem('chat_is_owner');
+    session.removeItem('chat_nickname');
+    session.removeItem('chat_is_owner');
     setNickname(null);
     setIsOwner(false);
   };

@@ -306,11 +306,11 @@
         if (fakeStyles) fakeStyles.remove();
         
         document.getElementById('root').style.display = 'block';
-        document.title = localStorage.getItem('app-cloaking-title') || "Sigma Games";
+        document.title = (function(){try{return localStorage.getItem('app-cloaking-title');}catch(e){return null;}})() || "Sigma Games";
         
         const favicon = document.getElementById('dynamic-favicon');
         if (favicon) {
-          favicon.href = localStorage.getItem('app-cloaking-icon') || '/favicon.svg?v=2';
+          favicon.href = (function(){try{return localStorage.getItem('app-cloaking-icon');}catch(e){return null;}})() || '/favicon.svg?v=2';
           favicon.type = 'image/svg+xml';
         }
         document.dispatchEvent(new Event('app-boot-complete'));

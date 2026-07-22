@@ -1,3 +1,4 @@
+import { storage } from "../utils/storage";
 import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme, useThemeColors, Theme, BackgroundStyle } from '../context/ThemeContext';
@@ -193,26 +194,26 @@ export function SettingsContent() {
         </div>
         <button
           onClick={() => {
-            localStorage.setItem('app-theme', 'red-green');
-            localStorage.setItem('app-background', 'dots');
-            localStorage.setItem('app-energy-level', '40');
-            localStorage.setItem('app-background-config', JSON.stringify({
+            storage.setItem('app-theme', 'red-green');
+            storage.setItem('app-background', 'dots');
+            storage.setItem('app-energy-level', '40');
+            storage.setItem('app-background-config', JSON.stringify({
               dots: { speed: 40, size: 2, density: 35 },
               vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
               matrix: { speed: 40, size: 40, density: 40 },
               blackHole: { speed: 40, size: 40, density: 40 },
               lightspeed: { speed: 40, size: 40, density: 40 }
             }));
-            localStorage.setItem('app-settings-view-mode', 'page');
-            localStorage.setItem('app-settings-box-size', JSON.stringify({ width: 1000, height: 700 }));
-            localStorage.setItem('app-settings-box-position', JSON.stringify({ x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 }));
-            localStorage.setItem('app-custom-colors', JSON.stringify(['#ffffff', '#ffffff', '#ffffff', '#ffffff']));
-            localStorage.setItem('app-cloaking-title', 'Sigma Games');
-            localStorage.setItem('app-cloaking-icon', '/favicon.svg?v=2');
-            localStorage.setItem('app-runner-mode', 'none');
-            localStorage.setItem('app-close-prevention', 'false');
-            localStorage.setItem('lightspeed-evasion', 'false');
-            localStorage.removeItem('lightspeed-popup-shown');
+            storage.setItem('app-settings-view-mode', 'page');
+            storage.setItem('app-settings-box-size', JSON.stringify({ width: 1000, height: 700 }));
+            storage.setItem('app-settings-box-position', JSON.stringify({ x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 }));
+            storage.setItem('app-custom-colors', JSON.stringify(['#ffffff', '#ffffff', '#ffffff', '#ffffff']));
+            storage.setItem('app-cloaking-title', 'Sigma Games');
+            storage.setItem('app-cloaking-icon', '/favicon.svg?v=2');
+            storage.setItem('app-runner-mode', 'none');
+            storage.setItem('app-close-prevention', 'false');
+            storage.setItem('lightspeed-evasion', 'false');
+            storage.removeItem('lightspeed-popup-shown');
 
             // Force visual page reload so settings are cleanly re-applied and visible
             window.location.reload();
