@@ -3,7 +3,6 @@ import { motion, AnimatePresence } from 'motion/react';
 import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { useFavorites } from '../context/FavoritesContext';
-import { isEvasionActive, launchEvasion } from '../utils/evasion';
 
 interface HydraGame {
   title: string;
@@ -112,11 +111,7 @@ export default function HydraGames() {
   }, [selectedGame]);
 
   const openGame = (game: HydraGame) => {
-    if (isEvasionActive()) {
-      launchEvasion(game.url, game.title);
-    } else {
-      setSelectedGame(game);
-    }
+    setSelectedGame(game);
   };
 
   const filteredGames = games.filter(g => 

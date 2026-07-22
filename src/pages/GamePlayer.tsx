@@ -2,13 +2,12 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
-import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle, MessageSquare, Shield } from 'lucide-react';
+import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle, MessageSquare } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import SettingsMenu from '../components/SettingsMenu';
 import Credits from '../components/Credits';
 import { useThemeColors } from '../context/ThemeContext';
 import { useFavorites } from '../context/FavoritesContext';
-import { launchEvasion } from '../utils/evasion';
 
 export default function GamePlayer() {
   const { id } = useParams<{ id: string }>();
@@ -19,21 +18,6 @@ export default function GamePlayer() {
   const [showPopup, setShowPopup] = useState(false);
   const [iframeUrl, setIframeUrl] = useState<string | undefined>(game?.url);
   const navigate = useNavigate();
-
-  const [forceNormalPlay, setForceNormalPlay] = useState(false);
-  const isEvasionEnabled = localStorage.getItem('lightspeed-evasion') === 'true';
-
-  const handleLaunchEvasion = () => {
-    if (game) {
-      launchEvasion(iframeUrl || game.url || '', game.title);
-    }
-  };
-
-  useEffect(() => {
-    if (isEvasionEnabled && game) {
-      handleLaunchEvasion();
-    }
-  }, [isEvasionEnabled, game]);
 
   useEffect(() => {
     const popupGames = ['crazy-cattle-3d', 'basket-random', 'soccer-random', 'boxing-random', 'geometry-dash', 'basket-bros', 'baseball-bros', 'football-bros', 'wrestle-bros', 'kart-bros', 'soccer-bros'];
@@ -109,16 +93,6 @@ export default function GamePlayer() {
               <game.icon size={18} />
             </div>
             <h1 className="font-bold text-white tracking-tight">{game.title}</h1>
-            {isEvasionEnabled && (
-              <button
-                onClick={handleLaunchEvasion}
-                className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all flex items-center gap-1 cursor-pointer ml-2"
-                title="Relaunch Secure Game Tab"
-              >
-                <Shield size={14} />
-                <span className="hidden sm:inline">Relaunch Evasion</span>
-              </button>
-            )}
             <button 
               onClick={() => game && toggleFavorite(game.id)}
               className={`p-1.5 rounded-lg transition-all ${
