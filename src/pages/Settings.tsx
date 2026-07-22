@@ -834,9 +834,18 @@ export function SettingsContent() {
                   <Maximize2 size={18} />
                   Launch in about:blank
                 </button>
-                <button
-                  onClick={() => {
-                    const html = `
+                <div className="relative w-full h-[48px] rounded-xl overflow-hidden">
+                  <iframe
+                    sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox"
+                    style={{ width: '100%', height: '100%', border: 'none' }}
+                    srcDoc={[
+                      '<!DOCTYPE html><html><head><meta charset="utf-8">',
+                      '<style>html,body{margin:0;height:100%;overflow:hidden}button{width:100%;height:100%;background-color:#27272a;color:white;border:none;border-radius:0.75rem;font-family:ui-sans-serif,system-ui,sans-serif;font-weight:500;font-size:1rem;display:flex;align-items:center;justify-content:center;gap:0.5rem;cursor:pointer;transition:background-color 0.15s;}button:hover{background-color:#3f3f46;}button svg{width:18px;height:18px;}</style></head><body>',
+                      '<button id="go" type="button">',
+                      '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6"/><path d="M9 21H3v-6"/><path d="M21 3l-7 7"/><path d="M3 21l7-7"/></svg>',
+                      '<span>Launch in blob: null</span></button>',
+                      '<script>',
+                      `var SHELL=${JSON.stringify(`
                       <html>
                         <head>
                           <title>${cloakingTitle}</title>
@@ -846,16 +855,15 @@ export function SettingsContent() {
                           <iframe src="${window.location.origin}" style="width:100vw;height:100vh;border:none;"></iframe>
                         </body>
                       </html>
-                    `;
-                    const blob = new Blob([html], { type: 'text/html' });
-                    const url = URL.createObjectURL(blob);
-                    window.open(url, '_blank');
-                  }}
-                  className="w-full px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-all flex items-center justify-center gap-2"
-                >
-                  <Maximize2 size={18} />
-                  Launch in blob: URL
-                </button>
+                    `).replace(/<\//g, '<\\/')};`,
+                      'document.getElementById("go").addEventListener("click",function(){',
+                      'try{var u=URL.createObjectURL(new Blob([SHELL],{type:"text/html"}));var w=window.open(u,"_blank");',
+                      'parent.postMessage({type:"arctic-blobnull",ok:!!w},"*");}',
+                      'catch(e){parent.postMessage({type:"arctic-blobnull",ok:false},"*");}});',
+                      '</script></body></html>'
+                    ].join('')}
+                  />
+                </div>
 
 
               </div>
