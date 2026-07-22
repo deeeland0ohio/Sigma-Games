@@ -1,3 +1,4 @@
+import { storage } from "../utils/storage";
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export interface FavoriteItem {
@@ -19,12 +20,12 @@ const FavoritesContext = createContext<FavoritesContextType | undefined>(undefin
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
   const [favorites, setFavorites] = useState<(string | FavoriteItem)[]>(() => {
-    const saved = localStorage.getItem('game_hub_favorites');
+    const saved = storage.getItem('game_hub_favorites');
     return saved ? JSON.parse(saved) : [];
   });
 
   useEffect(() => {
-    localStorage.setItem('game_hub_favorites', JSON.stringify(favorites));
+    storage.setItem('game_hub_favorites', JSON.stringify(favorites));
   }, [favorites]);
 
   const toggleFavorite = (item: string | FavoriteItem) => {

@@ -1,3 +1,4 @@
+import { storage } from "../utils/storage";
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 
 export type Theme = 
@@ -86,29 +87,29 @@ function hexToRgb(hex: string) {
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    return (localStorage.getItem('app-theme') as Theme) || 'red-green';
+    return (storage.getItem('app-theme') as Theme) || 'red-green';
   });
   
   const [background, setBackground] = useState<BackgroundStyle>(() => {
-    return (localStorage.getItem('app-background') as BackgroundStyle) || 'dots';
+    return (storage.getItem('app-background') as BackgroundStyle) || 'dots';
   });
 
   const [simulationPower, setSimulationPower] = useState<number>(() => {
     try {
-      const saved = localStorage.getItem('app-energy-level');
+      const saved = storage.getItem('app-energy-level');
       if (saved) {
         const parsedValue = parseInt(saved, 10);
         if (!isNaN(parsedValue)) return parsedValue;
       }
     } catch (e) {
-      console.warn("Could not load simulation power from localStorage", e);
+      console.warn("Could not load simulation power from storage", e);
     }
-    const bg = (localStorage.getItem('app-background') as BackgroundStyle) || 'dots';
+    const bg = (storage.getItem('app-background') as BackgroundStyle) || 'dots';
     return bg === 'vanta-dots' ? 36 : 40;
   });
 
   const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>(() => {
-    const saved = localStorage.getItem('app-background-config');
+    const saved = storage.getItem('app-background-config');
     if (saved) {
       try {
         return JSON.parse(saved);
@@ -126,7 +127,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   });
 
   const [customColors, setCustomColors] = useState<string[]>(() => {
-    const saved = localStorage.getItem('app-custom-colors');
+    const saved = storage.getItem('app-custom-colors');
     return saved ? JSON.parse(saved) : ['#ffffff', '#ffffff', '#ffffff', '#ffffff'];
   });
 
@@ -143,37 +144,37 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   };
 
   const [settingsViewMode, setSettingsViewMode] = useState<'page' | 'box'>(() => {
-    return (localStorage.getItem('app-settings-view-mode') as 'page' | 'box') || 'page';
+    return (storage.getItem('app-settings-view-mode') as 'page' | 'box') || 'page';
   });
 
   const [settingsBoxSize, setSettingsBoxSize] = useState(() => {
-    const saved = localStorage.getItem('app-settings-box-size');
+    const saved = storage.getItem('app-settings-box-size');
     return saved ? JSON.parse(saved) : { width: window.innerWidth * 0.52, height: window.innerHeight * 0.65 };
   });
 
   const [settingsBoxPosition, setSettingsBoxPosition] = useState(() => {
-    const saved = localStorage.getItem('app-settings-box-position');
+    const saved = storage.getItem('app-settings-box-position');
     return saved ? JSON.parse(saved) : { x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 };
   });
 
   const [cloakingTitle, setCloakingTitle] = useState(() => {
-    return localStorage.getItem('app-cloaking-title') || 'Sigma Games';
+    return storage.getItem('app-cloaking-title') || 'Sigma Games';
   });
 
   const [cloakingIcon, setCloakingIcon] = useState(() => {
-    return localStorage.getItem('app-cloaking-icon') || '/favicon.svg?v=2';
+    return storage.getItem('app-cloaking-icon') || '/favicon.svg?v=2';
   });
 
   const [runnerMode, setRunnerMode] = useState<RunnerMode>(() => {
-    return (localStorage.getItem('app-runner-mode') as RunnerMode) || 'none';
+    return (storage.getItem('app-runner-mode') as RunnerMode) || 'none';
   });
 
   const [closePrevention, setClosePrevention] = useState<boolean>(() => {
-    return localStorage.getItem('app-close-prevention') === 'true';
+    return storage.getItem('app-close-prevention') === 'true';
   });
 
   useEffect(() => {
-    localStorage.setItem('app-cloaking-title', cloakingTitle);
+    storage.setItem('app-cloaking-title', cloakingTitle);
     
     const applyTitle = () => {
       if (!document.getElementById('fake-login-screen')) {
@@ -188,7 +189,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [cloakingTitle]);
 
   useEffect(() => {
-    localStorage.setItem('app-cloaking-icon', cloakingIcon);
+    storage.setItem('app-cloaking-icon', cloakingIcon);
     
     const applyIcon = () => {
       if (!document.getElementById('fake-login-screen')) {
@@ -209,11 +210,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [cloakingIcon]);
 
   useEffect(() => {
-    localStorage.setItem('app-theme', theme);
+    storage.setItem('app-theme', theme);
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem('app-background', background);
+    storage.setItem('app-background', background);
     // Automatically adjust simulation power based on background type
     if (background === 'vanta-dots') {
       setSimulationPower(36);
@@ -223,35 +224,35 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [background]);
 
   useEffect(() => {
-    localStorage.setItem('app-energy-level', simulationPower.toString());
+    storage.setItem('app-energy-level', simulationPower.toString());
   }, [simulationPower]);
 
   useEffect(() => {
-    localStorage.setItem('app-background-config', JSON.stringify(backgroundConfig));
+    storage.setItem('app-background-config', JSON.stringify(backgroundConfig));
   }, [backgroundConfig]);
 
   useEffect(() => {
-    localStorage.setItem('app-custom-colors', JSON.stringify(customColors));
+    storage.setItem('app-custom-colors', JSON.stringify(customColors));
   }, [customColors]);
 
   useEffect(() => {
-    localStorage.setItem('app-settings-view-mode', settingsViewMode);
+    storage.setItem('app-settings-view-mode', settingsViewMode);
   }, [settingsViewMode]);
 
   useEffect(() => {
-    localStorage.setItem('app-settings-box-size', JSON.stringify(settingsBoxSize));
+    storage.setItem('app-settings-box-size', JSON.stringify(settingsBoxSize));
   }, [settingsBoxSize]);
 
   useEffect(() => {
-    localStorage.setItem('app-settings-box-position', JSON.stringify(settingsBoxPosition));
+    storage.setItem('app-settings-box-position', JSON.stringify(settingsBoxPosition));
   }, [settingsBoxPosition]);
 
   useEffect(() => {
-    localStorage.setItem('app-runner-mode', runnerMode);
+    storage.setItem('app-runner-mode', runnerMode);
   }, [runnerMode]);
 
   useEffect(() => {
-    localStorage.setItem('app-close-prevention', closePrevention.toString());
+    storage.setItem('app-close-prevention', closePrevention.toString());
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       e.preventDefault();

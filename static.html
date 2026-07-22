@@ -6,7 +6,7 @@
     <title>Sigma Games Static</title>
     <link id="dynamic-favicon" rel="icon" type="image/svg+xml" href="https://sigma-sigma-rizz.vercel.app/favicon.svg" />
     <script>
-      const savedIcon = localStorage.getItem('app-cloaking-icon');
+      const savedIcon = (function(){try{return localStorage.getItem('app-cloaking-icon');}catch(e){return null;}})();
       if (savedIcon) {
         document.getElementById('dynamic-favicon').href = savedIcon;
         document.getElementById('dynamic-favicon').type = 'image/png';
@@ -605,7 +605,7 @@
             if (!ctx) return;
 
             // Load theme & colors
-            const savedTheme = localStorage.getItem('app-theme') || 'red-green';
+            const savedTheme = (function(){try{return localStorage.getItem('app-theme');}catch(e){return null;}})() || 'red-green';
             const themeColorsMap = {
                 'red-green': ['rgba(239, 68, 68, 0.4)', 'rgba(16, 185, 129, 0.4)'],
                 'blue-pink': ['rgba(59, 130, 246, 0.4)', 'rgba(236, 72, 153, 0.4)'],
@@ -623,7 +623,7 @@
 
             if (savedTheme === 'custom') {
                 try {
-                    const savedCustom = localStorage.getItem('app-custom-colors');
+                    const savedCustom = (function(){try{return localStorage.getItem('app-custom-colors');}catch(e){return null;}})();
                     if (savedCustom) {
                         const parsedCustom = JSON.parse(savedCustom);
                         if (Array.isArray(parsedCustom) && parsedCustom.length > 0) {
