@@ -1,70 +1,28 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-react';
+import ProxyIframe from '../components/ProxyIframe';
+import { Search, X, Maximize, Box, Heart, Loader2, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import { diesmosGames as initialDiesmosGames } from '../data/diesmos';
 import { useFavorites } from '../context/FavoritesContext';
 
-interface HydraGame {
-  title: string;
-  url: string;
-  image?: string;
-}
-
-export default function HydraGames() {
-  const [games, setGames] = useState<HydraGame[]>([]);
-  const [loading, setLoading] = useState(false);
+export default function DiesmosGames() {
+  const [games, setGames] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [selectedGame, setSelectedGame] = useState<HydraGame | null>(null);
+  const [selectedGame, setSelectedGame] = useState<{ url: string, title: string, desc: string, image: string } | null>(null);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const loadGames = async () => {
     setLoading(true);
     try {
-      const res = await fetch('https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes.json');
-      if (!res.ok) throw new Error("GitHub fetch failed: " + res.status);
-      const raw = await res.json();
-      if (Array.isArray(raw)) {
-        const mapped: HydraGame[] = raw.map((g: any) => {
-          const title = g.title || "Untitled Game";
-          
-          let gameUrl = '';
-          if (g.file_name) {
-            let path = g.file_name;
-            if (!path.startsWith('gmes/')) {
-              path = 'gmes/' + path;
-            }
-            gameUrl = `https://cdn.jsdelivr.net/gh/zennedu/hydra@main/${path}`;
-          }
-
-          let imageUrl = '';
-          if (g.thumb) {
-            let path = g.thumb;
-            if (!path.startsWith('thumbs/')) {
-              path = 'thumbs/' + path;
-            }
-            imageUrl = `https://cdn.jsdelivr.net/gh/zennedu/hydra@main/${path}`;
-          }
-
-          return {
-            title,
-            url: gameUrl,
-            image: imageUrl
-          };
-        }).filter(g => g.url);
-
-        // Sort alphabetically (0-9-a-z)
-        mapped.sort((a, b) => {
-          const titleA = (a.title || "").toLowerCase();
-          const titleB = (b.title || "").toLowerCase();
-          return titleA.localeCompare(titleB, undefined, { numeric: true, sensitivity: 'base' });
-        });
-
-        setGames(mapped);
-      }
+      const sorted = [...initialDiesmosGames].sort((a, b) => 
+        (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' })
+      );
+      setGames(sorted);
     } catch (e) {
-      console.error("Failed to fetch Hydra games", e);
+      console.error("Error loading Diesmos games:", e);
     } finally {
       setLoading(false);
     }
@@ -74,67 +32,33 @@ export default function HydraGames() {
     loadGames();
   }, []);
 
-  useEffect(() => {
-    if (selectedGame && iframeRef.current) {
-      const iframe = iframeRef.current;
-      const targetUrl = selectedGame.url;
+  const formatFileName = (raw: string) => {
+    if (!raw) return '';
+    let name = raw.replace(/([a-z])([A-Z0-9])/g, '$1 $2').replace(/([0-9])([a-zA-Z])/g, '$1 $2');
+    name = name.replace(/[-_.]/g, ' ');
+    name = name.replace(/\s+/g, ' ').trim();
+    name = name.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+    return name;
+  };
 
-      const loadIframeContent = async () => {
-        try {
-          const response = await fetch(targetUrl);
-          if (response.ok) {
-            let html = await response.text();
-            const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-            const baseTag = `<base href="${baseUrl}">`;
-            
-            if (!html.includes('<base ')) {
-              if (html.includes('<head>')) {
-                html = html.replace('<head>', `<head>${baseTag}`);
-              } else if (html.includes('<html>')) {
-                html = html.replace('<html>', `<html><head>${baseTag}</head>`);
-              } else {
-                html = baseTag + html;
-              }
-            }
-            
-            const doc = iframe.contentDocument || iframe.contentWindow?.document;
-            if (doc) {
-              doc.open();
-              doc.write(html);
-              doc.close();
-              return;
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to fetch game content for inline iframe, falling back to direct src:", err);
-        }
-        
-        // Fallback: set src directly if fetch fails
-        iframe.src = targetUrl;
-      };
-
-      loadIframeContent();
-    }
-  }, [selectedGame]);
-
-  const openGame = (game: HydraGame) => {
+  const openGame = (game: any) => {
     setSelectedGame(game);
   };
 
   const filteredGames = games.filter(g => 
-    g.title.toLowerCase().includes(search.toLowerCase())
+    (g.title || g.url).toLowerCase().includes(search.toLowerCase())
   );
   const displayedGames = filteredGames.slice(0, visibleCount);
 
   return (
-    <PageLayout title="Hydra Games">
+    <PageLayout title="Diesmos Games Games">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400" />
             <input
               type="text"
-              placeholder="Search Hydra collection..."
+              placeholder="Search Diesmos Games collection..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700 focus:border-transparent transition-all"
@@ -157,7 +81,10 @@ export default function HydraGames() {
         ) : (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {displayedGames.map((g, index) => {
-              const gameId = `hydra:${g.title}`;
+              const displayName = g.title || formatFileName(g.url.split('/').pop() || g.url);
+              const imageSrc = g.image || null;
+              const gameId = `diesmos:${displayName}`;
+              
               return (
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
@@ -172,37 +99,34 @@ export default function HydraGames() {
                       e.stopPropagation();
                       toggleFavorite({
                         id: gameId,
-                        title: g.title,
+                        title: displayName,
                         url: g.url,
-                        image: g.image || '',
-                        source: 'hydra',
-                        description: `Play ${g.title} from Hydra Games.`
+                        image: imageSrc || '',
+                        source: "Diesmos Games",
+                        description: g.desc
                       });
                     }}
                     className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100"
                   >
                     <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500' : ''} />
                   </button>
-                  {g.image ? (
+                  {imageSrc ? (
                     <>
                       <img 
-                        src={g.image} 
-                        alt={g.title} 
+                        src={imageSrc} 
+                        alt={displayName} 
                         className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
                         loading="lazy"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
                       <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
-                        <p className="text-white font-medium text-xs sm:text-sm text-center leading-tight truncate">{g.title}</p>
+                        <p className="text-white font-medium text-xs sm:text-sm text-center leading-tight truncate">{displayName}</p>
                       </div>
                     </>
                   ) : (
                     <div className="h-full w-full flex items-center justify-center p-4 hover:bg-zinc-800/50">
                       <p className="text-white font-medium text-sm break-all line-clamp-3 group-hover:text-zinc-300">
-                        {g.title}
+                        {displayName}
                       </p>
                     </div>
                   )}
@@ -241,29 +165,30 @@ export default function HydraGames() {
             className="fixed inset-0 z-50 bg-black flex flex-col"
           >
             <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
-              <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedGame.title}</h3>
+              <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedGame.title || formatFileName(selectedGame.url)}</h3>
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
-                    const gameId = `hydra:${selectedGame.title}`;
+                    const displayName = selectedGame.title || formatFileName(selectedGame.url.split('/').pop() || selectedGame.url);
+                    const gameId = `diesmos:${displayName}`;
                     toggleFavorite({
                       id: gameId,
-                      title: selectedGame.title,
+                      title: displayName,
                       url: selectedGame.url,
                       image: selectedGame.image || '',
-                      source: 'hydra',
-                      description: `Play ${selectedGame.title} from Hydra Games.`
+                      source: "Diesmos Games",
+                      description: selectedGame.desc
                     });
                   }}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
-                  title={isFavorite(`hydra:${selectedGame.title}`) ? "Remove from Favorites" : "Add to Favorites"}
+                  title={isFavorite(`diesmos:${selectedGame.title || formatFileName(selectedGame.url.split('/').pop() || selectedGame.url)}`) ? "Remove from Favorites" : "Add to Favorites"}
                 >
-                  <Heart className={`w-5 h-5 ${isFavorite(`hydra:${selectedGame.title}`) ? 'fill-red-500 text-red-500' : ''}`} />
+                  <Heart className={`w-5 h-5 ${isFavorite(`diesmos:${selectedGame.title || formatFileName(selectedGame.url.split('/').pop() || selectedGame.url)}`) ? 'fill-red-500 text-red-500' : ''}`} />
                 </button>
                 <button
                   onClick={() => {
-                     const iframe = document.getElementById('hydra-iframe') as HTMLIFrameElement;
-                     if (iframe) iframe.requestFullscreen?.();
+                     const btn = document.getElementById('diesmos-iframe') as HTMLIFrameElement;
+                     if (btn) btn.requestFullscreen?.();
                   }}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                   title="Fullscreen"
@@ -281,13 +206,13 @@ export default function HydraGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <iframe
-                id="hydra-iframe"
-                ref={iframeRef}
+              <ProxyIframe
+                id="diesmos-iframe"
+                src={selectedGame.url}
                 className="w-full h-full border-none bg-black"
                 allow="autoplay; fullscreen; pointer-lock; keyboard-map"
                 allowFullScreen
-                title={selectedGame.title}
+                title={selectedGame.title || selectedGame.url}
               />
             </div>
           </motion.div>

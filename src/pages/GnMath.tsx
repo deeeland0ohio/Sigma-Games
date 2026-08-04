@@ -1,3 +1,4 @@
+import ProxyIframe from '../components/ProxyIframe';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
@@ -5,7 +6,7 @@ import PageLayout from '../components/PageLayout';
 import { useFavorites } from '../context/FavoritesContext';
 
 const COVER_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
-const HTML_BASE = "https://rawcdn.githack.com/freebuisness/html/main";
+const HTML_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/html@main";
 
 export interface Zone {
   name: string;
@@ -37,6 +38,14 @@ export default function GnMath() {
         url: z.url.replace("{HTML_URL}", HTML_BASE),
         tags: z.special || []
       }));
+      
+      // Sort alphabetically (0-9-a-z)
+      parsedZones.sort((a: any, b: any) => {
+        const nameA = (a.name || "").toLowerCase();
+        const nameB = (b.name || "").toLowerCase();
+        return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+      });
+      
       setZones(parsedZones);
       const allTags = Array.from(new Set(parsedZones.flatMap((z: Zone) => z.tags))) as string[];
       setTags(allTags);
@@ -217,7 +226,7 @@ export default function GnMath() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <iframe
+              <ProxyIframe
                 id="game-iframe"
                 src={selectedZone.url}
                 className="w-full h-full border-none bg-black"

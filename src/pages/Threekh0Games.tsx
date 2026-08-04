@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import ProxyIframe from '../components/ProxyIframe';
 import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { threekh0Games as initialThreekh0Games } from '../data/3kh0';
@@ -38,6 +39,12 @@ export default function Threekh0Games() {
             });
           
           if (gameFolders.length > 0) {
+            // Sort alphabetically (0-9-a-z) by formatted title
+            gameFolders.sort((a: any, b: any) => {
+              const nameA = formatFileName(a.title || "").toLowerCase();
+              const nameB = formatFileName(b.title || "").toLowerCase();
+              return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+            });
             setGames(gameFolders);
           }
         }
@@ -66,7 +73,7 @@ export default function Threekh0Games() {
   };
 
   const getUrl = (link: string) => {
-    return `https://raw.githack.com/3kh0/3kh0-lite/main/${link}`;
+    return `https://cdn.jsdelivr.net/gh/3kh0/3kh0-lite@main/${link}`;
   };
 
   const filteredGames = games.filter(g => 
@@ -106,7 +113,7 @@ export default function Threekh0Games() {
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             {displayedGames.map((g, index) => {
               const displayName = g.title || formatFileName(g.link.split('/')[1] || g.link);
-              const imageSrc = g.imgSrc ? `https://raw.githubusercontent.com/3kh0/3kh0-lite/main/${g.imgSrc}` : null;
+              const imageSrc = g.imgSrc ? `https://cdn.jsdelivr.net/gh/3kh0/3kh0-lite@main/${g.imgSrc}` : null;
               const gameId = `3kh0:${displayName}`;
               
               return (
@@ -195,7 +202,7 @@ export default function Threekh0Games() {
                   onClick={() => {
                     const displayName = selectedGame.title || formatFileName(selectedGame.link.split('/')[1] || selectedGame.link);
                     const gameId = `3kh0:${displayName}`;
-                    const imageSrc = (selectedGame as any).imgSrc ? `https://raw.githubusercontent.com/3kh0/3kh0-lite/main/${(selectedGame as any).imgSrc}` : null;
+                    const imageSrc = (selectedGame as any).imgSrc ? `https://cdn.jsdelivr.net/gh/3kh0/3kh0-lite@main/${(selectedGame as any).imgSrc}` : null;
                     toggleFavorite({
                       id: gameId,
                       title: displayName,
@@ -231,7 +238,7 @@ export default function Threekh0Games() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <iframe
+              <ProxyIframe
                 id="threekh0-iframe"
                 src={getUrl(selectedGame.link)}
                 className="w-full h-full border-none bg-black"

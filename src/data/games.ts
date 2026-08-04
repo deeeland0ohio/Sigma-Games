@@ -71,7 +71,14 @@ export const games: Game[] = [
   {
     id: 'hydra',
     title: 'Hydra Games',
-    description: "Browse the Hydra Games collection of games.",
+    description: "Browse the Hydra Games collection of 164 games.",
+    icon: Box,
+    type: 'folder',
+  },
+  {
+    id: 'diesmos',
+    title: 'Diesmos Games',
+    description: "Browse the Diesmos Games collection of 1039 games.",
     icon: Box,
     type: 'folder',
   },
