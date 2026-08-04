@@ -5,18 +5,14 @@
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <title>Sigma Static SVG</title>
-        
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet" />
-        
+
         <script>
           // <![CDATA[
-          // Compatibility shims for standalone SVG rendering (fixes Tailwind CDN, Lucide, etc. in SVG document context)
+          // 1. Shims must run FIRST
           if (!document.head) {
             Object.defineProperty(document, 'head', {
               get: function() {
-                return document.querySelector('head') || document.getElementsByTagName('head')[0];
+                return document.querySelector('head') || document.getElementsByTagName('head')[0] || document.documentElement.querySelector('head');
               },
               configurable: true
             });
@@ -24,13 +20,24 @@
           if (!document.body) {
             Object.defineProperty(document, 'body', {
               get: function() {
-                return document.querySelector('body') || document.getElementsByTagName('body')[0];
+                return document.querySelector('body') || document.getElementsByTagName('body')[0] || document.documentElement.querySelector('body');
               },
               configurable: true
             });
           }
+
+          // Override document.createElement to ensure HTML elements are created with the proper namespace in SVG documents
+          const _origCreateElement = document.createElement;
+          document.createElement = function(tagName, options) {
+            const htmlTags = ['style', 'div', 'span', 'script', 'link', 'meta', 'iframe', 'a', 'p', 'img', 'button', 'input', 'label', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ul', 'ol', 'li', 'canvas'];
+            if (htmlTags.includes(tagName.toLowerCase())) {
+              return document.createElementNS('http://www.w3.org/1999/xhtml', tagName);
+            }
+            return _origCreateElement.call(document, tagName, options);
+          };
           // ]]>
         </script>
+
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
           // <![CDATA[
@@ -48,11 +55,15 @@
                 }
               }
             }
-          }
+          };
           // ]]>
         </script>
-        
+
         <script src="https://unpkg.com/lucide@latest"></script>
+        
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet" />
 
         <style>
           /* <![CDATA[ */
@@ -397,17 +408,10 @@
             </div>
           </div>
         </div>
-
         <script>
-        // <![CDATA[
-        document.addEventListener("DOMContentLoaded", () => {
-
-          const originalCreateElement = document.createElement.bind(document);
-          document.createElement = function(tagName, options) {
-            return document.createElementNS("http://www.w3.org/1999/xhtml", tagName);
-          };
-
-          const COVER_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
+          // <![CDATA[
+          function initApp() {
+            const COVER_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
           const HTML_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/html@main";
 
           let currentView = "home"; 
@@ -1394,10 +1398,16 @@
           startTerminalBoot();
 
           lucide.createIcons();
-        });
+        }
+
+        if (document.readyState === "complete" || document.readyState === "interactive") {
+          initApp();
+        } else {
+          document.addEventListener("DOMContentLoaded", initApp);
+        }
         // ]]>
-        </script>
-      </body>
-    </html>
-  </foreignObject>
+      </script>
+    </body>
+  </html>
+</foreignObject>
 </svg>
