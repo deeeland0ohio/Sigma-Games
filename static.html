@@ -28,7 +28,7 @@
     }
   </script>
   
-  <script src="https://unpkg.com/lucide@latest"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js"></script>
 
   <style>
     ::-webkit-scrollbar {
@@ -356,7 +356,7 @@
   </div>
 
   <script>
-  document.addEventListener("DOMContentLoaded", () => {
+  function initApp() {
 
     const COVER_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
     const HTML_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/html@main";
@@ -1349,8 +1349,16 @@
     initDotBackground();
     startTerminalBoot();
 
-    lucide.createIcons();
-  });
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initApp);
+  } else {
+    initApp();
+  }
   </script>
 </body>
 </html>
