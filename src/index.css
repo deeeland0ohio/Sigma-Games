@@ -24,3 +24,15 @@ body {
   background-color: #09090b; /* zinc-950 */
   color: #d4d4d8; /* zinc-300 */
 }
+
+/* Neon glow effects matching the OG design */
+.glow-green {
+  color: #00ff88 !important;
+  text-shadow: 0 0 6px rgba(0, 255, 136, 0.6), 0 0 15px rgba(0, 255, 136, 0.3);
+}
+
+.glow-red {
+  color: #ff4a4a !important;
+  text-shadow: 0 0 6px rgba(255, 74, 74, 0.6), 0 0 15px rgba(255, 74, 74, 0.3);
+}
+

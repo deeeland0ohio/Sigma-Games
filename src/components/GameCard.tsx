@@ -18,11 +18,16 @@ export default function GameCard({ game, to }: GameCardProps) {
   const [showWarning, setShowWarning] = useState(false);
 
   const Icon = game.icon;
-  const targetPath = to || `/play/${game.id}`;
+  let defaultPath = `/play/${game.id}`;
+  if (game.type === 'folder') {
+    if (game.id === 'all-games') defaultPath = '/our-games';
+    else defaultPath = `/${game.id}`;
+  }
+  const targetPath = to || defaultPath;
   const favorited = isFavorite(game.id);
 
   const handleClick = (e: React.MouseEvent) => {
-    if ((game.id === 'hollow-knight-silksong' || game.id === 'repo' || game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr') && !showWarning) {
+    if ((game.id === 'hollow-knight-silksong' || game.id === 'repo' || game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos') && !showWarning) {
       e.preventDefault();
       setShowWarning(true);
     }
@@ -74,12 +79,12 @@ export default function GameCard({ game, to }: GameCardProps) {
             </div>
             <h2 className="text-xl font-bold text-white mb-2">
               {game.id === 'repo' ? 'Loading' : 
-               (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr') ? 'Notice' : 'Warning!'}
+               (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos') ? 'Notice' : 'Warning!'}
             </h2>
             <p className="text-zinc-400 mb-6">
               {game.id === 'repo' 
                 ? "If you see a black screen for a long time, don't worry it's just loading." 
-                : (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr')
+                : (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos')
                 ? "These aren't hosted on my site, some games here might not work. And there might be ads."
                 : "This Game needs at least  4GB of ram to play! Your school Chromebook probably doesn't have that."}
             </p>

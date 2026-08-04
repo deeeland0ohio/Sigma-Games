@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import ProxyIframe from '../components/ProxyIframe';
 import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { seraphGames as initialSeraphGames } from '../data/seraph';
@@ -26,11 +27,17 @@ export default function SeraphGames() {
               const id = node.path.replace('games/', '');
               return { 
                 id, 
-                image: `https://raw.githubusercontent.com/a456pur/seraph/main/images/thumbnails/${id}.jpg`
+                image: `https://cdn.jsdelivr.net/gh/a456pur/seraph@main/images/thumbnails/${id}.jpg`
               };
             });
           
           if (gameFolders.length > 0) {
+            // Sort alphabetically (0-9-a-z) by formatted title
+            gameFolders.sort((a: any, b: any) => {
+              const nameA = formatFileName(a.id).toLowerCase();
+              const nameB = formatFileName(b.id).toLowerCase();
+              return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+            });
             setGames(gameFolders);
           }
         }
@@ -59,7 +66,7 @@ export default function SeraphGames() {
   };
 
   const getUrl = (file: string) => {
-    return `https://raw.githack.com/a456pur/seraph/main/games/${file}/index.html`;
+    return `https://cdn.jsdelivr.net/gh/a456pur/seraph@main/games/${file}/index.html`;
   };
 
   const filteredFiles = games.filter(f => f.id.toLowerCase().includes(search.toLowerCase()));
@@ -221,7 +228,7 @@ export default function SeraphGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <iframe
+              <ProxyIframe
                 id="seraph-iframe"
                 src={getUrl(selectedFile)}
                 className="w-full h-full border-none bg-black"

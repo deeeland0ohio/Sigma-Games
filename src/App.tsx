@@ -18,6 +18,7 @@ import Threekh0Games from './pages/Threekh0Games';
 import NoahGames from './pages/NoahGames';
 import AlexrGames from './pages/AlexrGames';
 import HydraGames from './pages/HydraGames';
+import DiesmosGames from './pages/DiesmosGames';
 import ExternalPlayer from './pages/ExternalPlayer';
 import NotFound from './pages/NotFound';
 import Entertainment from './pages/Entertainment';
@@ -65,6 +66,7 @@ export default function App() {
               <Route path="/noah" element={<NoahGames />} />
               <Route path="/alexr" element={<AlexrGames />} />
               <Route path="/hydra" element={<HydraGames />} />
+                <Route path="/diesmos" element={<DiesmosGames />} />
               <Route path="/entertainment" element={<Entertainment />} />
               <Route path="/external-player" element={<ExternalPlayer />} />
               <Route path="*" element={<NotFound />} />

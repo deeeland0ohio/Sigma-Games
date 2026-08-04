@@ -1,0 +1,1371 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xhtml="http://www.w3.org/1999/xhtml" width="100%" height="100%">
+  <foreignObject width="100%" height="100%">
+    <html xmlns="http://www.w3.org/1999/xhtml" lang="en" style="width: 100%; height: 100%; margin: 0; padding: 0;">
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sigma Static SVG</title>
+        
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet" />
+        
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+          // <![CDATA[
+          tailwind.config = {
+            theme: {
+              extend: {
+                fontFamily: {
+                  sans: ["Inter", "ui-sans-serif", "system-ui", "-apple-system", "sans-serif"],
+                  mono: ["JetBrains Mono", "ui-monospace", "SFMono-Regular", "monospace"],
+                },
+                colors: {
+                  zinc: {
+                    950: '#09090b',
+                  }
+                }
+              }
+            }
+          }
+          // ]]>
+        </script>
+        
+        <script src="https://unpkg.com/lucide@latest"></script>
+
+        <style>
+          /* <![CDATA[ */
+          ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+          }
+          ::-webkit-scrollbar-track {
+            background: #09090b;
+          }
+          ::-webkit-scrollbar-thumb {
+            background: #27272a;
+            border-radius: 5px;
+            border: 2px solid #09090b;
+          }
+          ::-webkit-scrollbar-thumb:hover {
+            background: #3f3f46;
+          }
+          
+          body {
+            background-color: #09090b;
+            color: #d4d4d8;
+            overflow-x: hidden;
+          }
+
+          @keyframes blink {
+            50% { opacity: 0; }
+          }
+          .cursor-blink {
+            animation: blink 1s step-end infinite;
+          }
+          
+          .glow-green {
+            color: #00ff88 !important;
+            text-shadow: 0 0 1.8px rgba(0, 255, 136, 0.18), 0 0 4.5px rgba(0, 255, 136, 0.09);
+          }
+          .glow-red {
+            color: #ff4a4a !important;
+            text-shadow: 0 0 1.8px rgba(255, 74, 74, 0.18), 0 0 4.5px rgba(255, 74, 74, 0.09);
+          }
+          /* ]]> */
+        </style>
+      </head>
+      <body class="font-sans min-h-screen relative flex flex-col selection:bg-red-500/30 selection:text-white" style="width: 100%; height: 100%; margin: 0; padding: 0; overflow-y: auto;">
+
+        <canvas id="bg-canvas" class="fixed inset-0 -z-10 pointer-events-none bg-[#09090b]"></canvas>
+
+        <header class="h-20 border-b border-white/[0.08] backdrop-blur-md sticky top-0 z-40 bg-zinc-950/25 flex items-center px-6 justify-between select-none">
+          <div class="flex items-center gap-2 cursor-pointer font-mono font-bold text-xl tracking-tight hover:opacity-80 transition-opacity" id="header-logo-container">
+            <i data-lucide="terminal" class="w-6 h-6 text-emerald-500"></i>
+            <span class="text-red-500 select-none">Sigma_Games</span>
+            <span class="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-400 border border-zinc-700/50 rounded-full font-mono font-medium ml-1">
+              STATIC
+            </span>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <a href="https://github.com/deeeland0ohio" target="_blank" rel="noopener noreferrer" class="p-2 text-zinc-400 hover:text-emerald-500 hover:bg-zinc-800 rounded-lg transition-colors" title="View GitHub Profile">
+              <i data-lucide="github" class="w-5 h-5"></i>
+            </a>
+            <button id="credits-trigger-btn" class="p-2 text-zinc-400 hover:text-emerald-500 hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer" title="Show Credits">
+              <i data-lucide="info" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </header>
+
+        <main class="flex-1 w-full max-w-6xl mx-auto px-6 py-4 md:py-6 relative">
+          
+          <div id="home-view" class="space-y-12 block">
+            
+            <section class="bg-black border border-zinc-800 rounded-xl p-6 font-mono text-sm md:text-base shadow-2xl shadow-red-500/10">
+              <div class="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-4 text-zinc-500 select-none">
+                <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                <span class="w-3 h-3 rounded-full bg-yellow-500"></span>
+                <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                <span class="ml-2 text-xs uppercase tracking-widest text-zinc-500 font-sans font-semibold">Accessing sigma static...</span>
+              </div>
+              
+              <div class="min-h-[140px] text-sm md:text-base text-emerald-400 font-mono space-y-2" id="terminal-text-area">
+              </div>
+            </section>
+
+            <section id="games" class="space-y-8">
+              <div class="flex items-center justify-between border-b border-zinc-800 pb-4 select-none">
+                <h2 class="text-2xl font-bold text-white tracking-tight uppercase">OPTIONS</h2>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 select-none" id="collections-grid">
+                <div data-collection="gn-math" class="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-red-500 hover:shadow-[0_0_15px_rgba(239,68,68,0.2)] hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden cursor-pointer">
+                  <div class="absolute inset-0 bg-gradient-to-br from-red-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-red-500 group-hover:scale-110 group-hover:text-red-400 group-hover:border-red-500/50 transition-all duration-300 z-10">
+                    <i data-lucide="folder" class="w-6 h-6"></i>
+                  </div>
+                  <div class="relative z-10 w-full">
+                    <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-red-400 transition-colors duration-300">GN-Math</h3>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the GN-Math collection of 818 games.</p>
+                  </div>
+                </div>
+
+                <div data-collection="ugs" class="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-blue-500 hover:shadow-[0_0_15px_rgba(59,130,246,0.2)] hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden cursor-pointer">
+                  <div class="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-blue-500 group-hover:scale-110 group-hover:text-blue-400 group-hover:border-blue-500/50 transition-all duration-300 z-10">
+                    <i data-lucide="folder" class="w-6 h-6"></i>
+                  </div>
+                  <div class="relative z-10 w-full">
+                    <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-blue-400 transition-colors duration-300">UGS Games</h3>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the Ultimate Game Stash collection of 2932 games.</p>
+                  </div>
+                </div>
+
+                <div data-collection="seraph" class="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-purple-500 hover:shadow-[0_0_15px_rgba(168,85,247,0.2)] hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden cursor-pointer">
+                  <div class="absolute inset-0 bg-gradient-to-br from-purple-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-purple-500 group-hover:scale-110 group-hover:text-purple-400 group-hover:border-purple-500/50 transition-all duration-300 z-10">
+                    <i data-lucide="folder" class="w-6 h-6"></i>
+                  </div>
+                  <div class="relative z-10 w-full">
+                    <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-purple-400 transition-colors duration-300">Seraph Games</h3>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the Seraph collection of 494 games.</p>
+                  </div>
+                </div>
+
+                <div data-collection="3kh0" class="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-teal-500 hover:shadow-[0_0_15px_rgba(20,184,166,0.2)] hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden cursor-pointer">
+                  <div class="absolute inset-0 bg-gradient-to-br from-teal-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-teal-500 group-hover:scale-110 group-hover:text-teal-400 group-hover:border-teal-500/50 transition-all duration-300 z-10">
+                    <i data-lucide="folder" class="w-6 h-6"></i>
+                  </div>
+                  <div class="relative z-10 w-full">
+                    <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-teal-400 transition-colors duration-300">3kh0 Games</h3>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the 3kh0 collection of 145 games.</p>
+                  </div>
+                </div>
+
+                <div data-collection="noah" class="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-orange-500 hover:shadow-[0_0_15px_rgba(249,115,22,0.2)] hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden cursor-pointer">
+                  <div class="absolute inset-0 bg-gradient-to-br from-orange-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-orange-500 group-hover:scale-110 group-hover:text-orange-400 group-hover:border-orange-500/50 transition-all duration-300 z-10">
+                    <i data-lucide="folder" class="w-6 h-6"></i>
+                  </div>
+                  <div class="relative z-10 w-full">
+                    <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-orange-400 transition-colors duration-300">Noah's Hub</h3>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the Noah's Hub collection of 416 games.</p>
+                  </div>
+                </div>
+
+                <div data-collection="alexr" class="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-zinc-500 hover:shadow-[0_0_15px_rgba(113,113,122,0.2)] hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden cursor-pointer">
+                  <div class="absolute inset-0 bg-gradient-to-br from-zinc-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-zinc-400 group-hover:scale-110 group-hover:text-zinc-300 group-hover:border-zinc-500/50 transition-all duration-300 z-10">
+                    <i data-lucide="folder" class="w-6 h-6"></i>
+                  </div>
+                  <div class="relative z-10 w-full">
+                    <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-zinc-300 transition-colors duration-300">Alexr Games</h3>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the Alexr Games collection of 676 games.</p>
+                  </div>
+                </div>
+
+                <div data-collection="hydra" class="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-cyan-500 hover:shadow-[0_0_15px_rgba(6,182,212,0.2)] hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden cursor-pointer">
+                  <div class="absolute inset-0 bg-gradient-to-br from-cyan-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-cyan-500 group-hover:scale-110 group-hover:text-cyan-400 group-hover:border-cyan-500/50 transition-all duration-300 z-10">
+                    <i data-lucide="folder" class="w-6 h-6"></i>
+                  </div>
+                  <div class="relative z-10 w-full">
+                    <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-cyan-400 transition-colors duration-300">Hydra Games</h3>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the Hydra Games collection of 164 games.</p>
+                  </div>
+                </div>
+
+                <div data-collection="diesmos" class="group relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 hover:border-indigo-500 hover:shadow-[0_0_15px_rgba(99,102,241,0.2)] hover:bg-zinc-800/50 transition-all duration-300 flex flex-col items-start gap-4 overflow-hidden cursor-pointer">
+                  <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  <div class="p-3 bg-zinc-950 rounded-xl border border-zinc-800 text-indigo-500 group-hover:scale-110 group-hover:text-indigo-400 group-hover:border-indigo-500/50 transition-all duration-300 z-10">
+                    <i data-lucide="folder" class="w-6 h-6"></i>
+                  </div>
+                  <div class="relative z-10 w-full">
+                    <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-indigo-400 transition-colors duration-300">Diesmos Games</h3>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the Diesmos Games collection of 1039 games.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+          </div>
+
+          <div id="collection-view" class="space-y-6 hidden">
+
+            <div class="border-b border-zinc-800 pb-5 flex items-center justify-between">
+              <div>
+                <h1 id="collection-title" class="text-3xl font-bold tracking-tight text-white uppercase select-none">Collection Name</h1>
+                <p id="collection-description" class="text-zinc-500 mt-2">Description text goes here.</p>
+              </div>
+              <button id="collection-back-btn" class="px-4 py-2.5 bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 rounded-xl text-zinc-300 hover:text-white font-medium transition-all text-sm select-none cursor-pointer flex items-center gap-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                Back
+              </button>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-4 items-center justify-between">
+              <div class="relative flex-1 w-full max-w-md">
+                <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-zinc-400"></i>
+                <input
+                  id="collection-search-input"
+                  type="text"
+                  placeholder="Search collection..."
+                  class="w-full bg-zinc-900 border border-zinc-800 rounded-lg pl-10 pr-4 py-3 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-700 focus:border-transparent transition-all text-sm"
+                />
+              </div>
+              
+              <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto items-center">
+                <select 
+                  id="collection-filter-select" 
+                  class="hidden w-full sm:w-auto bg-zinc-900 border border-zinc-800 rounded-lg px-4 py-3 text-white focus:outline-none focus:ring-2 focus:ring-zinc-700 focus:border-transparent transition-all text-sm min-w-[150px] cursor-pointer"
+                >
+                  <option value="">All Tags</option>
+                </select>
+                
+                <button id="collection-refresh-btn" class="w-full sm:w-auto px-4 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700 flex items-center justify-center gap-2 select-none text-sm cursor-pointer">
+                  <i data-lucide="refresh-cw" class="w-4 h-4 text-white" id="refresh-icon"></i>
+                  Refresh
+                </button>
+              </div>
+            </div>
+
+            <div id="collection-loader" class="hidden flex items-center justify-center py-20 select-none">
+              <i data-lucide="loader-2" class="w-8 h-8 animate-spin text-zinc-500"></i>
+            </div>
+
+            <div id="collection-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            </div>
+
+            <div id="collection-empty" class="hidden flex flex-col items-center justify-center py-20 text-zinc-500 text-center select-none">
+              <div class="p-4 bg-zinc-900/50 rounded-full border border-zinc-800/50 mb-4 text-zinc-600">
+                <i data-lucide="package-open" class="w-10 h-10"></i>
+              </div>
+              <p class="text-lg font-medium text-zinc-400">No games found.</p>
+              <p class="text-sm mt-1">Try resetting or modifying your search filter query.</p>
+            </div>
+
+            <div id="load-more-container" class="hidden flex justify-center mt-6">
+              <button id="load-more-btn" class="px-6 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700 cursor-pointer text-sm">
+                Load More Games
+              </button>
+            </div>
+          </div>
+
+        </main>
+
+        <footer class="border-t border-white/[0.08] py-6 text-center text-xs text-zinc-600 mt-auto select-none">
+          <p>Sigma Games, Static Version.</p>
+        </footer>
+
+        <div id="game-player-view" class="fixed inset-0 z-50 bg-black flex flex-col hidden">
+          <div class="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800 select-none h-14">
+            <h3 id="player-title" class="text-white font-medium pl-2 truncate flex-1 text-sm sm:text-base">Game Title</h3>
+            <div class="flex items-center gap-2">
+              <button id="player-reload-btn" class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer" title="Reload Frame">
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              </button>
+              <button id="player-fullscreen-btn" class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer" title="Fullscreen Mode">
+                <i data-lucide="maximize" class="w-4 h-4"></i>
+              </button>
+              <button id="player-close-btn" class="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer" title="Close and Return to List">
+                <i data-lucide="x" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="flex-1 w-full bg-black relative">
+            <iframe id="player-iframe" class="w-full h-full border-none bg-black" allow="autoplay; fullscreen; pointer-lock; keyboard-map" allowfullscreen="true"></iframe>
+          </div>
+        </div>
+
+        <div id="credits-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center hidden">
+          <div class="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 max-w-md w-full relative shadow-2xl flex flex-col gap-6">
+            <button id="credits-close-btn" class="absolute top-4 right-4 text-zinc-500 hover:text-white transition-colors cursor-pointer">
+              <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <h2 class="text-2xl font-bold text-white flex items-center gap-3 tracking-tight select-none">
+              <i data-lucide="info" class="w-6 h-6 glow-green"></i>
+              Credits
+            </h2>
+
+            <div class="bg-[#0b0c0e]/80 border border-zinc-800/60 rounded-xl p-5 text-sm leading-relaxed flex flex-col gap-4 font-sans">
+              <p class="text-zinc-300">
+                <span class="text-zinc-500">Games:</span>
+                <span class="text-red-500 font-medium">
+                  <a href="https://www.gn-math.dev/" target="_blank" rel="noopener noreferrer" class="hover:underline">GN-Math</a>,
+                  <a href="https://docs.google.com/document/d/1_FmH3BlSBQI7FGgAQL59-ZPe8eCxs35wel6JUyVaG8Q/edit?tab=t.0" target="_blank" rel="noopener noreferrer" class="hover:underline">UGS</a>,
+                  <a href="https://github.com/a456pur/seraph" target="_blank" rel="noopener noreferrer" class="hover:underline">Seraph</a>,
+                  <a href="https://truffled.lol/" target="_blank" rel="noopener noreferrer" class="hover:underline">Truffled</a>,
+                  <a href="https://3kh0.net/" target="_blank" rel="noopener noreferrer" class="hover:underline">3kh0</a>,
+                  <a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" class="hover:underline">Noah's Hub</a>,
+                  <a href="https://dskjfoisjfsjio.github.io/" target="_blank" rel="noopener noreferrer" class="hover:underline">Alexr</a>,
+                  <a href="https://discord.gg/bgVhCQS9e" target="_blank" rel="noopener noreferrer" class="hover:underline">Diesmos Games</a>, and
+                  <a href="https://github.com/NOTAHACKER9999" target="_blank" rel="noopener noreferrer" class="hover:underline">Glitch</a>
+                </span>
+              </p>
+              <p class="text-zinc-300">
+                <span class="text-zinc-500">Website:</span>
+                <span class="glow-green font-medium">All aspects of the website are my ideas, although it is coded by Gemini</span>
+              </p>
+              <p class="text-zinc-300">
+                <span class="text-zinc-500">Inspiration:</span>
+                <span class="text-orange-500 font-medium">
+                  <a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" class="hover:underline">Noah's Tutoring Hub</a>
+                </span>
+              </p>
+            </div>
+
+            <button id="credits-footer-close-btn" class="w-full py-3 bg-[#27272a]/80 hover:bg-[#3f3f46]/80 text-white rounded-xl font-medium transition-all text-sm cursor-pointer">
+              Close
+            </button>
+          </div>
+        </div>
+
+        <div id="warning-modal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm p-4 flex items-center justify-center hidden">
+          <div class="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-6 max-w-md w-full shadow-2xl flex flex-col items-center text-center gap-4">
+            <div class="w-12 h-12 rounded-full bg-red-500/10 text-red-500 flex items-center justify-center border border-red-500/20">
+              <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+            </div>
+            
+            <h2 class="text-xl font-bold text-white select-none">Notice</h2>
+            <p class="text-sm text-zinc-400 leading-relaxed">
+              These aren't hosted on my site, some games here might not work. And there might be ads.
+            </p>
+            
+            <div class="flex gap-3 w-full mt-2">
+              <button id="warning-cancel-btn" class="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 rounded-xl font-medium transition-all text-sm">
+                Cancel
+              </button>
+              <button id="warning-confirm-btn" class="flex-1 py-3 bg-red-500 hover:bg-red-600 text-white rounded-xl font-semibold transition-all text-sm">
+                I Understand
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <script>
+        // <![CDATA[
+        document.addEventListener("DOMContentLoaded", () => {
+
+          const originalCreateElement = document.createElement.bind(document);
+          document.createElement = function(tagName, options) {
+            return document.createElementNS("http://www.w3.org/1999/xhtml", tagName);
+          };
+
+          const COVER_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
+          const HTML_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/html@main";
+
+          let currentView = "home"; 
+          let activeCollection = null;
+          let allGames = [];
+          let filteredGames = [];
+          let visibleCount = 100;
+          let activeCategories = [];
+          let currentNoticeCallback = null;
+
+          const homeView = document.getElementById("home-view");
+          const collectionView = document.getElementById("collection-view");
+          const gamePlayerView = document.getElementById("game-player-view");
+
+          const terminalTextArea = document.getElementById("terminal-text-area");
+
+          const collectionTitle = document.getElementById("collection-title");
+          const collectionDesc = document.getElementById("collection-description");
+          const collectionGrid = document.getElementById("collection-grid");
+          const collectionLoader = document.getElementById("collection-loader");
+          const collectionEmpty = document.getElementById("collection-empty");
+          const collectionSearch = document.getElementById("collection-search-input");
+          const collectionFilterSelect = document.getElementById("collection-filter-select");
+          const collectionRefreshBtn = document.getElementById("collection-refresh-btn");
+          const refreshIcon = document.getElementById("refresh-icon");
+          const collectionBackBtn = document.getElementById("collection-back-btn");
+
+          const loadMoreContainer = document.getElementById("load-more-container");
+          const loadMoreBtn = document.getElementById("load-more-btn");
+
+          const playerIframe = document.getElementById("player-iframe");
+          const playerTitle = document.getElementById("player-title");
+          const playerCloseBtn = document.getElementById("player-close-btn");
+          const playerReloadBtn = document.getElementById("player-reload-btn");
+          const playerFullscreenBtn = document.getElementById("player-fullscreen-btn");
+
+          const creditsTriggerBtn = document.getElementById("credits-trigger-btn");
+          const creditsModal = document.getElementById("credits-modal");
+          const creditsCloseBtn = document.getElementById("credits-close-btn");
+          const creditsFooterCloseBtn = document.getElementById("credits-footer-close-btn");
+
+          const warningModal = document.getElementById("warning-modal");
+          const warningCancelBtn = document.getElementById("warning-cancel-btn");
+          const warningConfirmBtn = document.getElementById("warning-confirm-btn");
+
+          const collectionsGrid = document.getElementById("collections-grid");
+          const headerLogoContainer = document.getElementById("header-logo-container");
+
+          function initDotBackground() {
+            const canvas = document.getElementById("bg-canvas");
+            if (!canvas) return;
+            const ctx = canvas.getContext("2d");
+            if (!ctx) return;
+
+            let width = window.innerWidth;
+            let height = window.innerHeight;
+            let dpr = window.devicePixelRatio || 1;
+
+            canvas.style.width = width + "px";
+            canvas.style.height = height + "px";
+            canvas.width = Math.floor(width * dpr);
+            canvas.height = Math.floor(height * dpr);
+            ctx.scale(dpr, dpr);
+
+            let mouse = { x: -1000, y: -1000 };
+            const shockwaves = [];
+
+            const config = {
+              speed: 40,   
+              size: 2,     
+              density: 35  
+            };
+            const power = 0.8; 
+
+            const color1 = "rgba(239, 68, 68, 0.4)";    
+            const color2 = "rgba(16, 185, 129, 0.4)";   
+            const color3 = "rgba(239, 68, 68, 0.4)";    
+            const color4 = "rgba(16, 185, 129, 0.4)";   
+
+            const dots = [];
+
+            function handleMouseMove(e) {
+              mouse.x = e.clientX;
+              mouse.y = e.clientY;
+            }
+
+            function handleMouseLeave() {
+              mouse.x = -1000;
+              mouse.y = -1000;
+            }
+
+            function handleCanvasClick(e) {
+              if (e.target && e.target.closest("button, a, input, select, option, [role='button']")) {
+                return;
+              }
+              shockwaves.push({
+                x: e.clientX,
+                y: e.clientY,
+                radius: 0,
+                maxRadius: Math.max(width, height) * 0.5 * power,
+                speed: 20 * Math.sqrt(power),
+                force: 10 * power
+              });
+            }
+
+            window.addEventListener("mousemove", handleMouseMove);
+            window.addEventListener("mouseout", handleMouseLeave);
+            window.addEventListener("click", handleCanvasClick);
+
+            function initDots() {
+              dots.length = 0;
+              width = window.innerWidth;
+              height = window.innerHeight;
+              dpr = window.devicePixelRatio || 1;
+
+              canvas.style.width = width + "px";
+              canvas.style.height = height + "px";
+              canvas.width = Math.floor(width * dpr);
+              canvas.height = Math.floor(height * dpr);
+              ctx.scale(dpr, dpr);
+
+              const spacing = config.density;
+              const palette = [color1, color2];
+
+              for (let x = 0; x < width + spacing; x += spacing) {
+                for (let y = 0; y < height + spacing; y += spacing) {
+                  const color = palette[Math.floor(Math.random() * palette.length)];
+                  dots.push({
+                    x, y,
+                    baseX: x, baseY: y,
+                    vx: 0, vy: 0,
+                    color
+                  });
+                }
+              }
+            }
+
+            initDots();
+            window.addEventListener("resize", initDots);
+
+            function parseToRgba(colorStr, alpha) {
+              if (!colorStr) return "rgba(255, 255, 255, " + alpha + ")";
+              colorStr = colorStr.trim();
+
+              if (colorStr.startsWith("rgba")) {
+                const match = colorStr.match(/rgba?\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+                if (match) {
+                  return "rgba(" + match[1] + ", " + match[2] + ", " + match[3] + ", " + alpha + ")";
+                }
+              }
+
+              if (colorStr.startsWith("rgb")) {
+                const match = colorStr.match(/rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+                if (match) {
+                  return "rgba(" + match[1] + ", " + match[2] + ", " + match[3] + ", " + alpha + ")";
+                }
+              }
+
+              if (colorStr.startsWith("#")) {
+                let hex = colorStr.slice(1);
+                if (hex.length === 3) {
+                  hex = hex.split("").map(char => char + char).join("");
+                }
+                if (hex.length === 6) {
+                  const r = parseInt(hex.slice(0, 2), 16);
+                  const g = parseInt(hex.slice(2, 4), 16);
+                  const b = parseInt(hex.slice(4, 6), 16);
+                  return "rgba(" + r + ", " + g + ", " + b + ", " + alpha + ")";
+                }
+              }
+
+              return colorStr;
+            }
+
+            function animate() {
+              const stepSpeed = config.speed / 1000;
+              ctx.clearRect(0, 0, width, height);
+
+              const driftTime = Date.now() * 0.0000195;
+
+              const bx1 = width * 0.25 + Math.sin(driftTime * 0.5) * width * 0.15;
+              const by1 = height * 0.25 + Math.cos(driftTime * 0.4) * height * 0.15;
+              const r1 = Math.max(width, height) * 0.5;
+
+              const bx2 = width * 0.75 + Math.sin(driftTime * -0.4) * width * 0.15;
+              const by2 = height * 0.75 + Math.cos(driftTime * 0.5) * height * 0.15;
+              const r2 = Math.max(width, height) * 0.5;
+
+              const bx3 = width * 0.7 + Math.sin(driftTime * 0.6) * width * 0.15;
+              const by3 = height * 0.3 + Math.cos(driftTime * -0.5) * height * 0.15;
+              const r3 = Math.max(width, height) * 0.45;
+
+              const bx4 = width * 0.3 + Math.sin(driftTime * -0.6) * width * 0.15;
+              const by4 = height * 0.7 + Math.cos(driftTime * 0.4) * height * 0.15;
+              const r4 = Math.max(width, height) * 0.5;
+
+              function drawBlob(cx, cy, radius, col, maxAlpha) {
+                if (radius <= 0) return;
+                const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+                gradient.addColorStop(0, parseToRgba(col, maxAlpha));
+                gradient.addColorStop(0.5, parseToRgba(col, maxAlpha * 0.4));
+                gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                ctx.fill();
+              }
+
+              drawBlob(bx1, by1, r1, color1, 0.065);
+              drawBlob(bx2, by2, r2, color2, 0.055);
+              drawBlob(bx3, by3, r3, color3 || color1, 0.06);
+              drawBlob(bx4, by4, r4, color4 || color2, 0.055);
+
+              ctx.beginPath();
+              ctx.strokeStyle = "rgba(255, 255, 255, 0.02)";
+              ctx.lineWidth = 0.4;
+              for (let x = 0; x < width; x += config.density) {
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+              }
+              for (let y = 0; y < height; y += config.density) {
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+              }
+              ctx.stroke();
+
+              for (let j = shockwaves.length - 1; j >= 0; j--) {
+                const sw = shockwaves[j];
+                sw.radius += sw.speed;
+                if (sw.radius >= sw.maxRadius) {
+                  shockwaves.splice(j, 1);
+                }
+              }
+
+              const maxDistance = 120 * Math.sqrt(power);
+              const brightnessRadius = 150 * Math.sqrt(power);
+              const baseRadius = config.size;
+
+              for (let i = 0; i < dots.length; i++) {
+                const dot = dots[i];
+
+                const dx = mouse.x - dot.x;
+                const dy = mouse.y - dot.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                if (distance < maxDistance && distance > 0) {
+                  const force = (maxDistance - distance) / maxDistance;
+                  const angle = Math.atan2(dy, dx);
+                  dot.vx -= Math.cos(angle) * force * 1.5 * power;
+                  dot.vy -= Math.sin(angle) * force * 1.5 * power;
+                }
+
+                for (let j = 0; j < shockwaves.length; j++) {
+                  const sw = shockwaves[j];
+                  const sdx = dot.x - sw.x;
+                  const sdy = dot.y - sw.y;
+                  const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+                  const ringThickness = 30;
+
+                  if (Math.abs(sdist - sw.radius) < ringThickness) {
+                    const forceMult = (ringThickness - Math.abs(sdist - sw.radius)) / ringThickness;
+                    const angle = Math.atan2(sdy, sdx);
+                    dot.vx += Math.cos(angle) * sw.force * forceMult;
+                    dot.vy += Math.sin(angle) * sw.force * forceMult;
+                  }
+                }
+
+                const swayVal = Date.now() * 0.0008;
+                const swayX = Math.sin(swayVal + dot.baseX * 0.01) * 6.0;
+                const swayY = Math.cos(swayVal + dot.baseY * 0.01) * 6.0;
+
+                dot.vx += (dot.baseX + swayX - dot.x) * stepSpeed;
+                dot.vy += (dot.baseY + swayY - dot.y) * stepSpeed;
+
+                dot.vx *= 0.82;
+                dot.vy *= 0.82;
+
+                dot.x += dot.vx;
+                dot.y += dot.vy;
+              }
+
+              ctx.fillStyle = color1;
+              ctx.beginPath();
+              for (let i = 0; i < dots.length; i++) {
+                const dot = dots[i];
+                if (dot.color !== color1) continue;
+
+                const dx = mouse.x - dot.x;
+                const dy = mouse.y - dot.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                let active = distance < brightnessRadius;
+                if (!active) {
+                  for (let j = 0; j < shockwaves.length; j++) {
+                    const sw = shockwaves[j];
+                    const sdx = dot.x - sw.x;
+                    const sdy = dot.y - sw.y;
+                    const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+                    if (Math.abs(sdist - sw.radius) < 40) {
+                      active = true;
+                      break;
+                    }
+                  }
+                }
+
+                if (!active) {
+                  ctx.moveTo(dot.x + baseRadius, dot.y);
+                  ctx.arc(dot.x, dot.y, baseRadius, 0, Math.PI * 2);
+                }
+              }
+              ctx.fill();
+
+              ctx.fillStyle = color2;
+              ctx.beginPath();
+              for (let i = 0; i < dots.length; i++) {
+                const dot = dots[i];
+                if (dot.color === color1) continue;
+
+                const dx = mouse.x - dot.x;
+                const dy = mouse.y - dot.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                let active = distance < brightnessRadius;
+                if (!active) {
+                  for (let j = 0; j < shockwaves.length; j++) {
+                    const sw = shockwaves[j];
+                    const sdx = dot.x - sw.x;
+                    const sdy = dot.y - sw.y;
+                    const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+                    if (Math.abs(sdist - sw.radius) < 40) {
+                      active = true;
+                      break;
+                    }
+                  }
+                }
+
+                if (!active) {
+                  ctx.moveTo(dot.x + baseRadius, dot.y);
+                  ctx.arc(dot.x, dot.y, baseRadius, 0, Math.PI * 2);
+                }
+              }
+              ctx.fill();
+
+              for (let i = 0; i < dots.length; i++) {
+                const dot = dots[i];
+                const dx = mouse.x - dot.x;
+                const dy = mouse.y - dot.y;
+                const distance = Math.sqrt(dx * dx + dy * dy);
+
+                let brightness = 1;
+                let scale = 1;
+                if (distance < brightnessRadius) {
+                  const influence = 1 - distance / brightnessRadius;
+                  brightness = 1 + influence * 2;
+                  scale = 1 + influence * 0.5;
+                }
+
+                for (let j = 0; j < shockwaves.length; j++) {
+                  const sw = shockwaves[j];
+                  const sdx = dot.x - sw.x;
+                  const sdy = dot.y - sw.y;
+                  const sdist = Math.sqrt(sdx * sdx + sdy * sdy);
+                  const ringThickness = 40;
+                  if (Math.abs(sdist - sw.radius) < ringThickness) {
+                    const brightMult = (ringThickness - Math.abs(sdist - sw.radius)) / ringThickness;
+                    const fadeOut = Math.max(0, 1 - (sw.radius / sw.maxRadius));
+                    brightness = Math.max(brightness, 1 + brightMult * 2.5 * fadeOut);
+                    scale = Math.max(scale, 1 + brightMult * 0.75 * fadeOut);
+                  }
+                }
+
+                if (brightness > 1) {
+                  const r = baseRadius * scale;
+                  const opacity = Math.min(1.0, 0.45 * brightness);
+
+                  ctx.beginPath();
+                  ctx.arc(dot.x, dot.y, r, 0, Math.PI * 2);
+                  ctx.fillStyle = parseToRgba(dot.color, opacity);
+                  ctx.fill();
+                }
+              }
+
+              requestAnimationFrame(animate);
+            }
+
+            animate();
+          }
+
+          function startTerminalBoot() {
+            const lines = [
+              { text: "</ SYSTEM STARTING", class: "glow-green font-bold font-mono" },
+              { text: "</ WELCOME TO SIGMA GAMES!", class: "glow-green font-bold font-mono" },
+              { text: "</ LOADING...", class: "glow-green font-bold font-mono" },
+              { text: "</ AURA INCREASING...", class: "glow-green font-bold font-mono" },
+              { text: "</ DONE! :]", class: "glow-green font-bold font-mono" }
+            ];
+
+            terminalTextArea.innerHTML = "";
+            let lineIdx = 0;
+
+            function renderLine() {
+              if (lineIdx < lines.length) {
+                const line = lines[lineIdx];
+                const lineElem = document.createElement("div");
+                lineElem.className = line.class + " opacity-0 transition-opacity duration-300";
+                lineElem.textContent = line.text;
+                terminalTextArea.appendChild(lineElem);
+
+                setTimeout(() => {
+                  lineElem.classList.remove("opacity-0");
+                }, 50);
+
+                lineIdx++;
+                setTimeout(renderLine, 400 + Math.random() * 200);
+              } else {
+                const promptElem = document.createElement("div");
+                promptElem.className = "flex items-start group relative mt-2 text-zinc-500 font-bold select-none";
+                promptElem.innerHTML = "<span class=\"mr-2\">&gt;</span><div class=\"w-2 h-5 bg-[#ff4a4a] cursor-blink shadow-[0_0_5px_rgba(255,74,74,0.6)] rounded-sm\"></div>";
+                terminalTextArea.appendChild(promptElem);
+              }
+            }
+
+            setTimeout(renderLine, 150);
+          }
+
+          function getJsDelivrUrl(url) {
+            try {
+              const urlObj = new URL(url);
+              if (urlObj.hostname === "raw.githubusercontent.com" || urlObj.hostname === "raw.githack.com" || urlObj.hostname === "rawcdn.githack.com") {
+                let pathParts = urlObj.pathname.split("/").filter(Boolean);
+                if (pathParts[2] === "refs" && pathParts[3] === "heads") {
+                  pathParts.splice(2, 2);
+                }
+                if (pathParts.length >= 4) {
+                  const user = pathParts[0];
+                  const repo = pathParts[1];
+                  const branch = pathParts[2];
+                  const filePath = pathParts.slice(3).join("/");
+                  return "https://cdn.jsdelivr.net/gh/" + user + "/" + repo + "@" + branch + "/" + filePath;
+                }
+              }
+            } catch (e) {}
+            return url;
+          }
+
+          function cleanGameUrl(url) {
+            let cleaned = getJsDelivrUrl(url);
+            cleaned = cleaned.replace(
+              /(https?:\/\/(?:testingcf|fastly|cdn)\.jsdelivr\.net\/gh\/aDiesmos\/([a-zA-Z0-9_-]+))@[a-zA-Z0-9_.-]+(\/|$)/g,
+              "$1@main$3"
+            );
+            return cleaned;
+          }
+
+          async function loadProxyIframe(iframe, src) {
+            const targetUrl = cleanGameUrl(src);
+            try {
+              let response = await fetch(targetUrl);
+              if (!response.ok) {
+                response = await fetch("/api/evasion-proxy?url=" + encodeURIComponent(targetUrl));
+              }
+              if (response.ok) {
+                let html = await response.text();
+
+                html = html.replace(
+                  /(https?:\/\/(?:testingcf|fastly|cdn)\.jsdelivr\.net\/gh\/aDiesmos\/([a-zA-Z0-9_-]+))@[a-zA-Z0-9_.-]+(\/|$)/g,
+                  "$1@main$3"
+                );
+
+                html = html.replace(/<script[^>]*src="[^"]*arc\.io[^"]*"[^>]*><\/script>/gi, "<!-- stripped arc.io -->");
+                html = html.replace(/<script[^>]*src="[^"]*googletagmanager\.com[^"]*"[^>]*><\/script>/gi, "<!-- stripped analytics manager -->");
+                html = html.replace(/gtag\s*\([^)]*\);?/gi, "");
+                html = html.replace(/src=["']\/js\/main\.js["']/gi, "src=\"data:text/javascript,console.log('main.js bypassed')\"");
+
+                const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf("/") + 1);
+                const baseTag = "<base href=\"" + baseUrl + "\">";
+
+                if (!html.includes("<base ")) {
+                  if (html.includes("<head>")) {
+                    html = html.replace("<head>", "<head>\n" + baseTag);
+                  } else if (html.includes("<html>")) {
+                    html = html.replace("<html>", "<html>\n<head>\n" + baseTag + "\n</head>");
+                  } else {
+                    html = baseTag + "\n" + html;
+                  }
+                }
+
+                const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (doc) {
+                  doc.open();
+                  doc.write(html);
+                  doc.close();
+                  return;
+                }
+              }
+            } catch (e) {
+              console.warn("Proxy fallback fetch failed, trying evasion proxy:", e);
+              try {
+                const proxyResponse = await fetch("/api/evasion-proxy?url=" + encodeURIComponent(targetUrl));
+                if (proxyResponse.ok) {
+                  let html = await proxyResponse.text();
+
+                  html = html.replace(
+                    /(https?:\/\/(?:testingcf|fastly|cdn)\.jsdelivr\.net\/gh\/aDiesmos\/([a-zA-Z0-9_-]+))@[a-zA-Z0-9_.-]+(\/|$)/g,
+                    "$1@main$3"
+                  );
+
+                  html = html.replace(/<script[^>]*src="[^"]*arc\.io[^"]*"[^>]*><\/script>/gi, "<!-- stripped arc.io -->");
+                  html = html.replace(/<script[^>]*src="[^"]*googletagmanager\.com[^"]*"[^>]*><\/script>/gi, "<!-- stripped analytics manager -->");
+                  html = html.replace(/gtag\s*\([^)]*\);?/gi, "");
+                  html = html.replace(/src=["']\/js\/main\.js["']/gi, "src=\"data:text/javascript,console.log('main.js bypassed')\"");
+
+                  const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf("/") + 1);
+                  const baseTag = "<base href=\"" + baseUrl + "\">";
+
+                  if (!html.includes("<base ")) {
+                    if (html.includes("<head>")) {
+                      html = html.replace("<head>", "<head>\n" + baseTag);
+                    } else if (html.includes("<html>")) {
+                      html = html.replace("<html>", "<html>\n<head>\n" + baseTag + "\n</head>");
+                    } else {
+                      html = baseTag + "\n" + html;
+                    }
+                  }
+
+                  const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                  if (doc) {
+                    doc.open();
+                    doc.write(html);
+                    doc.close();
+                    return;
+                  }
+                }
+              } catch (proxyErr) {
+                console.warn("Evasion proxy failed, falling back to direct src:", proxyErr);
+              }
+            }
+            iframe.src = targetUrl;
+          }
+
+          const CollectionLoaders = {
+            "gn-math": async () => {
+              const res = await fetch("https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json");
+              const raw = await res.json();
+              const parsed = raw.slice(1).map(z => ({
+                title: z.name,
+                cover: z.cover.replace("{COVER_URL}", COVER_BASE),
+                url: z.url.replace("{HTML_URL}", HTML_BASE),
+                tags: z.special || []
+              }));
+
+              const tags = Array.from(new Set(parsed.flatMap(g => g.tags)));
+              activeCategories = tags.sort();
+              return parsed;
+            },
+
+            "ugs": async () => {
+              const res = await fetch("https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js");
+              const text = await res.text();
+              const match = text.match(/let files = \[(.*?)\];/s);
+              if (!match) return [];
+
+              const arrayText = "[" + match[1] + "]";
+              const stringMatches = [...arrayText.matchAll(/"([^"]+)"|'([^']+)'/g)];
+              const files = stringMatches.map(m => m[1] || m[2]).filter(f => f !== "?");
+
+              function formatFileName(raw) {
+                let name = raw.replace(/^cl/i, "");
+                name = name.replace(/([a-z])([A-Z0-9])/g, "$1 $2").replace(/([0-9])([a-zA-Z])/g, "$1 $2");
+                name = name.replace(/[-_.]/g, " ");
+                name = name.replace(/\s+/g, " ").trim();
+                name = name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+                return name;
+              }
+
+              function getUrl(file) {
+                const normalized = file.includes(".") ? file : file + ".html";
+                return "https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/" + encodeURIComponent(normalized);
+              }
+
+              activeCategories = []; 
+              return files.map(f => ({
+                title: formatFileName(f),
+                url: getUrl(f),
+                cover: null,
+                tags: []
+              }));
+            },
+
+            "seraph": async () => {
+              const res = await fetch("https://api.github.com/repos/a456pur/seraph/git/trees/main?recursive=1");
+              const data = await res.json();
+              if (!data || !data.tree) return [];
+
+              const filtered = data.tree.filter(n => n.path.startsWith("games/") && n.path.split("/").length === 2 && n.type === "tree");
+
+              function formatName(id) {
+                let name = id.replace(/([a-z])([A-Z0-9])/g, "$1 $2").replace(/([0-9])([a-zA-Z])/g, "$1 $2");
+                name = name.replace(/[-_.]/g, " ");
+                name = name.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(" ");
+                return name;
+              }
+
+              activeCategories = [];
+              return filtered.map(node => {
+                const id = node.path.replace("games/", "");
+                return {
+                  title: formatName(id),
+                  url: "https://cdn.jsdelivr.net/gh/a456pur/seraph@main/games/" + id + "/index.html",
+                  cover: "https://cdn.jsdelivr.net/gh/a456pur/seraph@main/images/thumbnails/" + id + ".jpg",
+                  tags: []
+                };
+              });
+            },
+
+            "3kh0": async () => {
+              const res = await fetch("https://api.github.com/repos/3kh0/3kh0-lite/git/trees/main?recursive=1");
+              const data = await res.json();
+              if (!data || !data.tree) return [];
+
+              const filtered = data.tree.filter(n => n.path.startsWith("projects/") && n.path.split("/").length === 2 && n.type === "tree");
+
+              activeCategories = [];
+              return filtered.map(node => {
+                const id = node.path.replace("projects/", "");
+                const imageNode = data.tree.find(n => n.path.startsWith("projects/" + id + "/") && (n.path.endsWith(".png") || n.path.endsWith(".jpg")));
+
+                return {
+                  title: id.replace(/-/g, " ").toUpperCase(),
+                  url: "https://cdn.jsdelivr.net/gh/3kh0/3kh0-lite@main/projects/" + id + "/index.html",
+                  cover: imageNode ? "https://cdn.jsdelivr.net/gh/3kh0/3kh0-lite@main/" + imageNode.path : "https://cdn.jsdelivr.net/gh/3kh0/3kh0-lite@main/projects/" + id + "/meta/apple-touch-icon.png",
+                  tags: []
+                };
+              });
+            },
+
+            "noah": async () => {
+              const res = await fetch("https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games.js");
+              const text = await res.text();
+              const fnText = text.replace(/const games\s*=/, "return");
+              const gamesArray = (new Function(fnText))();
+
+              if (!Array.isArray(gamesArray)) return [];
+
+              activeCategories = [];
+              return gamesArray.map(g => ({
+                title: g.title,
+                url: g.url.replace("/refs/heads/master/", "/master/").replace("raw.githubusercontent.com", "raw.githack.com"),
+                cover: g.image,
+                tags: []
+              })).sort((a,b) => a.title.localeCompare(b.title));
+            },
+
+            "alexr": async () => {
+              const res = await fetch("https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/singlefilegames.json");
+              const list = await res.json();
+              if (!Array.isArray(list)) return [];
+
+              const parsed = list.filter(g => g.title !== "Alexr Code Editor" && !g.path.includes("codeeditor.html"));
+
+              const cats = Array.from(new Set(parsed.map(g => g.category).filter(Boolean)));
+              activeCategories = cats.sort();
+
+              return parsed.map(g => ({
+                title: g.title,
+                url: g.path,
+                cover: g.img,
+                tags: g.category ? [g.category] : []
+              }));
+            },
+
+            "hydra": async () => {
+              const res = await fetch("https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes.json");
+              const list = await res.json();
+              if (!Array.isArray(list)) return [];
+
+              activeCategories = [];
+              return list.map(g => {
+                let gameUrl = "";
+                if (g.file_name) {
+                  let path = g.file_name.startsWith("gmes/") ? g.file_name : "gmes/" + g.file_name;
+                  gameUrl = "https://cdn.jsdelivr.net/gh/zennedu/hydra@main/" + path;
+                }
+                let imageUrl = "";
+                if (g.thumb) {
+                  let path = g.thumb.startsWith("thumbs/") ? g.thumb : "thumbs/" + g.thumb;
+                  imageUrl = "https://cdn.jsdelivr.net/gh/zennedu/hydra@main/" + path;
+                }
+                return {
+                  title: g.title || "Untitled Game",
+                  url: gameUrl,
+                  cover: imageUrl,
+                  tags: []
+                };
+              }).filter(g => g.url);
+            },
+
+            "diesmos": async () => {
+              const res = await fetch("/api/diesmos-games");
+              const list = await res.json();
+              if (!Array.isArray(list)) return [];
+
+              activeCategories = [];
+              return list.map(g => ({
+                title: g.title,
+                url: g.url,
+                cover: g.image,
+                tags: []
+              }));
+            }
+          };
+
+          const CollectionMetadata = {
+            "gn-math": { title: "GN-Math", desc: "Browse the GN-Math collection of 818 games." },
+            "ugs": { title: "UGS Games Stash", desc: "Browse the Ultimate Game Stash collection of 2932 games." },
+            "seraph": { title: "Seraph Games", desc: "Browse the Seraph collection of 494 games." },
+            "3kh0": { title: "3kh0 Games", desc: "Browse the 3kh0 collection of 145 games." },
+            "noah": { title: "Noah's Hub", desc: "Browse the Noah's Hub collection of 416 games." },
+            "alexr": { title: "Alexr Games", desc: "Browse the Alexr Games collection of 676 games." },
+            "hydra": { title: "Hydra Games Stash", desc: "Browse the Hydra Games collection of 164 games." },
+            "diesmos": { title: "Diesmos Games", desc: "Browse the Diesmos Games collection of 1039 games." }
+          };
+
+          function renderGameGrid() {
+            collectionGrid.innerHTML = "";
+
+            if (filteredGames.length === 0) {
+              collectionEmpty.classList.remove("hidden");
+              loadMoreContainer.classList.add("hidden");
+              return;
+            }
+
+            collectionEmpty.classList.add("hidden");
+            const displayed = filteredGames.slice(0, visibleCount);
+
+            const hoverColorMap = {
+              "gn-math": "hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.15)]",
+              "ugs": "hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.15)]",
+              "seraph": "hover:border-purple-500/50 hover:shadow-[0_0_15px_rgba(168,85,247,0.15)]",
+              "3kh0": "hover:border-teal-500/50 hover:shadow-[0_0_15px_rgba(20,184,166,0.15)]",
+              "noah": "hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.15)]",
+              "alexr": "hover:border-zinc-500/50 hover:shadow-[0_0_15px_rgba(113,113,122,0.15)]",
+              "hydra": "hover:border-cyan-500/50 hover:shadow-[0_0_15px_rgba(6,182,212,0.15)]",
+              "diesmos": "hover:border-indigo-500/50 hover:shadow-[0_0_15px_rgba(99,102,241,0.15)]"
+            };
+            const hoverClass = hoverColorMap[activeCollection] || "hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.15)]";
+
+            displayed.forEach((g, index) => {
+              const card = document.createElement("div");
+              card.className = "group relative aspect-square overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800 " + hoverClass + " transition-all cursor-pointer flex flex-col justify-end p-3";
+
+              if (g.cover) {
+                card.innerHTML = "<img src=\"" + g.cover + "\" alt=\"" + g.title + "\" class=\"absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110\" loading=\"lazy\" referrerPolicy=\"no-referrer\" />" +
+                  "<div class=\"absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300\"></div>" +
+                  "<div class=\"absolute inset-x-0 bottom-0 p-3 translate-y-2 group-hover:translate-y-0 transition-all duration-300 pointer-events-none\">" +
+                    "<p class=\"text-white font-medium text-xs sm:text-sm text-center leading-tight truncate\">" + g.title + "</p>" +
+                  "</div>";
+              } else {
+                const iconColorMap = {
+                  "gn-math": "group-hover:text-red-400 group-hover:border-red-500/20",
+                  "ugs": "group-hover:text-blue-400 group-hover:border-blue-500/20",
+                  "seraph": "group-hover:text-purple-400 group-hover:border-purple-500/20",
+                  "3kh0": "group-hover:text-teal-400 group-hover:border-teal-500/20",
+                  "noah": "group-hover:text-orange-400 group-hover:border-orange-500/20",
+                  "alexr": "group-hover:text-zinc-400 group-hover:border-zinc-500/20",
+                  "hydra": "group-hover:text-cyan-400 group-hover:border-cyan-500/20",
+                  "diesmos": "group-hover:text-indigo-400 group-hover:border-indigo-500/20"
+                };
+                const iconClass = iconColorMap[activeCollection] || "group-hover:text-red-400 group-hover:border-red-500/20";
+                card.innerHTML = "<div class=\"absolute inset-0 flex flex-col items-center justify-center p-4 hover:bg-zinc-800/20 text-center\">" +
+                    "<div class=\"p-2.5 bg-zinc-950 rounded-xl border border-zinc-800 text-zinc-500 group-hover:scale-115 transition-all mb-2 " + iconClass + "\">" +
+                      "<i data-lucide=\"box\" class=\"w-5 h-5\"></i>" +
+                    "</div>" +
+                    "<p class=\"text-zinc-300 font-medium text-xs sm:text-sm leading-snug line-clamp-3\">" + g.title + "</p>" +
+                  "</div>";
+              }
+
+              card.addEventListener("click", () => {
+                openGamePlayer(g);
+              });
+
+              collectionGrid.appendChild(card);
+            });
+
+            lucide.createIcons();
+
+            if (visibleCount < filteredGames.length) {
+              loadMoreContainer.classList.remove("hidden");
+              loadMoreBtn.textContent = "Load More (" + (filteredGames.length - visibleCount) + " Remaining)";
+            } else {
+              loadMoreContainer.classList.add("hidden");
+            }
+          }
+
+          function applyFilters() {
+            const searchVal = collectionSearch.value.toLowerCase().trim();
+            const filterVal = collectionFilterSelect.value;
+
+            filteredGames = allGames.filter(g => {
+              const matchesSearch = g.title.toLowerCase().includes(searchVal);
+              const matchesFilter = filterVal ? g.tags.includes(filterVal) : true;
+              return matchesSearch && matchesFilter;
+            });
+
+            visibleCount = 100;
+            renderGameGrid();
+          }
+
+          async function loadCollection(id) {
+            activeCollection = id;
+            const meta = CollectionMetadata[id];
+
+            collectionTitle.textContent = meta.title;
+            collectionDesc.textContent = meta.desc;
+
+            collectionSearch.value = "";
+            collectionFilterSelect.value = "";
+            collectionFilterSelect.classList.add("hidden");
+
+            homeView.classList.add("hidden");
+            collectionView.classList.remove("hidden");
+            collectionLoader.classList.remove("hidden");
+            collectionGrid.innerHTML = "";
+            loadMoreContainer.classList.add("hidden");
+            collectionEmpty.classList.add("hidden");
+
+            try {
+              refreshIcon.classList.add("animate-spin");
+
+              const fetchFn = CollectionLoaders[id];
+              if (fetchFn) {
+                const rawGames = await fetchFn();
+                allGames = (rawGames || []).filter(g => {
+                  if (!g || !g.title) return false;
+                  const t = g.title.toLowerCase().trim();
+                  return t !== "comments" && t !== "comment" && !t.includes("comments") && !t.includes("comment") && t !== "" && t !== "?";
+                });
+
+                allGames.sort((a, b) => {
+                  const titleA = (a.title || "").toString().toLowerCase();
+                  const titleB = (b.title || "").toString().toLowerCase();
+                  return titleA.localeCompare(titleB, undefined, { numeric: true, sensitivity: "base" });
+                });
+
+                filteredGames = [...allGames];
+
+                if (activeCategories && activeCategories.length > 0) {
+                  collectionFilterSelect.innerHTML = "<option value=\"\">All Categories</option>";
+                  activeCategories.forEach(cat => {
+                    const opt = document.createElement("option");
+                    opt.value = cat;
+                    opt.textContent = cat;
+                    collectionFilterSelect.appendChild(opt);
+                  });
+                  collectionFilterSelect.classList.remove("hidden");
+                }
+
+                renderGameGrid();
+              }
+            } catch (e) {
+              console.error("Failed to load collection list", e);
+              collectionEmpty.classList.remove("hidden");
+            } finally {
+              collectionLoader.classList.add("hidden");
+              refreshIcon.classList.remove("animate-spin");
+            }
+          }
+
+          function openGamePlayer(game) {
+            playerTitle.textContent = game.title;
+            playerIframe.src = "about:blank"; 
+
+            collectionView.classList.add("hidden");
+            gamePlayerView.classList.remove("hidden");
+            gamePlayerView.classList.add("flex");
+
+            loadProxyIframe(playerIframe, game.url);
+          }
+
+          function closeGamePlayer() {
+            playerIframe.src = "about:blank";
+            gamePlayerView.classList.remove("flex");
+            gamePlayerView.classList.add("hidden");
+            collectionView.classList.remove("hidden");
+          }
+
+          if (collectionBackBtn) {
+            collectionBackBtn.addEventListener("click", () => {
+              collectionView.classList.add("hidden");
+              homeView.classList.remove("hidden");
+              activeCollection = null;
+              allGames = [];
+              filteredGames = [];
+            });
+          }
+
+          collectionSearch.addEventListener("input", applyFilters);
+          collectionFilterSelect.addEventListener("change", applyFilters);
+
+          collectionRefreshBtn.addEventListener("click", () => {
+            if (activeCollection) {
+              loadCollection(activeCollection);
+            }
+          });
+
+          loadMoreBtn.addEventListener("click", () => {
+            visibleCount += 100;
+            renderGameGrid();
+          });
+
+          playerCloseBtn.addEventListener("click", closeGamePlayer);
+
+          playerReloadBtn.addEventListener("click", () => {
+            playerIframe.contentWindow.location.reload();
+          });
+
+          playerFullscreenBtn.addEventListener("click", () => {
+            if (playerIframe.requestFullscreen) {
+              playerIframe.requestFullscreen();
+            } else if (playerIframe.webkitRequestFullscreen) {
+              playerIframe.webkitRequestFullscreen();
+            } else if (playerIframe.msRequestFullscreen) {
+              playerIframe.msRequestFullscreen();
+            }
+          });
+
+          warningCancelBtn.addEventListener("click", () => {
+            warningModal.classList.add("hidden");
+            currentNoticeCallback = null;
+          });
+
+          warningConfirmBtn.addEventListener("click", () => {
+            warningModal.classList.add("hidden");
+            if (currentNoticeCallback) {
+              currentNoticeCallback();
+              currentNoticeCallback = null;
+            }
+          });
+
+          collectionsGrid.addEventListener("click", (e) => {
+            const card = e.target.closest("[data-collection]");
+            if (!card) return;
+
+            const colId = card.getAttribute("data-collection");
+
+            currentNoticeCallback = () => {
+              loadCollection(colId);
+            };
+            warningModal.classList.remove("hidden");
+          });
+
+          creditsTriggerBtn.addEventListener("click", () => {
+            creditsModal.classList.remove("hidden");
+          });
+
+          creditsCloseBtn.addEventListener("click", () => {
+            creditsModal.classList.add("hidden");
+          });
+
+          creditsFooterCloseBtn.addEventListener("click", () => {
+            creditsModal.classList.add("hidden");
+          });
+
+          creditsModal.addEventListener("click", (e) => {
+            if (e.target === creditsModal) {
+              creditsModal.classList.add("hidden");
+            }
+          });
+
+          headerLogoContainer.addEventListener("click", () => {
+            gamePlayerView.classList.remove("flex");
+            gamePlayerView.classList.add("hidden");
+            collectionView.classList.add("hidden");
+            homeView.classList.remove("hidden");
+          });
+
+          window.addEventListener("beforeunload", (e) => {
+            e.preventDefault();
+            e.returnValue = "Are you sure you want to close this page? Any unsaved progress or changes may be lost.";
+            return "Are you sure you want to close this page? Any unsaved progress or changes may be lost.";
+          });
+
+          initDotBackground();
+          startTerminalBoot();
+
+          lucide.createIcons();
+        });
+        // ]]>
+        </script>
+      </body>
+    </html>
+  </foreignObject>
+</svg>

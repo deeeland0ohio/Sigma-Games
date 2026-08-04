@@ -1,3 +1,4 @@
+import ProxyIframe from '../components/ProxyIframe';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
@@ -23,6 +24,14 @@ export default function UgsFiles() {
         const arrayText = `[${match[1]}]`;
         const stringMatches = [...arrayText.matchAll(/"([^"]+)"|'([^']+)'/g)];
         const parsedFiles = stringMatches.map(m => m[1] || m[2]).filter(f => f !== '?');
+        
+        // Sort alphabetically (0-9-a-z) by their formatted names
+        parsedFiles.sort((a, b) => {
+          const nameA = formatFileName(a).toLowerCase();
+          const nameB = formatFileName(b).toLowerCase();
+          return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
+        });
+        
         setFiles(parsedFiles);
       }
     } catch (e) {
@@ -55,7 +64,7 @@ export default function UgsFiles() {
       return name + ".html";
     };
     const normalized = normalizeFileName(file);
-    return `https://raw.githack.com/bubbls/ugs-singlefile/main/UGS-Files/${encodeURIComponent(normalized)}`;
+    return `https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/UGS-Files/${encodeURIComponent(normalized)}`;
   };
 
   const filteredFiles = files.filter(f => f.toLowerCase().includes(search.toLowerCase()));
@@ -197,7 +206,7 @@ export default function UgsFiles() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <iframe
+              <ProxyIframe
                 id="ugs-iframe"
                 src={getUrl(selectedFile)}
                 className="w-full h-full border-none bg-black"

@@ -2,7 +2,9 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import compression from "compression";
 import path from "path";
+import fs from "fs";
 import * as Ably from "ably";
+import { diesmosGames } from "./src/data/diesmos";
 
 async function startServer() {
   const app = express();
@@ -385,9 +387,91 @@ async function startServer() {
     }
   });
 
+  // API endpoint for Diesmos Games to support the static site unblocked loader
+  app.get("/api/diesmos-games", (req, res) => {
+    res.json(diesmosGames);
+  });
+
+  // Intercept game HTML to inject localStorage mock to prevent crashes in blob:null
+  app.get("/games/*/index.html", async (req, res, next) => {
+    try {
+      // Decode the URL path to handle any spaces or special characters
+      const filePath = path.join(process.cwd(), 'public', decodeURIComponent(req.path));
+      if (fs.existsSync(filePath)) {
+        let html = await fs.promises.readFile(filePath, 'utf-8');
+        const mockScript = `<script>
+          (function() {
+            var mem = {};
+            var sessionMem = {};
+            try {
+              window.localStorage.getItem('test');
+            } catch(e) {
+              try {
+                Object.defineProperty(window, 'localStorage', {
+                  value: {
+                    getItem: function(k) { return mem[k] || null; },
+                    setItem: function(k, v) { mem[k] = v; },
+                    removeItem: function(k) { delete mem[k]; },
+                    clear: function() { mem = {}; },
+                    key: function(i) { return Object.keys(mem)[i] || null; },
+                    get length() { return Object.keys(mem).length; }
+                  },
+                  writable: true
+                });
+                Object.defineProperty(window, 'sessionStorage', {
+                  value: {
+                    getItem: function(k) { return sessionMem[k] || null; },
+                    setItem: function(k, v) { sessionMem[k] = v; },
+                    removeItem: function(k) { delete sessionMem[k]; },
+                    clear: function() { sessionMem = {}; },
+                    key: function(i) { return Object.keys(sessionMem)[i] || null; },
+                    get length() { return Object.keys(sessionMem).length; }
+                  },
+                  writable: true
+                });
+              } catch(err) {}
+            }
+          })();
+        </script>`;
+        
+        if (html.includes('<head>')) {
+          html = html.replace('<head>', '<head>\\n' + mockScript);
+        } else {
+          html = mockScript + html;
+        }
+        
+        res.setHeader('Content-Type', 'text/html');
+        res.send(html);
+        return;
+      }
+    } catch(err) {
+      console.error(err);
+    }
+    next();
+  });
+
+  // Serve static.html and static.svg directly from workspace root
+  app.get("/static.html", (req, res) => {
+    res.sendFile(path.join(process.cwd(), "static.html"));
+  });
+
+  app.get("/static.svg", (req, res) => {
+    res.sendFile(path.join(process.cwd(), "static.svg"));
+  });
+
+  // Keep compatibility for /sigmastatic
+  app.get("/sigmastatic", (req, res) => {
+    res.sendFile(path.join(process.cwd(), "static.html"));
+  });
+
   // Serve public directory directly for maximum speed on local games
   // This bypasses Vite's processing for large static HTML files
   app.use(express.static(path.join(process.cwd(), 'public')));
+  
+  // Prevent missing local game assets from hitting Vite middleware and crashing the server
+  app.use('/games', (req, res) => {
+    res.status(404).send('Game asset not found');
+  });
 
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({

@@ -303,18 +303,14 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
         ctx.beginPath();
         ctx.arc(dot.x, dot.y, size * scale, 0, Math.PI * 2);
         
-        // Apply brightness to color
+        // Apply opacity brightness based on proximity/shockwaves
+        let alpha = 0.45;
         if (brightness > 1) {
-          ctx.fillStyle = dot.color.replace('0.4', (0.4 * brightness).toString());
-          ctx.shadowBlur = 10 * (brightness - 1);
-          ctx.shadowColor = dot.color;
-        } else {
-          ctx.fillStyle = dot.color;
-          ctx.shadowBlur = 0;
+          alpha = Math.min(1.0, 0.45 * brightness);
         }
+        ctx.fillStyle = parseToRgba(dot.color, alpha);
         
         ctx.fill();
-        ctx.shadowBlur = 0; // Reset for next dot
       }
       
       animationFrameId = requestAnimationFrame(animate);

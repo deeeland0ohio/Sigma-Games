@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import ProxyIframe from '../components/ProxyIframe';
 import { Search, X, Maximize, Box, Heart, Loader2, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { noahGames as initialNoahGames } from '../data/noah';
@@ -16,7 +17,7 @@ export default function NoahGames() {
   const loadGames = async () => {
     setLoading(true);
     try {
-      let res = await fetch('https://raw.githubusercontent.com/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor/master/games.js')
+      let res = await fetch('https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games.js')
         .catch(() => fetch('https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games.js'));
       
       if (!res.ok) {
@@ -227,7 +228,7 @@ export default function NoahGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <iframe
+              <ProxyIframe
                 id="noah-iframe"
                 src={selectedGame.url.replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com')}
                 className="w-full h-full border-none bg-black"

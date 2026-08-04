@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
+import ProxyIframe from '../components/ProxyIframe';
 import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { alexrGames as initialAlexrGames } from '../data/alexr';
@@ -14,20 +15,6 @@ export interface AlexrGame {
   iframe?: boolean;
 }
 
-const getRunnableUrl = (url: string) => {
-  if (!url) return url;
-  if (url.includes('cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/')) {
-    return url.replace('cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/', 'raw.githack.com/dskjfoisjfsjio/alexrsworld/main/');
-  }
-  if (url.includes('raw.githubusercontent.com/dskjfoisjfsjio/alexrsworld/refs/heads/main/')) {
-    return url.replace('raw.githubusercontent.com/dskjfoisjfsjio/alexrsworld/refs/heads/main/', 'raw.githack.com/dskjfoisjfsjio/alexrsworld/main/');
-  }
-  if (url.includes('raw.githubusercontent.com/dskjfoisjfsjio/alexrsworld/main/')) {
-    return url.replace('raw.githubusercontent.com/dskjfoisjfsjio/alexrsworld/main/', 'raw.githack.com/dskjfoisjfsjio/alexrsworld/main/');
-  }
-  return url;
-};
-
 export default function AlexrGames() {
   const [games, setGames] = useState<AlexrGame[]>(() => {
     // Exclude Code Editor on initial mount if present in backup dataset
@@ -36,7 +23,7 @@ export default function AlexrGames() {
       g.path !== "https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Apps/codeeditor.html"
     ).map(g => ({
       ...g,
-      path: getRunnableUrl(g.path)
+      path: g.path
     }));
   });
   const [loading, setLoading] = useState(true);
@@ -52,7 +39,7 @@ export default function AlexrGames() {
   const loadGames = async () => {
     setLoading(true);
     try {
-      const res = await fetch("https://raw.githubusercontent.com/dskjfoisjfsjio/alexrsworld/refs/heads/main/singlefilegames.json");
+      const res = await fetch("https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/singlefilegames.json");
       if (res.ok) {
         const raw = await res.json() as AlexrGame[];
         if (Array.isArray(raw)) {
@@ -62,8 +49,16 @@ export default function AlexrGames() {
             g.path !== "https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Apps/codeeditor.html"
           ).map(g => ({
             ...g,
-            path: getRunnableUrl(g.path)
+            path: g.path
           }));
+          
+          // Sort alphabetically (0-9-a-z)
+          parsed.sort((a, b) => {
+            const titleA = (a.title || "").toLowerCase();
+            const titleB = (b.title || "").toLowerCase();
+            return titleA.localeCompare(titleB, undefined, { numeric: true, sensitivity: 'base' });
+          });
+          
           setGames(parsed);
           const allCats = Array.from(new Set(parsed.map((g: AlexrGame) => g.category).filter(Boolean))) as string[];
           setCategories(allCats);
@@ -278,7 +273,7 @@ export default function AlexrGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <iframe
+              <ProxyIframe
                 id="alexr-game-iframe"
                 key={reloadKey}
                 src={selectedGame.path}

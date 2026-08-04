@@ -1,3 +1,4 @@
+import ProxyIframe from '../components/ProxyIframe';
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -66,7 +67,7 @@ export default function ExternalPlayer() {
         </div>
         
         <div className="flex-1 w-full bg-black relative overflow-hidden">
-          <iframe
+          <ProxyIframe
             id="external-iframe"
             src={url}
             className="w-full h-full border-none bg-black block"

@@ -22,7 +22,7 @@ export default function HydraGames() {
   const loadGames = async () => {
     setLoading(true);
     try {
-      const res = await fetch('https://raw.githubusercontent.com/zennedu/hydra/main/gmes.json');
+      const res = await fetch('https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes.json');
       if (!res.ok) throw new Error("GitHub fetch failed: " + res.status);
       const raw = await res.json();
       if (Array.isArray(raw)) {
@@ -53,6 +53,13 @@ export default function HydraGames() {
             image: imageUrl
           };
         }).filter(g => g.url);
+
+        // Sort alphabetically (0-9-a-z)
+        mapped.sort((a, b) => {
+          const titleA = (a.title || "").toLowerCase();
+          const titleB = (b.title || "").toLowerCase();
+          return titleA.localeCompare(titleB, undefined, { numeric: true, sensitivity: 'base' });
+        });
 
         setGames(mapped);
       }

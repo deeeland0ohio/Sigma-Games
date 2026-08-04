@@ -194,29 +194,26 @@ export function SettingsContent() {
         </div>
         <button
           onClick={() => {
-            storage.setItem('app-theme', 'red-green');
-            storage.setItem('app-background', 'dots');
-            storage.setItem('app-energy-level', '40');
-            storage.setItem('app-background-config', JSON.stringify({
+            setTheme('red-green');
+            setBackground('dots');
+            setSimulationPower(40);
+            setBackgroundConfig({
               dots: { speed: 40, size: 2, density: 35 },
               vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
               matrix: { speed: 40, size: 40, density: 40 },
               blackHole: { speed: 40, size: 40, density: 40 },
               lightspeed: { speed: 40, size: 40, density: 40 }
-            }));
-            storage.setItem('app-settings-view-mode', 'page');
-            storage.setItem('app-settings-box-size', JSON.stringify({ width: 1000, height: 700 }));
-            storage.setItem('app-settings-box-position', JSON.stringify({ x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 }));
-            storage.setItem('app-custom-colors', JSON.stringify(['#ffffff', '#ffffff', '#ffffff', '#ffffff']));
-            storage.setItem('app-cloaking-title', 'Sigma Games');
-            storage.setItem('app-cloaking-icon', '/favicon.svg?v=2');
-            storage.setItem('app-runner-mode', 'none');
-            storage.setItem('app-close-prevention', 'false');
+            });
+            setSettingsViewMode('page');
+            setSettingsBoxSize({ width: 1000, height: 700 });
+            setSettingsBoxPosition({ x: window.innerWidth / 2 - 500, y: window.innerHeight / 2 - 350 });
+            setCustomColors(['#ffffff', '#ffffff', '#ffffff', '#ffffff']);
+            setCloakingTitle('Sigma Games');
+            setCloakingIcon('/favicon.svg?v=2');
+            setRunnerMode('none');
+            setClosePrevention(false);
             storage.setItem('lightspeed-evasion', 'false');
             storage.removeItem('lightspeed-popup-shown');
-
-            // Force visual page reload so settings are cleanly re-applied and visible
-            window.location.reload();
           }}
           className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all font-medium flex-shrink-0 cursor-pointer"
         >
