@@ -10,6 +10,27 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet" />
         
+        <script>
+          // <![CDATA[
+          // Compatibility shims for standalone SVG rendering (fixes Tailwind CDN, Lucide, etc. in SVG document context)
+          if (!document.head) {
+            Object.defineProperty(document, 'head', {
+              get: function() {
+                return document.querySelector('head') || document.getElementsByTagName('head')[0];
+              },
+              configurable: true
+            });
+          }
+          if (!document.body) {
+            Object.defineProperty(document, 'body', {
+              get: function() {
+                return document.querySelector('body') || document.getElementsByTagName('body')[0];
+              },
+              configurable: true
+            });
+          }
+          // ]]>
+        </script>
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
           // <![CDATA[
@@ -55,6 +76,17 @@
             background-color: #09090b;
             color: #d4d4d8;
             overflow-x: hidden;
+          }
+          
+          #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -10;
+            pointer-events: none;
+            background-color: #09090b;
           }
 
           @keyframes blink {
@@ -193,7 +225,7 @@
                   </div>
                   <div class="relative z-10 w-full">
                     <h3 class="text-lg font-semibold text-zinc-100 group-hover:text-cyan-400 transition-colors duration-300">Hydra Games</h3>
-                    <p class="text-sm text-zinc-500 mt-1">Browse the Hydra Games collection of 164 games.</p>
+                    <p class="text-sm text-zinc-500 mt-1">Browse the Hydra Games collection of 1653 games.</p>
                   </div>
                 </div>
 
@@ -1095,7 +1127,7 @@
             "3kh0": { title: "3kh0 Games", desc: "Browse the 3kh0 collection of 145 games." },
             "noah": { title: "Noah's Hub", desc: "Browse the Noah's Hub collection of 416 games." },
             "alexr": { title: "Alexr Games", desc: "Browse the Alexr Games collection of 676 games." },
-            "hydra": { title: "Hydra Games Stash", desc: "Browse the Hydra Games collection of 164 games." },
+            "hydra": { title: "Hydra Games Stash", desc: "Browse the Hydra Games collection of 1653 games." },
             "diesmos": { title: "Diesmos Games", desc: "Browse the Diesmos Games collection of 1039 games." }
           };
 
