@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Terminal, Github, ArrowLeft, MessageSquare } from 'lucide-react';
+import { Terminal, Github, ArrowLeft } from 'lucide-react';
 import SettingsMenu from './SettingsMenu';
 import Credits from './Credits';
 import { useThemeColors } from '../context/ThemeContext';
@@ -59,13 +59,6 @@ export default function PageLayout({
           )}
 
           <div className="flex items-center gap-4">
-            <Link
-              to="/chat"
-              className={`p-2 text-zinc-400 hover:${colors.primary} hover:bg-zinc-800 rounded-lg transition-all`}
-              title="Global Chat"
-            >
-              <MessageSquare size={20} />
-            </Link>
             <a
               href="https://github.com/deeeland0ohio"
               target="_blank"

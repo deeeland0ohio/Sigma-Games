@@ -3,7 +3,6 @@ import { createServer as createViteServer } from "vite";
 import compression from "compression";
 import path from "path";
 import fs from "fs";
-import * as Ably from "ably";
 import { diesmosGames } from "./src/data/diesmos";
 
 async function startServer() {
@@ -51,43 +50,16 @@ async function startServer() {
     }
   });
 
-  // --- ABLY CHAT ROOM & SSE FALLBACK HYBRID BACKEND ---
+  // --- CHAT ROOM REALTIME BACKEND ---
   const chatMessages: any[] = [];
   const activeBannedUserIds: Record<string, number> = {};
   const activeBannedNicknames: Record<string, number> = {};
   let sseClients: any[] = [];
 
-  let ablyServerClient: Ably.Realtime | null = null;
-  const getAblyClient = () => {
-    if (!ablyServerClient) {
-      const apiKey = process.env.ABLY_API_KEY;
-      if (apiKey) {
-        ablyServerClient = new Ably.Realtime({ key: apiKey });
-      }
-    }
-    return ablyServerClient;
-  };
-
-  // Auth endpoint for Ably Token Authentication
-  app.get("/api/ably-auth", async (req, res) => {
-    try {
-      const client = getAblyClient();
-      if (!client) {
-        return res.status(403).json({ error: "ABLY_API_KEY not configured on server" });
-      }
-      const clientId = (req.query.clientId as string) || "anonymous-" + Math.random().toString(36).substring(2, 6);
-      const tokenRequest = await client.auth.createTokenRequest({ clientId });
-      res.json(tokenRequest);
-    } catch (err: any) {
-      console.error("Ably auth error:", err);
-      res.status(500).json({ error: err.message || "Failed to create Ably token" });
-    }
-  });
-
-  // Check whether Ably is configured
+  // Check whether Ably is configured (disabled / removed)
   app.get("/api/ably-check", (req, res) => {
     res.json({
-      configured: !!process.env.ABLY_API_KEY
+      configured: false
     });
   });
 
@@ -106,7 +78,7 @@ async function startServer() {
     });
   });
 
-  // Broadcast router for chat rooms (saves history in Node memory, publishes to Ably AND relays via custom SSEfallback)
+  // Broadcast router for chat rooms (saves history in Node memory and relays via SSE stream)
   app.post("/api/chat/broadcast", async (req, res) => {
     try {
       const payload = req.body;
@@ -138,23 +110,12 @@ async function startServer() {
         }
       }
 
-      // 1. Broadcast via Ably if initialized
-      const client = getAblyClient();
-      if (client) {
-        try {
-          const channel = client.channels.get("global-chat");
-          await channel.publish("event", JSON.stringify(payload));
-        } catch (ablyErr) {
-          console.error("Failed to publish event via Ably, showing error:", ablyErr);
-        }
-      }
-
-      // 2. Broadcast via internal SSE fallback stream (supports instant, zero-limit cost-free fallback!)
+      // Broadcast via internal SSE stream (supports instant, zero-limit cost-free realtime)
       sseClients.forEach(c => {
         try {
           c.res.write(`data: ${JSON.stringify(payload)}\n\n`);
         } catch (e) {
-          // clean up failed clients inside catch
+          // clean up failed clients
         }
       });
 

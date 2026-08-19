@@ -3,7 +3,7 @@ import { motion } from 'motion/react';
 import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
 import ProxyIframe from '../components/ProxyIframe';
-import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import SettingsMenu from '../components/SettingsMenu';
 import Credits from '../components/Credits';
@@ -108,13 +108,6 @@ export default function GamePlayer() {
           </div>
 
           <div className="flex items-center gap-2">
-            <Link
-              to="/chat"
-              className={`p-2 text-zinc-400 hover:${colors.primary} hover:bg-zinc-800 rounded-lg transition-all`}
-              title="Global Chat"
-            >
-              <MessageSquare size={18} />
-            </Link>
             <a
               href="https://github.com/deeeland0ohio"
               target="_blank"

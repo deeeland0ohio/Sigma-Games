@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PageLayout from '../components/PageLayout';
 import { useThemeColors } from '../context/ThemeContext';
+import ProxyIframe from '../components/ProxyIframe';
 import { Play, Youtube, Search, Loader2, Maximize, X, Video, Smartphone, Music, Tv } from 'lucide-react';
 
 interface MediaItem {
@@ -25,7 +26,7 @@ function TikTokEmbed({ videoId }: { videoId: string; username?: string }) {
           height: '525px', // Clean cropped height of the video player viewport
         }}
       >
-        <iframe
+        <ProxyIframe
           src={`https://www.tiktok.com/embed/v2/${videoId}`}
           className="absolute"
           style={{
@@ -35,7 +36,7 @@ function TikTokEmbed({ videoId }: { videoId: string; username?: string }) {
             height: '670px', // Full height containing the bottom bar (pushed out of bounds)
             border: 'none',
           }}
-          allow="autoplay; encrypted-media"
+          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
           allowFullScreen
           title="TikTok Player"
         />
@@ -424,13 +425,14 @@ export default function Entertainment() {
                     isPortraitPlayer ? 'aspect-[9/16] w-full max-w-[340px]' : 'aspect-video w-full'
                   }`}
                 >
-                  <iframe
+                  <ProxyIframe
                     src={embedUrl}
                     className="absolute inset-0 w-full h-full bg-black"
                     frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowFullScreen
                     title="Embed Player"
-                  ></iframe>
+                  />
                   <button
                     onClick={() => {
                       if (playerRef.current) {

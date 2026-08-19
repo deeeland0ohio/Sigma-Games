@@ -35,7 +35,24 @@ export function cleanGameUrl(url: string) {
   return cleaned;
 }
 
-export default function ProxyIframe({ src, srcDoc, ...props }: ProxyIframeProps) {
+export function isVideoEmbed(url: string) {
+  try {
+    const urlObj = new URL(url.startsWith('http') ? url : `https://${url}`);
+    const host = urlObj.hostname.toLowerCase();
+    return (
+      host.includes('youtube.com') ||
+      host.includes('youtube-nocookie.com') ||
+      host.includes('youtu.be') ||
+      host.includes('tiktok.com') ||
+      host.includes('vimeo.com') ||
+      host.includes('dailymotion.com')
+    );
+  } catch (e) {
+    return false;
+  }
+}
+
+export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true, ...props }: ProxyIframeProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [fallbackSrc, setFallbackSrc] = useState<string | undefined>(undefined);
 
@@ -48,6 +65,12 @@ export default function ProxyIframe({ src, srcDoc, ...props }: ProxyIframeProps)
       const targetUrl = cleanGameUrl(src);
       
       let isMounted = true;
+
+      // Video embeds (YouTube, TikTok) must run natively in the iframe to allow player scripts & media decoders
+      if (isVideoEmbed(targetUrl)) {
+        setFallbackSrc(targetUrl);
+        return;
+      }
 
       const loadContent = async () => {
         try {
@@ -97,7 +120,35 @@ export default function ProxyIframe({ src, srcDoc, ...props }: ProxyIframeProps)
             return;
           }
         } catch (err) {
-          console.warn("Failed to fetch iframe content for proxy, falling back to direct src:", err);
+          // Direct fetch failed, attempt evasion proxy
+          try {
+            const proxyRes = await fetch(`/api/evasion-proxy?url=${encodeURIComponent(targetUrl)}`);
+            if (proxyRes.ok) {
+              let html = await proxyRes.text();
+              const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
+              const baseTag = `<base href="${baseUrl}">`;
+              if (!html.includes('<base ')) {
+                if (html.includes('<head>')) {
+                  html = html.replace('<head>', `<head>\n${baseTag}`);
+                } else if (html.includes('<html>')) {
+                  html = html.replace('<html>', `<html>\n<head>\n${baseTag}\n</head>`);
+                } else {
+                  html = baseTag + '\n' + html;
+                }
+              }
+              if (isMounted) {
+                const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                if (doc) {
+                  doc.open();
+                  doc.write(html);
+                  doc.close();
+                }
+                return;
+              }
+            }
+          } catch (proxyErr) {
+            console.warn("Proxy fallback fetch failed, falling back to direct src:", proxyErr);
+          }
         }
         
         if (isMounted) {
@@ -121,11 +172,15 @@ export default function ProxyIframe({ src, srcDoc, ...props }: ProxyIframeProps)
     }
   }, [src, srcDoc]);
 
+  const defaultAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
+
   return (
     <iframe
       ref={iframeRef}
       src={fallbackSrc}
       srcDoc={srcDoc}
+      allow={allow || defaultAllow}
+      allowFullScreen={allowFullScreen}
       {...props}
     />
   );
