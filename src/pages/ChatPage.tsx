@@ -38,8 +38,8 @@ const getOS = () => {
   return "Other";
 };
 
-// We broadcast all real-time chat sync actions to our Node.js back-end.
-// The backend handles saving histories, checking bans, publishing to Ably if configured, OR streaming over native fallback SSE.
+// b64:V2UgYnJvYWRjYXN0IGFsbCByZWFsLXRpbWUgY2hhdCBzeW5jIGFjdGlvbnMgdG8gb3VyIE5vZGUuanMgYmFjay1lbmQu
+// b64:VGhlIGJhY2tlbmQgaGFuZGxlcyBzYXZpbmcgaGlzdG9yaWVzLCBjaGVja2luZyBiYW5zLCBwdWJsaXNoaW5nIHRvIEFibHkgaWYgY29uZmlndXJlZCwgT1Igc3RyZWFtaW5nIG92ZXIgbmF0aXZlIGZhbGxiYWNrIFNTRS4=
 const publishEvent = async (payload: any) => {
   try {
     await fetch('/api/chat/broadcast', {
@@ -56,8 +56,8 @@ const publishEvent = async (payload: any) => {
 
 export default function ChatPage() {
   const [userId] = useState<string>(() => {
-    // Generate a clean, unique ID per page load / tab instance to prevent collisions
-    // when tabs are duplicated or cloned, while retaining their session nickname.
+    // b64:R2VuZXJhdGUgYSBjbGVhbiwgdW5pcXVlIElEIHBlciBwYWdlIGxvYWQgLyB0YWIgaW5zdGFuY2UgdG8gcHJldmVudCBjb2xsaXNpb25z
+    // b64:d2hlbiB0YWJzIGFyZSBkdXBsaWNhdGVkIG9yIGNsb25lZCwgd2hpbGUgcmV0YWluaW5nIHRoZWlyIHNlc3Npb24gbmlja25hbWUu
     if (typeof storage !== 'undefined') {
       storage.removeItem('chat_guest_id');
     }
@@ -88,7 +88,7 @@ export default function ChatPage() {
   const [newMessage, setNewMessage] = useState('');
   const [isConnected, setIsConnected] = useState(navigator.onLine);
   
-  // Track online presence timestamps
+  // b64:VHJhY2sgb25saW5lIHByZXNlbmNlIHRpbWVzdGFtcHM=
   const [usersMap, setUsersMap] = useState<Record<string, ChatUser>>({});
   const [bannedNicknames, setBannedNicknames] = useState<Record<string, number>>({});
   const [bannedUserIds, setBannedUserIds] = useState<Record<string, number>>({});
@@ -96,12 +96,12 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number, y: number, messageId: string, userId: string, nickname: string } | null>(null);
   const [kickWarning, setKickWarning] = useState<{ title: string; message: string } | null>(null);
-  const [, setTick] = useState(0); // Force custom re-render for message expirations
+  const [, setTick] = useState(0); // b64:Rm9yY2UgY3VzdG9tIHJlLXJlbmRlciBmb3IgbWVzc2FnZSBleHBpcmF0aW9ucw==
   const scrollRef = useRef<HTMLDivElement>(null);
   const lastEnterTime = useRef<number>(0);
   const colors = useThemeColors();
 
-  // Create stable, non-stale references for state values accessed in subscriptions
+  // b64:Q3JlYXRlIHN0YWJsZSwgbm9uLXN0YWxlIHJlZmVyZW5jZXMgZm9yIHN0YXRlIHZhbHVlcyBhY2Nlc3NlZCBpbiBzdWJzY3JpcHRpb25z
   const nicknameRef = useRef(nickname);
   const userIdRef = useRef(userId);
   const isOwnerRef = useRef(isOwner);
@@ -123,7 +123,7 @@ export default function ChatPage() {
     isTypingRef.current = isTyping;
   }, [isTyping]);
 
-  // Clean kick_end checks on mount
+  // b64:Q2xlYW4ga2lja19lbmQgY2hlY2tzIG9uIG1vdW50
   useEffect(() => {
     const kickEnd = storage.getItem('kick_end');
     if (kickEnd && userId) {
@@ -139,11 +139,11 @@ export default function ChatPage() {
     }
   }, [userId]);
 
-  // Real-time ticking for message expirations and ban countdowns
+  // b64:UmVhbC10aW1lIHRpY2tpbmcgZm9yIG1lc3NhZ2UgZXhwaXJhdGlvbnMgYW5kIGJhbiBjb3VudGRvd25z
   useEffect(() => {
     const interval = setInterval(() => {
       setTick(t => t + 1);
-      // Clean up storage kick_end when expired
+      // b64:Q2xlYW4gdXAgc3RvcmFnZSBraWNrX2VuZCB3aGVuIGV4cGlyZWQ=
       const kickEnd = storage.getItem('kick_end');
       if (kickEnd && Date.now() >= parseInt(kickEnd)) {
         storage.removeItem('kick_end');
@@ -152,7 +152,7 @@ export default function ChatPage() {
     return () => clearInterval(interval);
   }, []);
 
-  // Automatic eviction if current user is banned
+  // b64:QXV0b21hdGljIGV2aWN0aW9uIGlmIGN1cnJlbnQgdXNlciBpcyBiYW5uZWQ=
   useEffect(() => {
     if (!nickname || !userId) return;
 
@@ -171,7 +171,7 @@ export default function ChatPage() {
     }
   }, [nickname, userId, bannedUserIds, bannedNicknames]);
 
-  // Automatically clear the kicked error string once the ban timer expires
+  // b64:QXV0b21hdGljYWxseSBjbGVhciB0aGUga2lja2VkIGVycm9yIHN0cmluZyBvbmNlIHRoZSBiYW4gdGltZXIgZXhwaXJlcw==
   useEffect(() => {
     if (error === "You are currently kicked from this chatroom.") {
       const activeIdKickEnd = bannedUserIds[userId];
@@ -188,7 +188,7 @@ export default function ChatPage() {
 
   const lastEnforcedTimes = useRef<Record<string, number>>({});
 
-  // Owner auto-enforcing active bans if a banned user reappears/re-sends presence heartbeat
+  // b64:T3duZXIgYXV0by1lbmZvcmNpbmcgYWN0aXZlIGJhbnMgaWYgYSBiYW5uZWQgdXNlciByZWFwcGVhcnMvcmUtc2VuZHMgcHJlc2VuY2UgaGVhcnRiZWF0
   useEffect(() => {
     if (!isOwner || !userId) return;
 
@@ -206,7 +206,7 @@ export default function ChatPage() {
         const key = `${u.id}-${remainingEnd}`;
         const lastEnforced = lastEnforcedTimes.current[key] || 0;
 
-        // Only re-enforce once every 15 seconds per unique ban to keep channel traffic low
+        // b64:T25seSByZS1lbmZvcmNlIG9uY2UgZXZlcnkgMTUgc2Vjb25kcyBwZXIgdW5pcXVlIGJhbiB0byBrZWVwIGNoYW5uZWwgdHJhZmZpYyBsb3c=
         if (Date.now() - lastEnforced > 15000) {
           lastEnforcedTimes.current[key] = Date.now();
           publishEvent({
@@ -222,7 +222,7 @@ export default function ChatPage() {
     });
   }, [usersMap, bannedUserIds, bannedNicknames, isOwner, userId]);
 
-  // Sync network status and custom window click listeners
+  // b64:U3luYyBuZXR3b3JrIHN0YXR1cyBhbmQgY3VzdG9tIHdpbmRvdyBjbGljayBsaXN0ZW5lcnM=
   useEffect(() => {
     const handleOnline = () => setIsConnected(true);
     const handleOffline = () => setIsConnected(false);
@@ -239,7 +239,7 @@ export default function ChatPage() {
     };
   }, []);
 
-  // Dynamic Event Handling for incoming ntfy events
+  // b64:RHluYW1pYyBFdmVudCBIYW5kbGluZyBmb3IgaW5jb21pbmcgbnRmeSBldmVudHM=
   const handleIncomingPayload = (payload: any) => {
     if (!payload || !payload.type) return;
 
@@ -388,7 +388,7 @@ export default function ChatPage() {
     handleIncomingPayloadRef.current = handleIncomingPayload;
   }, [handleIncomingPayload]);
 
-  // Real-time listener: supporting Ably Realtime and Native Server-SSE fallback
+  // b64:UmVhbC10aW1lIGxpc3RlbmVyOiBzdXBwb3J0aW5nIEFibHkgUmVhbHRpbWUgYW5kIE5hdGl2ZSBTZXJ2ZXItU1NFIGZhbGxiYWNr
   useEffect(() => {
     if (!userId) return;
 
@@ -399,7 +399,7 @@ export default function ChatPage() {
     const bootstrapAndConnect = async () => {
       setAuthLoading(true);
       
-      // 1. Fetch persistent chat history from the Node back-end cache
+      // b64:MS4gRmV0Y2ggcGVyc2lzdGVudCBjaGF0IGhpc3RvcnkgZnJvbSB0aGUgTm9kZSBiYWNrLWVuZCBjYWNoZQ==
       try {
         const historyRes = await fetch('/api/chat/history');
         if (historyRes.ok && active) {
@@ -419,7 +419,7 @@ export default function ChatPage() {
 
       if (!active) return;
 
-      // 2. Query server for Ably Configuration Status
+      // b64:Mi4gUXVlcnkgc2VydmVyIGZvciBBYmx5IENvbmZpZ3VyYXRpb24gU3RhdHVz
       let isAblyConfigured = false;
       try {
         const checkRes = await fetch('/api/ably-check');
@@ -438,9 +438,9 @@ export default function ChatPage() {
         }
       }
 
-      // 3. Connect to live real-time streams
+      // b64:My4gQ29ubmVjdCB0byBsaXZlIHJlYWwtdGltZSBzdHJlYW1z
       if (isAblyConfigured) {
-        // --- ELEGANT ABLY MODE ---
+        // b64:LS0tIEVMRUdBTlQgQUJMWSBNT0RFIC0tLQ==
         try {
           ablyRealtime = new Ably.Realtime({
             authUrl: `/api/ably-auth?clientId=${userId}`
@@ -457,7 +457,7 @@ export default function ChatPage() {
             }
           });
 
-          // Send an immediate presence query to discover active peers instantly
+          // b64:U2VuZCBhbiBpbW1lZGlhdGUgcHJlc2VuY2UgcXVlcnkgdG8gZGlzY292ZXIgYWN0aXZlIHBlZXJzIGluc3RhbnRseQ==
           try {
             channel.publish('event', JSON.stringify({
               type: 'presence_request',
@@ -470,8 +470,8 @@ export default function ChatPage() {
           console.error("Failed establishing Ably Realtime connection:", ablyErr);
         }
       } else {
-        // --- HIGH-PERFORMANCE NATIVE SSE FALLBACK MODE ---
-        // Runs entirely on the Cloud Run Node server, 100% free, zero limits, supporting 100+ concurrent users!
+        // b64:LS0tIEhJR0gtUEVSRk9STUFOQ0UgTkFUSVZFIFNTRSBGQUxMQkFDSyBNT0RFIC0tLQ==
+        // b64:UnVucyBlbnRpcmVseSBvbiB0aGUgQ2xvdWQgUnVuIE5vZGUgc2VydmVyLCAxMDAlIGZyZWUsIHplcm8gbGltaXRzLCBzdXBwb3J0aW5nIDEwMCsgY29uY3VycmVudCB1c2VycyE=
         try {
           sseSource = new EventSource('/api/chat/sse');
           sseSource.onmessage = (event) => {
@@ -484,7 +484,7 @@ export default function ChatPage() {
             }
           };
 
-          // Send an immediate presence query to discover active peers instantly
+          // b64:U2VuZCBhbiBpbW1lZGlhdGUgcHJlc2VuY2UgcXVlcnkgdG8gZGlzY292ZXIgYWN0aXZlIHBlZXJzIGluc3RhbnRseQ==
           publishEvent({
             type: 'presence_request',
             id: userId
@@ -512,7 +512,7 @@ export default function ChatPage() {
     };
   }, [userId]);
 
-  // Presence Heartbeat Loop
+  // b64:UHJlc2VuY2UgSGVhcnRiZWF0IExvb3A=
   useEffect(() => {
     if (!nickname || !userId) return;
 
@@ -536,7 +536,7 @@ export default function ChatPage() {
     };
   }, [nickname, userId, isTyping, isOwner]);
 
-  // Broadcast offline presence on true unmount
+  // b64:QnJvYWRjYXN0IG9mZmxpbmUgcHJlc2VuY2Ugb24gdHJ1ZSB1bm1vdW50
   useEffect(() => {
     return () => {
       if (userId) {
@@ -548,7 +548,7 @@ export default function ChatPage() {
     };
   }, [userId]);
 
-  // Typing status effect
+  // b64:VHlwaW5nIHN0YXR1cyBlZmZlY3Q=
   useEffect(() => {
     if (!nickname) return;
     const hasText = newMessage.trim().length > 0;
@@ -588,20 +588,20 @@ export default function ChatPage() {
       return;
     }
 
-    // Validate passive/historic kicks by nickname (case-insensitive)
+    // b64:VmFsaWRhdGUgcGFzc2l2ZS9oaXN0b3JpYyBraWNrcyBieSBuaWNrbmFtZSAoY2FzZS1pbnNlbnNpdGl2ZSk=
     const activeNickKickEnd = bannedNicknames[trimmedNickname.toLowerCase()];
     if (activeNickKickEnd && Date.now() < activeNickKickEnd) {
       return;
     }
 
-    // Validate passive/historic kicks by guest userId
+    // b64:VmFsaWRhdGUgcGFzc2l2ZS9oaXN0b3JpYyBraWNrcyBieSBndWVzdCB1c2VySWQ=
     const activeIdKickEnd = bannedUserIds[userId];
     if (activeIdKickEnd && Date.now() < activeIdKickEnd) {
       return;
     }
 
     try {
-      // Deconflict nicknames client-side
+      // b64:RGVjb25mbGljdCBuaWNrbmFtZXMgY2xpZW50LXNpZGU=
       let finalNickname = trimmedNickname;
       let suffix = 1;
       const existingNicknames = Object.values(usersMap)
@@ -625,7 +625,7 @@ export default function ChatPage() {
       setNickname(finalNickname);
       setIsOwner(isSigmaDev);
 
-      // Broadcast immediate presence
+      // b64:QnJvYWRjYXN0IGltbWVkaWF0ZSBwcmVzZW5jZQ==
       if (userId) {
         publishEvent({
           type: 'user_presence',
@@ -682,7 +682,7 @@ export default function ChatPage() {
   const handleKickUser = async (targetNickname: string, kickDuration: 'soft' | '5m' | '1h' = 'soft') => {
     if (!isOwner || !userId) return;
 
-    let duration = 5000; // soft kick: 5s
+    let duration = 5000; // b64:c29mdCBraWNrOiA1cw==
     if (kickDuration === '5m') {
       duration = 300000;
     } else if (kickDuration === '1h') {
@@ -754,21 +754,21 @@ export default function ChatPage() {
     setIsOwner(false);
   };
 
-  // Force logout if Ably is inactive
+  // b64:Rm9yY2UgbG9nb3V0IGlmIEFibHkgaXMgaW5hY3RpdmU=
   useEffect(() => {
     if (!authLoading && !ablyActive && nickname) {
       handleLogout();
     }
   }, [authLoading, ablyActive, nickname]);
 
-  // Scroll to bottom helper
+  // b64:U2Nyb2xsIHRvIGJvdHRvbSBoZWxwZXI=
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [messages, nickname]);
 
-  // Client-side mapping & filter
+  // b64:Q2xpZW50LXNpZGUgbWFwcGluZyAmIGZpbHRlcg==
   const mappedMessages = messages.map(msg => {
     if (msg.isPermanentlyRemoved) {
       return null;
@@ -783,17 +783,17 @@ export default function ChatPage() {
   }).filter((msg): msg is Message => msg !== null);
 
   const filteredMessages = mappedMessages.filter(msg => {
-    const twoHoursAgo = Date.now() - 7200000; // Filter messages older than 2 hours
+    const twoHoursAgo = Date.now() - 7200000; // b64:RmlsdGVyIG1lc3NhZ2VzIG9sZGVyIHRoYW4gMiBob3Vycw==
     if (msg.createdAt <= twoHoursAgo) return false;
 
-    // Filter out messages from any users who are currently banned locally
+    // b64:RmlsdGVyIG91dCBtZXNzYWdlcyBmcm9tIGFueSB1c2VycyB3aG8gYXJlIGN1cnJlbnRseSBiYW5uZWQgbG9jYWxseQ==
     const bNick = bannedNicknames[msg.senderName.toLowerCase()];
     const bId = bannedUserIds[msg.senderId];
     const isBanned = (bNick && Date.now() < bNick) || (bId && Date.now() < bId);
     return !isBanned;
   });
 
-  // Calculate last message timestamp for each user
+  // b64:Q2FsY3VsYXRlIGxhc3QgbWVzc2FnZSB0aW1lc3RhbXAgZm9yIGVhY2ggdXNlcg==
   const lastMessageTimeMap: Record<string, number> = {};
   filteredMessages.forEach(m => {
     if (!lastMessageTimeMap[m.senderId] || m.createdAt > lastMessageTimeMap[m.senderId]) {
@@ -801,7 +801,7 @@ export default function ChatPage() {
     }
   });
 
-  // Derived active users list from usersMap (excluding banned people who bypassed cache)
+  // b64:RGVyaXZlZCBhY3RpdmUgdXNlcnMgbGlzdCBmcm9tIHVzZXJzTWFwIChleGNsdWRpbmcgYmFubmVkIHBlb3BsZSB3aG8gYnlwYXNzZWQgY2FjaGUp
   const users = Object.values(usersMap)
     .filter(u => Date.now() - u.lastActive < 18000)
     .filter(u => {
@@ -815,10 +815,10 @@ export default function ChatPage() {
       const timeB = lastMessageTimeMap[b.id] || 0;
 
       if (timeA !== timeB) {
-        return timeB - timeA; // most recent message first
+        return timeB - timeA; // b64:bW9zdCByZWNlbnQgbWVzc2FnZSBmaXJzdA==
       }
 
-      // fallback: show current user first, then Owner, then by lastActive
+      // b64:ZmFsbGJhY2s6IHNob3cgY3VycmVudCB1c2VyIGZpcnN0LCB0aGVuIE93bmVyLCB0aGVuIGJ5IGxhc3RBY3RpdmU=
       if (a.id === userId && b.id !== userId) return -1;
       if (b.id === userId && a.id !== userId) return 1;
       if (a.isOwner && !b.isOwner) return -1;

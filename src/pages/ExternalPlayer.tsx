@@ -2,7 +2,7 @@ import ProxyIframe from '../components/ProxyIframe';
 import { useEffect } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { Maximize, X, Heart } from 'lucide-react';
+import { Maximize, X, Heart, RotateCw } from 'lucide-react';
 import { useFavorites } from '../context/FavoritesContext';
 
 export default function ExternalPlayer() {
@@ -30,6 +30,20 @@ export default function ExternalPlayer() {
         <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800 shrink-0">
           <h3 className="text-white font-medium pl-2 truncate flex-1">{title}</h3>
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                const iframe = document.getElementById('external-iframe') as HTMLIFrameElement;
+                if (iframe) {
+                  const src = iframe.src;
+                  iframe.src = 'about:blank';
+                  setTimeout(() => { iframe.src = src; }, 50);
+                }
+              }}
+              className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+              title="Reload Game"
+            >
+              <RotateCw className="w-5 h-5" />
+            </button>
             <button
               onClick={() => {
                 toggleFavorite({

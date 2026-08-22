@@ -28,9 +28,9 @@ export default function Home() {
   const [dynamicGames, setDynamicGames] = useState(games);
 
   useEffect(() => {
-    // Dynamically fetch and update collection game counts to guarantee accuracy
+    // b64:RHluYW1pY2FsbHkgZmV0Y2ggYW5kIHVwZGF0ZSBjb2xsZWN0aW9uIGdhbWUgY291bnRzIHRvIGd1YXJhbnRlZSBhY2N1cmFjeQ==
     const fetchCounts = async () => {
-      // 1. GN Math
+      // b64:MS4gR04gTWF0aA==
       fetch("https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json")
         .then(res => res.json())
         .then((raw: any) => {
@@ -40,7 +40,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // 2. UGS (Ultimate Game Stash)
+      // b64:Mi4gVUdTIChVbHRpbWF0ZSBHYW1lIFN0YXNoKQ==
       fetch("https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js")
         .then(res => res.text())
         .then(text => {
@@ -55,7 +55,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // 3. Seraph Games
+      // b64:My4gU2VyYXBoIEdhbWVz
       fetch('https://api.github.com/repos/a456pur/seraph/git/trees/main?recursive=1')
         .then(res => res.json())
         .then((data: any) => {
@@ -67,7 +67,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // 4. 3kh0 Games
+      // b64:NC4gM2toMCBHYW1lcw==
       fetch('https://api.github.com/repos/3kh0/3kh0-lite/git/trees/main?recursive=1')
         .then(res => res.json())
         .then((data: any) => {
@@ -79,7 +79,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // 5. Noah's Hub Games
+      // b64:NS4gTm9haCdzIEh1YiBHYW1lcw==
       fetch('https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games.js')
         .then(async (res) => {
           if (!res.ok) throw new Error("Fetch failed");
@@ -92,7 +92,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // 6. Alexr Games
+      // b64:Ni4gQWxleHIgR2FtZXM=
       fetch("https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/singlefilegames.json")
         .then(res => res.json())
         .then((raw: any) => {
@@ -102,12 +102,22 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // 7. Hydra Games
+      // b64:Ny4gSHlkcmEgR2FtZXM=
       fetch("https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes.json")
         .then(res => res.json())
         .then((raw: any) => {
           if (Array.isArray(raw)) {
             setDynamicGames(prev => prev.map(g => g.id === 'hydra' ? { ...g, description: `Browse the Hydra Games collection of ${raw.length} games.` } : g));
+          }
+        }).catch(() => {});
+
+      // b64:OC4gQ2hpY2tlbiBLaW5nJ3MgVmF1bHQgKENWSyk=
+      fetch("https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main/games.js")
+        .then(res => res.text())
+        .then(text => {
+          const matches = text.match(/<a class="game-link"/g);
+          if (matches && matches.length > 0) {
+            setDynamicGames(prev => prev.map(g => g.id === 'cvk' ? { ...g, description: `Browse the Chicken King's Vault collection of ${matches.length} games.` } : g));
           }
         }).catch(() => {});
     };
@@ -398,6 +408,8 @@ builtins.input = custom_input
                   game.id === 'alexr' ? '/alexr' :
                   game.id === 'hydra' ? '/hydra' :
                   game.id === 'diesmos' ? '/diesmos' :
+                  game.id === 'lumin' ? '/lumin' :
+                  game.id === 'cvk' ? '/cvk' :
                   undefined
                 }
               />

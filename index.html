@@ -314,7 +314,7 @@
           favicon.type = 'image/svg+xml';
         }
         document.dispatchEvent(new Event('app-boot-complete'));
-      }, 5000);
+      }, 3000);
 
       // Silence benign Vite WebSocket errors that occur due to HMR being disabled in this environment
       window.addEventListener('unhandledrejection', function(event) {

@@ -19,6 +19,8 @@ import NoahGames from './pages/NoahGames';
 import AlexrGames from './pages/AlexrGames';
 import HydraGames from './pages/HydraGames';
 import DiesmosGames from './pages/DiesmosGames';
+import LuminGames from './pages/LuminGames';
+import CvkGames from './pages/CvkGames';
 import ExternalPlayer from './pages/ExternalPlayer';
 import NotFound from './pages/NotFound';
 import Entertainment from './pages/Entertainment';
@@ -29,11 +31,11 @@ function AnalyticsTracker() {
   useEffect(() => {
     const currentPath = location.pathname;
 
-    // Track ONLY the home page
+    // b64:VHJhY2sgT05MWSB0aGUgaG9tZSBwYWdl
     if (currentPath === '/') {
       const umami = (window as any).umami;
       if (umami && typeof umami.track === 'function') {
-        // Track page view manually
+        // b64:VHJhY2sgcGFnZSB2aWV3IG1hbnVhbGx5
         umami.track();
       }
     }
@@ -67,7 +69,9 @@ export default function App() {
               <Route path="/alexr" element={<AlexrGames />} />
               <Route path="/hydra" element={<HydraGames />} />
                 <Route path="/diesmos" element={<DiesmosGames />} />
-              <Route path="/entertainment" element={<Entertainment />} />
+                <Route path="/lumin" element={<LuminGames />} />
+                <Route path="/cvk" element={<CvkGames />} />
+                <Route path="/entertainment" element={<Entertainment />} />
               <Route path="/external-player" element={<ExternalPlayer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>

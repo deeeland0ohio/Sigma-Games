@@ -215,7 +215,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     storage.setItem('app-background', background);
-    // Automatically adjust simulation power based on background type
+    // b64:QXV0b21hdGljYWxseSBhZGp1c3Qgc2ltdWxhdGlvbiBwb3dlciBiYXNlZCBvbiBiYWNrZ3JvdW5kIHR5cGU=
     if (background === 'vanta-dots') {
       setSimulationPower(36);
     } else if (background !== 'blank') {
@@ -334,7 +334,7 @@ export function useThemeColors() {
       popupText: 'text-red-50',
       hexPrimary: 'rgba(239, 68, 68, 0.4)',
       hexSecondary: 'rgba(16, 185, 129, 0.4)',
-      hexMatrix: '#10b981' // emerald-500
+      hexMatrix: '#10b981' // b64:ZW1lcmFsZC01MDA=
     },
     'blue-pink': {
       primary: 'text-blue-500',
@@ -356,7 +356,7 @@ export function useThemeColors() {
       popupText: 'text-blue-50',
       hexPrimary: 'rgba(59, 130, 246, 0.4)',
       hexSecondary: 'rgba(236, 72, 153, 0.4)',
-      hexMatrix: '#ec4899' // pink-500
+      hexMatrix: '#ec4899' // b64:cGluay01MDA=
     },
     'purple-cyan': {
       primary: 'text-purple-500',
@@ -378,7 +378,7 @@ export function useThemeColors() {
       popupText: 'text-purple-50',
       hexPrimary: 'rgba(168, 85, 247, 0.4)',
       hexSecondary: 'rgba(6, 182, 212, 0.4)',
-      hexMatrix: '#06b6d4' // cyan-500
+      hexMatrix: '#06b6d4' // b64:Y3lhbi01MDA=
     },
     'orange-yellow': {
       primary: 'text-orange-500',
@@ -400,7 +400,7 @@ export function useThemeColors() {
       popupText: 'text-orange-50',
       hexPrimary: 'rgba(249, 115, 22, 0.4)',
       hexSecondary: 'rgba(234, 179, 8, 0.4)',
-      hexMatrix: '#eab308' // yellow-500
+      hexMatrix: '#eab308' // b64:eWVsbG93LTUwMA==
     },
     'monochrome': {
       primary: 'text-zinc-100',
@@ -422,7 +422,7 @@ export function useThemeColors() {
       popupText: 'text-zinc-50',
       hexPrimary: 'rgba(244, 244, 245, 0.4)',
       hexSecondary: 'rgba(161, 161, 170, 0.4)',
-      hexMatrix: '#f4f4f5' // zinc-100
+      hexMatrix: '#f4f4f5' // b64:emluYy0xMDA=
     },
     'neon-green': {
       primary: 'text-lime-400',
@@ -444,7 +444,7 @@ export function useThemeColors() {
       popupText: 'text-lime-50',
       hexPrimary: 'rgba(163, 230, 53, 0.4)',
       hexSecondary: 'rgba(16, 185, 129, 0.4)',
-      hexMatrix: '#a3e635' // lime-400
+      hexMatrix: '#a3e635' // b64:bGltZS00MDA=
     },
     'cyberpunk': {
       primary: 'text-yellow-400',
@@ -466,7 +466,7 @@ export function useThemeColors() {
       popupText: 'text-yellow-50',
       hexPrimary: 'rgba(250, 204, 21, 0.4)',
       hexSecondary: 'rgba(217, 70, 239, 0.4)',
-      hexMatrix: '#facc15' // yellow-400
+      hexMatrix: '#facc15' // b64:eWVsbG93LTQwMA==
     },
     'synthwave': {
       primary: 'text-indigo-500',
@@ -488,7 +488,7 @@ export function useThemeColors() {
       popupText: 'text-indigo-50',
       hexPrimary: 'rgba(99, 102, 241, 0.4)',
       hexSecondary: 'rgba(217, 70, 239, 0.4)',
-      hexMatrix: '#d946ef' // fuchsia-500
+      hexMatrix: '#d946ef' // b64:ZnVjaHNpYS01MDA=
     },
     'dracula': {
       primary: 'text-purple-400',
@@ -510,7 +510,7 @@ export function useThemeColors() {
       popupText: 'text-purple-50',
       hexPrimary: 'rgba(192, 132, 252, 0.4)',
       hexSecondary: 'rgba(236, 72, 153, 0.4)',
-      hexMatrix: '#c084fc' // purple-400
+      hexMatrix: '#c084fc' // b64:cHVycGxlLTQwMA==
     },
     'hacker': {
       primary: 'text-emerald-500',
@@ -532,7 +532,7 @@ export function useThemeColors() {
       popupText: 'text-emerald-50',
       hexPrimary: 'rgba(16, 185, 129, 0.4)',
       hexSecondary: 'rgba(4, 120, 87, 0.4)',
-      hexMatrix: '#10b981' // emerald-500
+      hexMatrix: '#10b981' // b64:ZW1lcmFsZC01MDA=
     },
     'lightspeed-special': {
       primary: 'text-cyan-400',
@@ -596,7 +596,7 @@ export function useThemeColors() {
       hexSecondary: 'rgba(249, 115, 22, 0.4)', // orange-500
       hexTertiary: '#fbbf24', // amber-400
       hexQuaternary: '#e11d48', // rose-600
-      hexMatrix: '#8b5cf6' // violet-500
+      hexMatrix: '#8b5cf6' // b64:dmlvbGV0LTUwMA==
     },
     'event-horizon-blue-orange': {
       primary: 'text-blue-400',
@@ -628,7 +628,7 @@ export function useThemeColors() {
       hexSecondary: 'rgba(249, 115, 22, 0.6)', // orange-500
       hexTertiary: '#22d3ee', // cyan-400
       hexQuaternary: '#fbbf24', // amber-400
-      hexMatrix: '#3b82f6' // blue-500
+      hexMatrix: '#3b82f6' // b64:Ymx1ZS01MDA=
     },
     'custom': {
       primary: 'text-[rgba(var(--custom-1),1)]',

@@ -1,7 +1,8 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-react';
+import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2, RotateCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import ProxyIframe from '../components/ProxyIframe';
 import { useFavorites } from '../context/FavoritesContext';
 
 interface HydraGame {
@@ -17,7 +18,6 @@ export default function HydraGames() {
   const [selectedGame, setSelectedGame] = useState<HydraGame | null>(null);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
-  const iframeRef = useRef<HTMLIFrameElement>(null);
 
   const loadGames = async () => {
     setLoading(true);
@@ -54,7 +54,7 @@ export default function HydraGames() {
           };
         }).filter(g => g.url);
 
-        // Sort alphabetically (0-9-a-z)
+        // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteik=
         mapped.sort((a, b) => {
           const titleA = (a.title || "").toLowerCase();
           const titleB = (b.title || "").toLowerCase();
@@ -73,49 +73,6 @@ export default function HydraGames() {
   useEffect(() => {
     loadGames();
   }, []);
-
-  useEffect(() => {
-    if (selectedGame && iframeRef.current) {
-      const iframe = iframeRef.current;
-      const targetUrl = selectedGame.url;
-
-      const loadIframeContent = async () => {
-        try {
-          const response = await fetch(targetUrl);
-          if (response.ok) {
-            let html = await response.text();
-            const baseUrl = targetUrl.substring(0, targetUrl.lastIndexOf('/') + 1);
-            const baseTag = `<base href="${baseUrl}">`;
-            
-            if (!html.includes('<base ')) {
-              if (html.includes('<head>')) {
-                html = html.replace('<head>', `<head>${baseTag}`);
-              } else if (html.includes('<html>')) {
-                html = html.replace('<html>', `<html><head>${baseTag}</head>`);
-              } else {
-                html = baseTag + html;
-              }
-            }
-            
-            const doc = iframe.contentDocument || iframe.contentWindow?.document;
-            if (doc) {
-              doc.open();
-              doc.write(html);
-              doc.close();
-              return;
-            }
-          }
-        } catch (err) {
-          console.warn("Failed to fetch game content for inline iframe, falling back to direct src:", err);
-        }
-        
-        // Fallback: set src directly if fetch fails
-        iframe.src = targetUrl;
-      };
-
-      loadIframeContent();
-    }
-  }, [selectedGame]);
 
   const openGame = (game: HydraGame) => {
     setSelectedGame(game);
@@ -245,6 +202,20 @@ export default function HydraGames() {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => {
+                    const iframe = document.getElementById('hydra-iframe') as HTMLIFrameElement;
+                    if (iframe) {
+                      const src = iframe.src;
+                      iframe.src = 'about:blank';
+                      setTimeout(() => { iframe.src = src; }, 50);
+                    }
+                  }}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                  title="Reload Game"
+                >
+                  <RotateCw className="w-5 h-5" />
+                </button>
+                <button
+                  onClick={() => {
                     const gameId = `hydra:${selectedGame.title}`;
                     toggleFavorite({
                       id: gameId,
@@ -281,9 +252,9 @@ export default function HydraGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <iframe
+              <ProxyIframe
                 id="hydra-iframe"
-                ref={iframeRef}
+                src={selectedGame.url}
                 className="w-full h-full border-none bg-black"
                 allow="autoplay; fullscreen; pointer-lock; keyboard-map"
                 allowFullScreen

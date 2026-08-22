@@ -48,7 +48,7 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
     const scene = new THREE.Scene();
     const bgColor = new THREE.Color(backgroundColor || '#09090b');
     scene.background = bgColor;
-    // Add fog to hide the dots snapping in at the distance
+    // b64:QWRkIGZvZyB0byBoaWRlIHRoZSBkb3RzIHNuYXBwaW5nIGluIGF0IHRoZSBkaXN0YW5jZQ==
     scene.fog = new THREE.Fog(bgColor, 500, 2000);
 
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 5000);
@@ -58,7 +58,7 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     
-    // Clear up old canvas if any
+    // b64:Q2xlYXIgdXAgb2xkIGNhbnZhcyBpZiBhbnk=
     while (containerRef.current.firstChild) {
       containerRef.current.removeChild(containerRef.current.firstChild);
     }
@@ -84,7 +84,7 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
     const basePositions: number[] = [];
     const gridScale = 50; 
     
-    // Create an expansive grid
+    // b64:Q3JlYXRlIGFuIGV4cGFuc2l2ZSBncmlk
     for (let i = -gridScale; i <= gridScale; i++) {
         for (let j = -gridScale; j <= gridScale; j++) {
             const x = i * spacing + spacing / 2;
@@ -100,7 +100,7 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
     const dots = new THREE.Points(geometry, material);
     scene.add(dots);
 
-    // Array to store active splash ripples
+    // b64:QXJyYXkgdG8gc3RvcmUgYWN0aXZlIHNwbGFzaCByaXBwbGVz
     const splashes: { x: number, z: number, time: number, maxRadius: number }[] = [];
     
     const raycaster = new THREE.Raycaster();
@@ -123,12 +123,12 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
         if (event.target instanceof Element && event.target.closest('button, a, input, textarea, select, label, [role="button"], [role="switch"]')) {
             return;
         }
-        // Calculate where the user clicked on the "floor" plane
+        // b64:Q2FsY3VsYXRlIHdoZXJlIHRoZSB1c2VyIGNsaWNrZWQgb24gdGhlICJmbG9vciIgcGxhbmU=
         mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
         mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
         raycaster.setFromCamera(mouse, camera);
         
-        // Approximate floor height
+        // b64:QXBwcm94aW1hdGUgZmxvb3IgaGVpZ2h0
         const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 140);
         const target = new THREE.Vector3();
         const intersectPoint = raycaster.ray.intersectPlane(plane, target);
@@ -149,35 +149,35 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
     let frameId: number;
     let time = 0;
     
-    // Constant Z speed for endless effect
+    // b64:Q29uc3RhbnQgWiBzcGVlZCBmb3IgZW5kbGVzcyBlZmZlY3Q=
     let scrollZ = 0;
 
     const animate = () => {
-        // dynamically fetch config variables inside the loop
+        // b64:ZHluYW1pY2FsbHkgZmV0Y2ggY29uZmlnIHZhcmlhYmxlcyBpbnNpZGUgdGhlIGxvb3A=
         const currentConfig = configRef.current;
         const springSpeed = currentConfig?.springSpeed ?? 50;
         const dotSizeVal = currentConfig?.dotSize ?? 4;
         const splashVal = currentConfig?.splash ?? 50;
         
-        // Update size dynamically in px
+        // b64:VXBkYXRlIHNpemUgZHluYW1pY2FsbHkgaW4gcHg=
         material.size = dotSizeVal;
         
         const speedMultiplier = Math.max(0.1, springSpeed / 50);
         const energyWaveSpeed = powerRef.current;
         const splashMultiplier = Math.max(0.1, splashVal / 50);
 
-        // Slow down the forward movement as requested
-        const baseScrollSpeed = 0.3; // Much slower forward movement 
+        // b64:U2xvdyBkb3duIHRoZSBmb3J3YXJkIG1vdmVtZW50IGFzIHJlcXVlc3RlZA==
+        const baseScrollSpeed = 0.3; // b64:TXVjaCBzbG93ZXIgZm9yd2FyZCBtb3ZlbWVudA==
         const speed = baseScrollSpeed * speedMultiplier;
 
-        // Wave animation uses global energy multiplier
+        // b64:V2F2ZSBhbmltYXRpb24gdXNlcyBnbG9iYWwgZW5lcmd5IG11bHRpcGxpZXI=
         time += 0.015 * energyWaveSpeed;
         scrollZ += speed;
         
         const posAttr = geometry.attributes.position;
         const positionsArr = posAttr.array as Float32Array;
         
-        // Gentle camera sway based on mouse
+        // b64:R2VudGxlIGNhbWVyYSBzd2F5IGJhc2VkIG9uIG1vdXNl
         const targetCamX = currentMouseX * 100;
         const targetCamY = 150 + (-currentMouseY * 50);
         
@@ -185,11 +185,11 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
         camera.position.y += (targetCamY - camera.position.y) * 0.05;
         camera.lookAt(camera.position.x * 0.5, 0, camera.position.z - 800); 
         
-        // Update splashes
+        // b64:VXBkYXRlIHNwbGFzaGVz
         for (let i = splashes.length - 1; i >= 0; i--) {
-            // Speed of ripple is somewhat dependent on speedMultiplier
+            // b64:U3BlZWQgb2YgcmlwcGxlIGlzIHNvbWV3aGF0IGRlcGVuZGVudCBvbiBzcGVlZE11bHRpcGxpZXI=
             splashes[i].time += 0.04 * Math.max(0.5, speedMultiplier);
-            // Remove splashes that have expanded out completely
+            // b64:UmVtb3ZlIHNwbGFzaGVzIHRoYXQgaGF2ZSBleHBhbmRlZCBvdXQgY29tcGxldGVseQ==
             if (splashes[i].time > Math.PI) {
                 splashes.splice(i, 1);
             }
@@ -203,42 +203,42 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
             const by = basePositions[idx + 1];
             let bz = basePositions[idx + 2];
             
-            // Flow towards camera
+            // b64:RmxvdyB0b3dhcmRzIGNhbWVyYQ==
             bz += scrollZ;
             
-            // When a line of dots passes the camera, wrap them far back
+            // b64:V2hlbiBhIGxpbmUgb2YgZG90cyBwYXNzZXMgdGhlIGNhbWVyYSwgd3JhcCB0aGVtIGZhciBiYWNr
             const thresholdZ = camera.position.z + 100;
             while (bz > thresholdZ) {
                 bz -= (gridScale * 2 * spacing);
                 basePositions[idx+2] -= (gridScale * 2 * spacing); 
             }
             
-            // Ambient wave motion controlled by globalEnergy
+            // b64:QW1iaWVudCB3YXZlIG1vdGlvbiBjb250cm9sbGVkIGJ5IGdsb2JhbEVuZXJneQ==
             let targetY = by + Math.sin(bz * 0.015 + bx * 0.01 + time) * 20 * energyWaveSpeed;
             
-            // Calculate ripple displacement
+            // b64:Q2FsY3VsYXRlIHJpcHBsZSBkaXNwbGFjZW1lbnQ=
             for (const splash of splashes) {
                 const dx = bx - splash.x;
                 const dz = bz - splash.z;
                 const dist = Math.sqrt(dx*dx + dz*dz);
                 
-                // Ring expands from click center
+                // b64:UmluZyBleHBhbmRzIGZyb20gY2xpY2sgY2VudGVy
                 const waveRadius = splash.time * (250 * splashMultiplier);
                 
                 const distFromWave = dist - waveRadius;
-                const splashWidth = 100 * splashMultiplier; // Wider to prevent spatial aliasing on grid
+                const splashWidth = 100 * splashMultiplier; // b64:V2lkZXIgdG8gcHJldmVudCBzcGF0aWFsIGFsaWFzaW5nIG9uIGdyaWQ=
                 const splashHeight = 90 * splashMultiplier;
 
-                // Only influence dots near the wave packet
+                // b64:T25seSBpbmZsdWVuY2UgZG90cyBuZWFyIHRoZSB3YXZlIHBhY2tldA==
                 if (Math.abs(distFromWave) < splashWidth * 3 && dist < splash.maxRadius) {
-                    // Normalized distance from wave crest
+                    // b64:Tm9ybWFsaXplZCBkaXN0YW5jZSBmcm9tIHdhdmUgY3Jlc3Q=
                     const x = (distFromWave / splashWidth) * 2;
                     
-                    // Ricker wavelet (Mexican hat) formula for a highly realistic natural ripple 
-                    // It provides a smooth crest and symmetrical troughs
+                    // b64:Umlja2VyIHdhdmVsZXQgKE1leGljYW4gaGF0KSBmb3JtdWxhIGZvciBhIGhpZ2hseSByZWFsaXN0aWMgbmF0dXJhbCByaXBwbGU=
+                    // b64:SXQgcHJvdmlkZXMgYSBzbW9vdGggY3Jlc3QgYW5kIHN5bW1ldHJpY2FsIHRyb3VnaHM=
                     const wave = (1 - x * x) * Math.exp(-0.5 * x * x);
                     
-                    // Fade out as it expands
+                    // b64:RmFkZSBvdXQgYXMgaXQgZXhwYW5kcw==
                     const fade = Math.max(0, 1 - (splash.time / Math.PI)); 
                     
                     targetY += wave * splashHeight * fade;

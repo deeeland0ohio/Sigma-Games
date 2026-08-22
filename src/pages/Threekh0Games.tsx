@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ProxyIframe from '../components/ProxyIframe';
-import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-react';
+import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2, RotateCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { threekh0Games as initialThreekh0Games } from '../data/3kh0';
 import { useFavorites } from '../context/FavoritesContext';
@@ -25,7 +25,7 @@ export default function Threekh0Games() {
             .filter((node: any) => node.path.startsWith('projects/') && node.path.split('/').length === 2 && node.type === 'tree')
             .map((node: any) => {
               const id = node.path.replace('projects/', '');
-              // Try to find an image in the tree for this project
+              // b64:VHJ5IHRvIGZpbmQgYW4gaW1hZ2UgaW4gdGhlIHRyZWUgZm9yIHRoaXMgcHJvamVjdA==
               const imageNode = data.tree.find((n: any) => 
                 n.path.startsWith(`projects/${id}/`) && 
                 (n.path.endsWith('.png') || n.path.endsWith('.jpg'))
@@ -39,7 +39,7 @@ export default function Threekh0Games() {
             });
           
           if (gameFolders.length > 0) {
-            // Sort alphabetically (0-9-a-z) by formatted title
+            // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteikgYnkgZm9ybWF0dGVkIHRpdGxl
             gameFolders.sort((a: any, b: any) => {
               const nameA = formatFileName(a.title || "").toLowerCase();
               const nameB = formatFileName(b.title || "").toLowerCase();
@@ -198,6 +198,20 @@ export default function Threekh0Games() {
             <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedGame.title || formatFileName(selectedGame.link)}</h3>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const iframe = document.getElementById('threekh0-iframe') as HTMLIFrameElement;
+                    if (iframe) {
+                      const src = iframe.src;
+                      iframe.src = 'about:blank';
+                      setTimeout(() => { iframe.src = src; }, 50);
+                    }
+                  }}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                  title="Reload Game"
+                >
+                  <RotateCw className="w-5 h-5" />
+                </button>
                 <button
                   onClick={() => {
                     const displayName = selectedGame.title || formatFileName(selectedGame.link.split('/')[1] || selectedGame.link);

@@ -83,20 +83,20 @@ export default function GamePlayer() {
           </Link>
           
           <div className="flex items-center gap-3">
-            <button 
-              onClick={reloadGame}
-              className={`p-2 text-zinc-400 hover:${colors.secondary} hover:bg-zinc-800 rounded-lg transition-all active:rotate-180 duration-500`}
-              title="Reload Game"
-            >
-              <RefreshCcw size={18} />
-            </button>
             <div className={`p-2 bg-zinc-900 rounded-lg border border-zinc-800 ${colors.tertiary || colors.secondary}`}>
               <game.icon size={18} />
             </div>
             <h1 className="font-bold text-white tracking-tight">{game.title}</h1>
             <button 
+              onClick={reloadGame}
+              className={`p-2 text-zinc-400 hover:${colors.secondary} hover:bg-zinc-800 rounded-lg transition-all active:rotate-180 duration-500 cursor-pointer`}
+              title="Reload Game"
+            >
+              <RefreshCcw size={18} />
+            </button>
+            <button 
               onClick={() => game && toggleFavorite(game.id)}
-              className={`p-1.5 rounded-lg transition-all ${
+              className={`p-1.5 rounded-lg transition-all cursor-pointer ${
                 isFavorite(game?.id || '') 
                   ? `${colors.quaternary || colors.secondary} bg-zinc-800/50` 
                   : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'

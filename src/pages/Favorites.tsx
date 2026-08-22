@@ -16,7 +16,7 @@ export default function Favorites() {
     if (typeof f === 'string') return allGamesList.find(g => g.id === f);
     if (f.source === 'local') return allGamesList.find(g => g.id === f.id);
     
-    // For external games, construct a compatible object
+    // b64:Rm9yIGV4dGVybmFsIGdhbWVzLCBjb25zdHJ1Y3QgYSBjb21wYXRpYmxlIG9iamVjdA==
     return {
       id: f.id,
       title: f.title || 'Unknown Game',
