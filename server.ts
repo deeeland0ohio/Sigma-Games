@@ -4,12 +4,14 @@ import compression from "compression";
 import path from "path";
 import fs from "fs";
 import { diesmosGames } from "./src/data/diesmos";
+import { defaultLuminGames } from "./src/data/lumin";
+import { cvkGames } from "./src/data/cvk";
 
 async function startServer() {
   const app = express();
   const PORT = 3000;
 
-  // Enable gzip compression for faster transfers
+  // b64:RW5hYmxlIGd6aXAgY29tcHJlc3Npb24gZm9yIGZhc3RlciB0cmFuc2ZlcnM=
   app.use(compression());
   app.use(express.json());
 
@@ -17,7 +19,49 @@ async function startServer() {
     res.json({ status: "ok" });
   });
 
-  // Server-side Evasion Proxy to bypass CORS & Chrome Blocker
+  // b64:SGVscGVyIHRvIGZvcm1hdCByZWxhdGl2ZSB1cGxvYWQgZGF0ZXMgKGUuZy4sICIzIGRheXMgYWdvIiwgIjIgbW9udGhzIGFnbyIp
+  function formatTimeAgo(dateInput: any): string {
+    if (!dateInput) return "";
+    let date: Date;
+    if (typeof dateInput === "number") {
+      date = new Date(dateInput);
+    } else if (dateInput instanceof Date) {
+      date = dateInput;
+    } else {
+      const cleaned = String(dateInput).replace(/^(Streamed live on|Premiered on|Premiered)\s+/i, "").trim();
+      date = new Date(cleaned);
+    }
+
+    if (isNaN(date.getTime())) {
+      if (typeof dateInput === "string" && dateInput.toLowerCase().includes("ago")) return dateInput;
+      return String(dateInput);
+    }
+
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+    if (seconds < 0 || seconds < 60) return "Just now";
+    
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+    
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+    
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days} ${days === 1 ? "day" : "days"} ago`;
+    
+    const weeks = Math.floor(days / 7);
+    if (weeks < 4) return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
+    
+    const months = Math.floor(days / 30.4375);
+    if (months < 12) return `${months} ${months === 1 ? "month" : "months"} ago`;
+    
+    const years = Math.floor(days / 365.25);
+    return `${years} ${years === 1 ? "year" : "years"} ago`;
+  }
+
+  // b64:U2VydmVyLXNpZGUgRXZhc2lvbiBQcm94eSB0byBieXBhc3MgQ09SUyAmIENocm9tZSBCbG9ja2Vy
   app.get("/api/evasion-proxy", async (req, res) => {
     try {
       const { url } = req.query;
@@ -42,6 +86,11 @@ async function startServer() {
       const contentType = proxyResponse.headers.get('content-type') || 'text/html';
       res.setHeader('Content-Type', contentType);
       
+      // b64:U3RyaXAgZnJhbWluZyByZXN0cmljdGlvbiBoZWFkZXJzIHNvIENocm9tZSB3b24ndCBibG9jayBlbWJlZGRpbmc=
+      res.removeHeader('X-Frame-Options');
+      res.removeHeader('Content-Security-Policy');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+
       const text = await proxyResponse.text();
       res.send(text);
     } catch (err: any) {
@@ -50,20 +99,20 @@ async function startServer() {
     }
   });
 
-  // --- CHAT ROOM REALTIME BACKEND ---
+  // b64:LS0tIENIQVQgUk9PTSBSRUFMVElNRSBCQUNLRU5EIC0tLQ==
   const chatMessages: any[] = [];
   const activeBannedUserIds: Record<string, number> = {};
   const activeBannedNicknames: Record<string, number> = {};
   let sseClients: any[] = [];
 
-  // Check whether Ably is configured (disabled / removed)
+  // b64:Q2hlY2sgd2hldGhlciBBYmx5IGlzIGNvbmZpZ3VyZWQgKGRpc2FibGVkIC8gcmVtb3ZlZCk=
   app.get("/api/ably-check", (req, res) => {
     res.json({
       configured: false
     });
   });
 
-  // Fallback SSE Endpoint for server-native streaming (100% free, unlimited, no API keys required!)
+  // b64:RmFsbGJhY2sgU1NFIEVuZHBvaW50IGZvciBzZXJ2ZXItbmF0aXZlIHN0cmVhbWluZyAoMTAwJSBmcmVlLCB1bmxpbWl0ZWQsIG5vIEFQSSBrZXlzIHJlcXVpcmVkISk=
   app.get("/api/chat/sse", (req, res) => {
     res.setHeader('Content-Type', 'text/event-stream');
     res.setHeader('Cache-Control', 'no-cache');
@@ -78,7 +127,7 @@ async function startServer() {
     });
   });
 
-  // Broadcast router for chat rooms (saves history in Node memory and relays via SSE stream)
+  // b64:QnJvYWRjYXN0IHJvdXRlciBmb3IgY2hhdCByb29tcyAoc2F2ZXMgaGlzdG9yeSBpbiBOb2RlIG1lbW9yeSBhbmQgcmVsYXlzIHZpYSBTU0Ugc3RyZWFtKQ==
   app.post("/api/chat/broadcast", async (req, res) => {
     try {
       const payload = req.body;
@@ -86,7 +135,7 @@ async function startServer() {
         return res.status(400).json({ error: "Invalid payload" });
       }
 
-      // Update in-memory storage based on transaction types
+      // b64:VXBkYXRlIGluLW1lbW9yeSBzdG9yYWdlIGJhc2VkIG9uIHRyYW5zYWN0aW9uIHR5cGVz
       if (payload.type === 'chat_message') {
         if (chatMessages.length >= 100) chatMessages.shift();
         chatMessages.push(payload);
@@ -110,7 +159,7 @@ async function startServer() {
         }
       }
 
-      // Broadcast via internal SSE stream (supports instant, zero-limit cost-free realtime)
+      // b64:QnJvYWRjYXN0IHZpYSBpbnRlcm5hbCBTU0Ugc3RyZWFtIChzdXBwb3J0cyBpbnN0YW50LCB6ZXJvLWxpbWl0IGNvc3QtZnJlZSByZWFsdGltZSk=
       sseClients.forEach(c => {
         try {
           c.res.write(`data: ${JSON.stringify(payload)}\n\n`);
@@ -126,7 +175,7 @@ async function startServer() {
     }
   });
 
-  // Retrieve message history & current ban states from server cache
+  // b64:UmV0cmlldmUgbWVzc2FnZSBoaXN0b3J5ICYgY3VycmVudCBiYW4gc3RhdGVzIGZyb20gc2VydmVyIGNhY2hl
   app.get("/api/chat/history", (req, res) => {
     res.json({
       messages: chatMessages,
@@ -202,7 +251,7 @@ async function startServer() {
         let id = idMatch[1];
         if (!ids.includes(id)) continue;
         
-        // Remove so we process each unique ID only once
+        // b64:UmVtb3ZlIHNvIHdlIHByb2Nlc3MgZWFjaCB1bmlxdWUgSUQgb25seSBvbmNl
         ids.splice(ids.indexOf(id), 1);
 
         const titleMatch = card.match(/tile-title[^>]*>(.*?)<\/p>/s);
@@ -232,19 +281,45 @@ async function startServer() {
           thumbnail,
           duration,
           views,
-          channel
+          channel,
+          uploadedAgo: ""
         });
       }
 
-      // Fetch accurate channel names from oEmbed API in parallel
+      // b64:RmV0Y2ggYWNjdXJhdGUgY2hhbm5lbCBuYW1lcywgdGl0bGVzIGFuZCB1cGxvYWQgZGF0ZXMgaW4gcGFyYWxsZWw=
       await Promise.all(
         results.map(async (item) => {
           try {
-            const embedRes = await fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${item.id}&format=json`);
-            if (embedRes.ok) {
+            const [embedRes, watchRes] = await Promise.all([
+              fetch(`https://www.youtube.com/oembed?url=https://www.youtube.com/watch?v=${item.id}&format=json`).catch(() => null),
+              fetch(`https://www.youtube.com/watch?v=${item.id}`, {
+                headers: {
+                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+                  "Accept-Language": "en-US,en;q=0.9"
+                }
+              }).catch(() => null)
+            ]);
+
+            if (embedRes && embedRes.ok) {
               const data = await embedRes.json();
               if (data.author_name) item.channel = data.author_name;
-              if (data.title) item.title = data.title; // sometimes oembed provides an un-truncated, cleaner title
+              if (data.title) item.title = data.title;
+            }
+
+            if (watchRes && watchRes.ok) {
+              const text = await watchRes.text();
+              const dateMatch = text.match(/"dateText":\{"simpleText":"([^"]+)"\}/)?.[1] ||
+                                text.match(/"uploadDate":"([^"]+)"/)?.[1] ||
+                                text.match(/"publishDate":"([^"]+)"/)?.[1] ||
+                                text.match(/itemprop="datePublished" content="([^"]+)"/)?.[1];
+              if (dateMatch) {
+                item.uploadedAgo = formatTimeAgo(dateMatch);
+              }
+              if (!item.channel || item.channel === "YouTube") {
+                const authorMatch = text.match(/"ownerChannelName":"([^"]+)"/)?.[1] ||
+                                    text.match(/"author":"([^"]+)"/)?.[1];
+                if (authorMatch) item.channel = authorMatch;
+              }
             }
           } catch (e) {
             // Error silently, fall back to scraped data
@@ -306,7 +381,7 @@ async function startServer() {
           decodedUrl = url;
         }
 
-        // Match: tiktok.com/@username/video/1234567890
+        // b64:TWF0Y2g6IHRpa3Rvay5jb20vQHVzZXJuYW1lL3ZpZGVvLzEyMzQ1Njc4OTA=
         const tiktokMatch = decodedUrl.match(/tiktok\.com\/@([^\/]+)\/video\/(\d+)/i);
         if (!tiktokMatch) continue;
 
@@ -330,6 +405,15 @@ async function startServer() {
         const viewsMatch = card.match(/(\d[\d.,]*[MK]?) views/i);
         const views = viewsMatch?.[1] || "unknown";
 
+        let uploadedAgo = "";
+        try {
+          // b64:VGlrVG9rIDY0LWJpdCBzbm93Zmxha2UgSURzIGVuY29kZSB0aW1lc3RhbXAgaW4gdXBwZXIgMzIgYml0cw==
+          const timeSec = Number(BigInt(id) >> 32n);
+          if (!isNaN(timeSec) && timeSec > 0) {
+            uploadedAgo = formatTimeAgo(timeSec * 1000);
+          }
+        } catch (e) {}
+
         results.push({
           id,
           username,
@@ -337,7 +421,8 @@ async function startServer() {
           thumbnail,
           duration,
           views,
-          channel: `@${username}`
+          channel: `@${username}`,
+          uploadedAgo
         });
       }
 
@@ -348,15 +433,23 @@ async function startServer() {
     }
   });
 
-  // API endpoint for Diesmos Games to support the static site unblocked loader
+  // b64:QVBJIGVuZHBvaW50IGZvciBnYW1lIGxpYnJhcmllcyB0byBzdXBwb3J0IHN0YXRpYyB1bmJsb2NrZWQgbG9hZGVycw==
   app.get("/api/diesmos-games", (req, res) => {
     res.json(diesmosGames);
   });
 
-  // Intercept game HTML to inject localStorage mock to prevent crashes in blob:null
+  app.get("/api/lumin-games", (req, res) => {
+    res.json(defaultLuminGames);
+  });
+
+  app.get("/api/cvk-games", (req, res) => {
+    res.json(cvkGames);
+  });
+
+  // b64:SW50ZXJjZXB0IGdhbWUgSFRNTCB0byBpbmplY3QgbG9jYWxTdG9yYWdlIG1vY2sgdG8gcHJldmVudCBjcmFzaGVzIGluIGJsb2I6bnVsbA==
   app.get("/games/*/index.html", async (req, res, next) => {
     try {
-      // Decode the URL path to handle any spaces or special characters
+      // b64:RGVjb2RlIHRoZSBVUkwgcGF0aCB0byBoYW5kbGUgYW55IHNwYWNlcyBvciBzcGVjaWFsIGNoYXJhY3RlcnM=
       const filePath = path.join(process.cwd(), 'public', decodeURIComponent(req.path));
       if (fs.existsSync(filePath)) {
         let html = await fs.promises.readFile(filePath, 'utf-8');
@@ -411,7 +504,7 @@ async function startServer() {
     next();
   });
 
-  // Serve static.html and static.svg directly from workspace root
+  // b64:U2VydmUgc3RhdGljLmh0bWwgYW5kIHN0YXRpYy5zdmcgZGlyZWN0bHkgZnJvbSB3b3Jrc3BhY2Ugcm9vdA==
   app.get("/static.html", (req, res) => {
     res.sendFile(path.join(process.cwd(), "static.html"));
   });
@@ -420,16 +513,16 @@ async function startServer() {
     res.sendFile(path.join(process.cwd(), "static.svg"));
   });
 
-  // Keep compatibility for /sigmastatic
+  // b64:S2VlcCBjb21wYXRpYmlsaXR5IGZvciAvc2lnbWFzdGF0aWM=
   app.get("/sigmastatic", (req, res) => {
     res.sendFile(path.join(process.cwd(), "static.html"));
   });
 
-  // Serve public directory directly for maximum speed on local games
-  // This bypasses Vite's processing for large static HTML files
+  // b64:U2VydmUgcHVibGljIGRpcmVjdG9yeSBkaXJlY3RseSBmb3IgbWF4aW11bSBzcGVlZCBvbiBsb2NhbCBnYW1lcw==
+  // b64:VGhpcyBieXBhc3NlcyBWaXRlJ3MgcHJvY2Vzc2luZyBmb3IgbGFyZ2Ugc3RhdGljIEhUTUwgZmlsZXM=
   app.use(express.static(path.join(process.cwd(), 'public')));
   
-  // Prevent missing local game assets from hitting Vite middleware and crashing the server
+  // b64:UHJldmVudCBtaXNzaW5nIGxvY2FsIGdhbWUgYXNzZXRzIGZyb20gaGl0dGluZyBWaXRlIG1pZGRsZXdhcmUgYW5kIGNyYXNoaW5nIHRoZSBzZXJ2ZXI=
   app.use('/games', (req, res) => {
     res.status(404).send('Game asset not found');
   });

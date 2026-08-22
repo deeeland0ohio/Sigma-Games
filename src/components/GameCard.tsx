@@ -27,7 +27,7 @@ export default function GameCard({ game, to }: GameCardProps) {
   const favorited = isFavorite(game.id);
 
   const handleClick = (e: React.MouseEvent) => {
-    if ((game.id === 'hollow-knight-silksong' || game.id === 'repo' || game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos') && !showWarning) {
+    if ((game.id === 'hollow-knight-silksong' || game.id === 'repo' || game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos' || game.id === 'lumin' || game.id === 'cvk') && !showWarning) {
       e.preventDefault();
       setShowWarning(true);
     }
@@ -52,18 +52,19 @@ export default function GameCard({ game, to }: GameCardProps) {
   const isTeal = game.id === '3kh0';
   const isOrange = game.id === 'noah';
   const isGray = game.id === 'alexr';
-  const isCyan = game.id === 'hydra';
+  const isCyan = game.id === 'hydra' || game.id === 'lumin';
+  const isAmber = game.id === 'cvk';
 
-  const cardHoverBorder = isRed ? 'hover:border-red-500' : isBlue ? 'hover:border-blue-500' : isPurple ? 'hover:border-purple-500' : isTeal ? 'hover:border-teal-500' : isOrange ? 'hover:border-orange-500' : isGray ? 'hover:border-zinc-500' : isCyan ? 'hover:border-cyan-500' : colors.hoverBorder;
-  const cardHoverShadow = isRed ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' : isBlue ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]' : isPurple ? 'hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]' : isTeal ? 'hover:shadow-[0_0_15px_rgba(20,184,166,0.2)]' : isOrange ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.2)]' : isGray ? 'hover:shadow-[0_0_15px_rgba(113,113,122,0.2)]' : isCyan ? 'hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]' : colors.hoverShadow;
-  const cardGradientFrom = isRed ? 'from-red-500/10' : isBlue ? 'from-blue-500/10' : isPurple ? 'from-purple-500/10' : isTeal ? 'from-teal-500/10' : isOrange ? 'from-orange-500/10' : isGray ? 'from-zinc-500/10' : isCyan ? 'from-cyan-500/10' : colors.gradientFrom;
-  const cardGradientVia = (isRed || isBlue || isPurple || isTeal || isOrange || isGray || isCyan) ? '' : (colors.gradientVia || '');
-  const cardGradientTo = (isRed || isBlue || isPurple || isTeal || isOrange || isGray || isCyan) ? 'to-transparent' : colors.gradientTo;
-  const cardTertiary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : isGray ? 'text-zinc-400' : isCyan ? 'text-cyan-500' : (colors.tertiary || colors.secondary);
-  const cardGroupHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : isGray ? 'group-hover:text-zinc-300' : isCyan ? 'group-hover:text-cyan-400' : (colors.groupHoverQuaternary || colors.groupHoverText);
-  const cardGroupHoverBorder = isRed ? 'group-hover:border-red-500/50' : isBlue ? 'group-hover:border-blue-500/50' : isPurple ? 'group-hover:border-purple-500/50' : isTeal ? 'group-hover:border-teal-500/50' : isOrange ? 'group-hover:border-orange-500/50' : isGray ? 'group-hover:border-zinc-500/50' : isCyan ? 'group-hover:border-cyan-500/50' : colors.groupHoverBorder;
-  const titleHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : isGray ? 'group-hover:text-zinc-300' : isCyan ? 'group-hover:text-cyan-400' : colors.groupHoverText;
-  const cardQuaternary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : isGray ? 'text-zinc-400' : isCyan ? 'text-cyan-500' : (colors.quaternary || colors.secondary);
+  const cardHoverBorder = isRed ? 'hover:border-red-500' : isBlue ? 'hover:border-blue-500' : isPurple ? 'hover:border-purple-500' : isTeal ? 'hover:border-teal-500' : isOrange ? 'hover:border-orange-500' : isGray ? 'hover:border-zinc-500' : isCyan ? 'hover:border-cyan-500' : isAmber ? 'hover:border-amber-500' : colors.hoverBorder;
+  const cardHoverShadow = isRed ? 'hover:shadow-[0_0_15px_rgba(239,68,68,0.2)]' : isBlue ? 'hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]' : isPurple ? 'hover:shadow-[0_0_15px_rgba(168,85,247,0.2)]' : isTeal ? 'hover:shadow-[0_0_15px_rgba(20,184,166,0.2)]' : isOrange ? 'hover:shadow-[0_0_15px_rgba(249,115,22,0.2)]' : isGray ? 'hover:shadow-[0_0_15px_rgba(113,113,122,0.2)]' : isCyan ? 'hover:shadow-[0_0_15px_rgba(6,182,212,0.2)]' : isAmber ? 'hover:shadow-[0_0_15px_rgba(245,158,11,0.2)]' : colors.hoverShadow;
+  const cardGradientFrom = isRed ? 'from-red-500/10' : isBlue ? 'from-blue-500/10' : isPurple ? 'from-purple-500/10' : isTeal ? 'from-teal-500/10' : isOrange ? 'from-orange-500/10' : isGray ? 'from-zinc-500/10' : isCyan ? 'from-cyan-500/10' : isAmber ? 'from-amber-500/10' : colors.gradientFrom;
+  const cardGradientVia = (isRed || isBlue || isPurple || isTeal || isOrange || isGray || isCyan || isAmber) ? '' : (colors.gradientVia || '');
+  const cardGradientTo = (isRed || isBlue || isPurple || isTeal || isOrange || isGray || isCyan || isAmber) ? 'to-transparent' : colors.gradientTo;
+  const cardTertiary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : isGray ? 'text-zinc-400' : isCyan ? 'text-cyan-500' : isAmber ? 'text-amber-500' : (colors.tertiary || colors.secondary);
+  const cardGroupHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : isGray ? 'group-hover:text-zinc-300' : isCyan ? 'group-hover:text-cyan-400' : isAmber ? 'group-hover:text-amber-400' : (colors.groupHoverQuaternary || colors.groupHoverText);
+  const cardGroupHoverBorder = isRed ? 'group-hover:border-red-500/50' : isBlue ? 'group-hover:border-blue-500/50' : isPurple ? 'group-hover:border-purple-500/50' : isTeal ? 'group-hover:border-teal-500/50' : isOrange ? 'group-hover:border-orange-500/50' : isGray ? 'group-hover:border-zinc-500/50' : isCyan ? 'group-hover:border-cyan-500/50' : isAmber ? 'group-hover:border-amber-500/50' : colors.groupHoverBorder;
+  const titleHoverText = isRed ? 'group-hover:text-red-400' : isBlue ? 'group-hover:text-blue-400' : isPurple ? 'group-hover:text-purple-400' : isTeal ? 'group-hover:text-teal-400' : isOrange ? 'group-hover:text-orange-400' : isGray ? 'group-hover:text-zinc-300' : isCyan ? 'group-hover:text-cyan-400' : isAmber ? 'group-hover:text-amber-400' : colors.groupHoverText;
+  const cardQuaternary = isRed ? 'text-red-500' : isBlue ? 'text-blue-500' : isPurple ? 'text-purple-500' : isTeal ? 'text-teal-500' : isOrange ? 'text-orange-500' : isGray ? 'text-zinc-400' : isCyan ? 'text-cyan-500' : isAmber ? 'text-amber-500' : (colors.quaternary || colors.secondary);
 
   return (
     <>
@@ -79,12 +80,12 @@ export default function GameCard({ game, to }: GameCardProps) {
             </div>
             <h2 className="text-xl font-bold text-white mb-2">
               {game.id === 'repo' ? 'Loading' : 
-               (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos') ? 'Notice' : 'Warning!'}
+               (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos' || game.id === 'lumin' || game.id === 'cvk') ? 'Notice' : 'Warning!'}
             </h2>
             <p className="text-zinc-400 mb-6">
               {game.id === 'repo' 
                 ? "If you see a black screen for a long time, don't worry it's just loading." 
-                : (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos')
+                : (game.id === 'gn-math' || game.id === 'ugs' || game.id === 'seraph' || game.id === '3kh0' || game.id === 'noah' || game.id === 'alexr' || game.id === 'hydra' || game.id === 'diesmos' || game.id === 'lumin' || game.id === 'cvk')
                 ? "These aren't hosted on my site, some games here might not work. And there might be ads."
                 : "This Game needs at least  4GB of ram to play! Your school Chromebook probably doesn't have that."}
             </p>

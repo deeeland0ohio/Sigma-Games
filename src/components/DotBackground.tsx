@@ -64,15 +64,15 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
     let height = window.innerHeight;
     let dpr = window.devicePixelRatio || 1;
     
-    // Set display size (css pixels)
+    // b64:U2V0IGRpc3BsYXkgc2l6ZSAoY3NzIHBpeGVscyk=
     canvas.style.width = width + 'px';
     canvas.style.height = height + 'px';
     
-    // Set actual size in memory (scaled to account for extra pixel density)
+    // b64:U2V0IGFjdHVhbCBzaXplIGluIG1lbW9yeSAoc2NhbGVkIHRvIGFjY291bnQgZm9yIGV4dHJhIHBpeGVsIGRlbnNpdHkp
     canvas.width = Math.floor(width * dpr);
     canvas.height = Math.floor(height * dpr);
     
-    // Normalize coordinate system to use css pixels
+    // b64:Tm9ybWFsaXplIGNvb3JkaW5hdGUgc3lzdGVtIHRvIHVzZSBjc3MgcGl4ZWxz
     ctx.scale(dpr, dpr);
 
     let mouse = { x: -1000, y: -1000 };
@@ -152,26 +152,26 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       
       ctx.clearRect(0, 0, width, height);
 
-      // Draw the fluid liquid drifting background blobs directly on the canvas
-      // This is extremely high-performance (completely hardware-accelerated, zero DOM blur filters or layout thrashing)
-      const driftTime = Date.now() * 0.0000195; // Beautiful slow, flowing drift (1.3x faster than before)
+      // b64:RHJhdyB0aGUgZmx1aWQgbGlxdWlkIGRyaWZ0aW5nIGJhY2tncm91bmQgYmxvYnMgZGlyZWN0bHkgb24gdGhlIGNhbnZhcw==
+      // b64:VGhpcyBpcyBleHRyZW1lbHkgaGlnaC1wZXJmb3JtYW5jZSAoY29tcGxldGVseSBoYXJkd2FyZS1hY2NlbGVyYXRlZCwgemVybyBET00gYmx1ciBmaWx0ZXJzIG9yIGxheW91dCB0aHJhc2hpbmcp
+      const driftTime = Date.now() * 0.0000195; // b64:QmVhdXRpZnVsIHNsb3csIGZsb3dpbmcgZHJpZnQgKDEuM3ggZmFzdGVyIHRoYW4gYmVmb3JlKQ==
 
-      // Blob 1: color1 (drifting top-left area)
+      // b64:QmxvYiAxOiBjb2xvcjEgKGRyaWZ0aW5nIHRvcC1sZWZ0IGFyZWEp
       const bx1 = width * 0.25 + Math.sin(driftTime * 0.5) * width * 0.15;
       const by1 = height * 0.25 + Math.cos(driftTime * 0.4) * height * 0.15;
       const r1 = Math.max(width, height) * 0.5;
 
-      // Blob 2: color2 (drifting bottom-right area)
+      // b64:QmxvYiAyOiBjb2xvcjIgKGRyaWZ0aW5nIGJvdHRvbS1yaWdodCBhcmVhKQ==
       const bx2 = width * 0.75 + Math.sin(driftTime * -0.4) * width * 0.15;
       const by2 = height * 0.75 + Math.cos(driftTime * 0.5) * height * 0.15;
       const r2 = Math.max(width, height) * 0.5;
 
-      // Blob 3: color3 || color1 (drifting middle-right area)
+      // b64:QmxvYiAzOiBjb2xvcjMgfHwgY29sb3IxIChkcmlmdGluZyBtaWRkbGUtcmlnaHQgYXJlYSk=
       const bx3 = width * 0.7 + Math.sin(driftTime * 0.6) * width * 0.15;
       const by3 = height * 0.3 + Math.cos(driftTime * -0.5) * height * 0.15;
       const r3 = Math.max(width, height) * 0.45;
 
-      // Blob 4: color4 || color2 (drifting bottom-left area)
+      // b64:QmxvYiA0OiBjb2xvcjQgfHwgY29sb3IyIChkcmlmdGluZyBib3R0b20tbGVmdCBhcmVhKQ==
       const bx4 = width * 0.3 + Math.sin(driftTime * -0.6) * width * 0.15;
       const by4 = height * 0.7 + Math.cos(driftTime * 0.4) * height * 0.15;
       const r4 = Math.max(width, height) * 0.5;
@@ -193,7 +193,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       drawBlob(bx3, by3, r3, color3 || color1, 0.06);
       drawBlob(bx4, by4, r4, color4 || color2, 0.055);
       
-      // Draw faint grid on top of background
+      // b64:RHJhdyBmYWludCBncmlkIG9uIHRvcCBvZiBiYWNrZ3JvdW5k
       ctx.beginPath();
       ctx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
       ctx.lineWidth = 0.4;
@@ -207,7 +207,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       }
       ctx.stroke();
 
-      // Update shockwaves
+      // b64:VXBkYXRlIHNob2Nrd2F2ZXM=
       for (let j = shockwaves.length - 1; j >= 0; j--) {
         const sw = shockwaves[j];
         sw.radius += sw.speed;
@@ -225,7 +225,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
           dot.vx = 0;
           dot.vy = 0;
         } else {
-          // 1. Mouse hover repulsion
+          // b64:MS4gTW91c2UgaG92ZXIgcmVwdWxzaW9u
           const dx = mouse.x - dot.x;
           const dy = mouse.y - dot.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
@@ -234,12 +234,12 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
           if (distance < maxDistance && distance > 0) {
             const force = (maxDistance - distance) / maxDistance;
             const angle = Math.atan2(dy, dx);
-            // push away
+            // b64:cHVzaCBhd2F5
             dot.vx -= Math.cos(angle) * force * 1.5 * powerRef.current;
             dot.vy -= Math.sin(angle) * force * 1.5 * powerRef.current;
           }
 
-          // 2. Shockwave forces
+          // b64:Mi4gU2hvY2t3YXZlIGZvcmNlcw==
           for (let j = 0; j < shockwaves.length; j++) {
             const sw = shockwaves[j];
             const sdx = dot.x - sw.x;
@@ -255,7 +255,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
             }
           }
           
-          // 3. Spring back to original position (with slight sway)
+          // b64:My4gU3ByaW5nIGJhY2sgdG8gb3JpZ2luYWwgcG9zaXRpb24gKHdpdGggc2xpZ2h0IHN3YXkp
           const timeVal = Date.now() * 0.0008;
           const swayX = Math.sin(timeVal + dot.baseX * 0.01) * 6.0;
           const swayY = Math.cos(timeVal + dot.baseY * 0.01) * 6.0;
@@ -263,16 +263,16 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
           dot.vx += (dot.baseX + swayX - dot.x) * speed;
           dot.vy += (dot.baseY + swayY - dot.y) * speed;
           
-          // 4. Friction (dampening)
+          // b64:NC4gRnJpY3Rpb24gKGRhbXBlbmluZyk=
           dot.vx *= 0.82;
           dot.vy *= 0.82;
           
-          // 5. Apply velocity to position
+          // b64:NS4gQXBwbHkgdmVsb2NpdHkgdG8gcG9zaXRpb24=
           dot.x += dot.vx;
           dot.y += dot.vy;
         }
         
-        // Cursor brightness effect
+        // b64:Q3Vyc29yIGJyaWdodG5lc3MgZWZmZWN0
         const dx = mouse.x - dot.x;
         const dy = mouse.y - dot.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
@@ -285,7 +285,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
           scale = 1 + influence * 0.5;
         }
 
-        // Shockwave brightness effect
+        // b64:U2hvY2t3YXZlIGJyaWdodG5lc3MgZWZmZWN0
         for (let j = 0; j < shockwaves.length; j++) {
           const sw = shockwaves[j];
           const sdx = dot.x - sw.x;
@@ -303,7 +303,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
         ctx.beginPath();
         ctx.arc(dot.x, dot.y, size * scale, 0, Math.PI * 2);
         
-        // Apply opacity brightness based on proximity/shockwaves
+        // b64:QXBwbHkgb3BhY2l0eSBicmlnaHRuZXNzIGJhc2VkIG9uIHByb3hpbWl0eS9zaG9ja3dhdmVz
         let alpha = 0.45;
         if (brightness > 1) {
           alpha = Math.min(1.0, 0.45 * brightness);
@@ -325,7 +325,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       window.removeEventListener('resize', initDots);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [color1, color2, color3, color4]); // re-run when colors change
+  }, [color1, color2, color3, color4]); // b64:cmUtcnVuIHdoZW4gY29sb3JzIGNoYW5nZQ==
 
   return (
     <canvas 

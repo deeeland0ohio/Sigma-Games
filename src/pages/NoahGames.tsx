@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ProxyIframe from '../components/ProxyIframe';
-import { Search, X, Maximize, Box, Heart, Loader2, RefreshCw } from 'lucide-react';
+import { Search, X, Maximize, Box, Heart, Loader2, RefreshCw, RotateCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { noahGames as initialNoahGames } from '../data/noah';
 import { useFavorites } from '../context/FavoritesContext';
@@ -189,6 +189,20 @@ export default function NoahGames() {
             <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedGame.title || formatFileName(selectedGame.url)}</h3>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const iframe = document.getElementById('noah-iframe') as HTMLIFrameElement;
+                    if (iframe) {
+                      const src = iframe.src;
+                      iframe.src = 'about:blank';
+                      setTimeout(() => { iframe.src = src; }, 50);
+                    }
+                  }}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                  title="Reload Game"
+                >
+                  <RotateCw className="w-5 h-5" />
+                </button>
                 <button
                   onClick={() => {
                     const displayName = selectedGame.title || formatFileName(selectedGame.url.split('/').pop() || selectedGame.url);

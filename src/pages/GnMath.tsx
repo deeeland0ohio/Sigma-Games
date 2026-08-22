@@ -1,7 +1,7 @@
 import ProxyIframe from '../components/ProxyIframe';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
+import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw, RotateCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -32,14 +32,24 @@ export default function GnMath() {
       const res = await fetch("https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json");
       const raw = await res.json();
       
-      const parsedZones = raw.slice(1).map((z: any) => ({
-        name: z.name,
-        cover: z.cover.replace("{COVER_URL}", COVER_BASE),
-        url: z.url.replace("{HTML_URL}", HTML_BASE),
-        tags: z.special || []
-      }));
+      const parsedZones = raw
+        .filter((z: any) => {
+          if (!z || !z.name || !z.url) return false;
+          const name = z.name.trim().toLowerCase();
+          const url = z.url.trim().toLowerCase();
+          if (name.startsWith('[!]') || name.includes('[!]') || name.startsWith('[?]')) return false;
+          if (name.includes('comment') || name.includes('discord') || name.includes('suggest game') || name.includes('suggest a game')) return false;
+          if (url.includes('discord.gg') || url.includes('forms.gle') || url.includes('docs.google.com/forms')) return false;
+          return true;
+        })
+        .map((z: any) => ({
+          name: z.name,
+          cover: z.cover ? z.cover.replace("{COVER_URL}", COVER_BASE) : '',
+          url: z.url.replace("{HTML_URL}", HTML_BASE),
+          tags: z.special || []
+        }));
       
-      // Sort alphabetically (0-9-a-z)
+      // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteik=
       parsedZones.sort((a: any, b: any) => {
         const nameA = (a.name || "").toLowerCase();
         const nameB = (b.name || "").toLowerCase();
@@ -189,6 +199,20 @@ export default function GnMath() {
             <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedZone.name}</h3>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const iframe = document.getElementById('game-iframe') as HTMLIFrameElement;
+                    if (iframe) {
+                      const src = iframe.src;
+                      iframe.src = 'about:blank';
+                      setTimeout(() => { iframe.src = src; }, 50);
+                    }
+                  }}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                  title="Reload Game"
+                >
+                  <RotateCw className="w-5 h-5" />
+                </button>
                 <button
                   onClick={() => {
                     const gameId = `gnmath:${selectedZone.name}`;

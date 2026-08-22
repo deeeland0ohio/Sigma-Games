@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ProxyIframe from '../components/ProxyIframe';
-import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2 } from 'lucide-react';
+import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2, RotateCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { seraphGames as initialSeraphGames } from '../data/seraph';
 import { useFavorites } from '../context/FavoritesContext';
@@ -32,7 +32,7 @@ export default function SeraphGames() {
             });
           
           if (gameFolders.length > 0) {
-            // Sort alphabetically (0-9-a-z) by formatted title
+            // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteikgYnkgZm9ybWF0dGVkIHRpdGxl
             gameFolders.sort((a: any, b: any) => {
               const nameA = formatFileName(a.id).toLowerCase();
               const nameB = formatFileName(b.id).toLowerCase();
@@ -188,6 +188,20 @@ export default function SeraphGames() {
             <div className="flex items-center justify-between px-4 py-3 bg-zinc-900 border-b border-zinc-800">
               <h3 className="text-white font-medium pl-2 truncate flex-1">{formatFileName(selectedFile)}</h3>
               <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const iframe = document.getElementById('seraph-iframe') as HTMLIFrameElement;
+                    if (iframe) {
+                      const src = iframe.src;
+                      iframe.src = 'about:blank';
+                      setTimeout(() => { iframe.src = src; }, 50);
+                    }
+                  }}
+                  className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
+                  title="Reload Game"
+                >
+                  <RotateCw className="w-5 h-5" />
+                </button>
                 <button
                   onClick={() => {
                     const displayName = formatFileName(selectedFile);

@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import ProxyIframe from '../components/ProxyIframe';
-import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw } from 'lucide-react';
+import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw, RotateCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
 import { alexrGames as initialAlexrGames } from '../data/alexr';
 import { useFavorites } from '../context/FavoritesContext';
@@ -17,7 +17,7 @@ export interface AlexrGame {
 
 export default function AlexrGames() {
   const [games, setGames] = useState<AlexrGame[]>(() => {
-    // Exclude Code Editor on initial mount if present in backup dataset
+    // b64:RXhjbHVkZSBDb2RlIEVkaXRvciBvbiBpbml0aWFsIG1vdW50IGlmIHByZXNlbnQgaW4gYmFja3VwIGRhdGFzZXQ=
     return initialAlexrGames.filter(g => 
       g.title !== "Alexr Code Editor" && 
       g.path !== "https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Apps/codeeditor.html"
@@ -43,7 +43,7 @@ export default function AlexrGames() {
       if (res.ok) {
         const raw = await res.json() as AlexrGame[];
         if (Array.isArray(raw)) {
-          // Filter out "Alexr Code Editor" from dynamic data source
+          // b64:RmlsdGVyIG91dCAiQWxleHIgQ29kZSBFZGl0b3IiIGZyb20gZHluYW1pYyBkYXRhIHNvdXJjZQ==
           const parsed = raw.filter((g: AlexrGame) => 
             g.title !== "Alexr Code Editor" && 
             g.path !== "https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Apps/codeeditor.html"
@@ -52,7 +52,7 @@ export default function AlexrGames() {
             path: g.path
           }));
           
-          // Sort alphabetically (0-9-a-z)
+          // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteik=
           parsed.sort((a, b) => {
             const titleA = (a.title || "").toLowerCase();
             const titleB = (b.title || "").toLowerCase();
@@ -77,7 +77,7 @@ export default function AlexrGames() {
 
   const openGame = (game: AlexrGame) => {
     setSelectedGame(game);
-    setReloadKey(0); // Reset reload key upon opening new game
+    setReloadKey(0); // b64:UmVzZXQgcmVsb2FkIGtleSB1cG9uIG9wZW5pbmcgbmV3IGdhbWU=
   };
 
   const filteredGames = games.filter(g => {
@@ -229,11 +229,20 @@ export default function AlexrGames() {
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedGame.title}</h3>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setReloadKey(prev => prev + 1)}
+                  onClick={() => {
+                    const iframe = document.getElementById('alexr-game-iframe') as HTMLIFrameElement;
+                    if (iframe) {
+                      const src = iframe.src;
+                      iframe.src = 'about:blank';
+                      setTimeout(() => { iframe.src = src; }, 50);
+                    } else {
+                      setReloadKey(prev => prev + 1);
+                    }
+                  }}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                   title="Reload Game"
                 >
-                  <RefreshCw className="w-5 h-5" />
+                  <RotateCw className="w-5 h-5" />
                 </button>
                 <button
                   onClick={() => {

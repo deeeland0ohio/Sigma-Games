@@ -11,33 +11,69 @@ interface MediaItem {
   duration?: string;
   views: string;
   channel: string;
+  uploadedAgo?: string;
   isTikTok?: boolean;
   username?: string;
   isShort?: boolean;
+}
+
+function formatTimeAgoClient(dateInput: any): string {
+  if (!dateInput) return "";
+  let date: Date;
+  if (typeof dateInput === "number") {
+    date = new Date(dateInput);
+  } else if (dateInput instanceof Date) {
+    date = dateInput;
+  } else {
+    const cleaned = String(dateInput).replace(/^(Streamed live on|Premiered on|Premiered)\s+/i, "").trim();
+    date = new Date(cleaned);
+  }
+
+  if (isNaN(date.getTime())) {
+    if (typeof dateInput === "string" && dateInput.toLowerCase().includes("ago")) return dateInput;
+    return String(dateInput);
+  }
+
+  const now = new Date();
+  const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+
+  if (seconds < 0 || seconds < 60) return "Just now";
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `${minutes} ${minutes === 1 ? "minute" : "minutes"} ago`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} ${hours === 1 ? "hour" : "hours"} ago`;
+  
+  const days = Math.floor(hours / 24);
+  if (days < 7) return `${days} ${days === 1 ? "day" : "days"} ago`;
+  
+  const weeks = Math.floor(days / 7);
+  if (weeks < 4) return `${weeks} ${weeks === 1 ? "week" : "weeks"} ago`;
+  
+  const months = Math.floor(days / 30.4375);
+  if (months < 12) return `${months} ${months === 1 ? "month" : "months"} ago`;
+  
+  const years = Math.floor(days / 365.25);
+  return `${years} ${years === 1 ? "year" : "years"} ago`;
 }
 
 function TikTokEmbed({ videoId }: { videoId: string; username?: string }) {
   return (
     <div className="w-full flex justify-center bg-zinc-950/80 p-4 rounded-2xl border border-zinc-900 overflow-hidden">
       <div 
-        className="relative overflow-hidden rounded-xl bg-black shadow-2xl"
+        className="relative overflow-hidden rounded-2xl bg-black shadow-2xl"
         style={{
           width: '325px',
-          height: '525px', // Clean cropped height of the video player viewport
+          height: '580px',
         }}
       >
         <ProxyIframe
-          src={`https://www.tiktok.com/embed/v2/${videoId}`}
-          className="absolute"
-          style={{
-            top: '0',
-            left: '0',
-            width: '325px',
-            height: '670px', // Full height containing the bottom bar (pushed out of bounds)
-            border: 'none',
-          }}
-          allow="autoplay; encrypted-media; fullscreen; picture-in-picture"
+          src={`https://www.tiktok.com/player/v1/${videoId}?autoplay=1`}
+          className="absolute inset-0 w-full h-full border-none"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
           allowFullScreen
+          referrerPolicy="strict-origin-when-cross-origin"
           title="TikTok Player"
         />
       </div>
@@ -63,12 +99,12 @@ export default function Entertainment() {
   const playerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef(activeTab);
 
-  // Keep the ref in sync with the state
+  // b64:S2VlcCB0aGUgcmVmIGluIHN5bmMgd2l0aCB0aGUgc3RhdGU=
   useEffect(() => {
     activeTabRef.current = activeTab;
   }, [activeTab]);
 
-  // Trigger results fetch on active tab change
+  // b64:VHJpZ2dlciByZXN1bHRzIGZldGNoIG9uIGFjdGl2ZSB0YWIgY2hhbmdl
   useEffect(() => {
     setSearchQuery('');
     setSelectedMedia(null);
@@ -86,25 +122,25 @@ export default function Entertainment() {
       }
     } catch (e) {}
 
-    // Match: tiktok.com/@username/video/1234567890
+    // b64:TWF0Y2g6IHRpa3Rvay5jb20vQHVzZXJuYW1lL3ZpZGVvLzEyMzQ1Njc4OTA=
     const match1 = decoded.match(/tiktok\.com\/@([^\/]+)\/video\/(\d+)/i);
     if (match1) {
       return { username: match1[1], id: match1[2] };
     }
 
-    // Match: tiktok.com/v/1234567890 or tiktok.com/embed/1234567890
+    // b64:TWF0Y2g6IHRpa3Rvay5jb20vdi8xMjM0NTY3ODkwIG9yIHRpa3Rvay5jb20vZW1iZWQvMTIzNDU2Nzg5MA==
     const match2 = decoded.match(/tiktok\.com\/(?:v|embed|embed\/v2)\/(\d+)/i);
     if (match2) {
       return { username: '', id: match2[1] };
     }
 
-    // General digits at the end
+    // b64:R2VuZXJhbCBkaWdpdHMgYXQgdGhlIGVuZA==
     const match3 = decoded.match(/tiktok\.com\/.*\/(\d+)/i);
     if (match3) {
       return { username: '', id: match3[1] };
     }
 
-    // Is it just a numeric string of digits (presumably a direct video ID)?
+    // b64:SXMgaXQganVzdCBhIG51bWVyaWMgc3RyaW5nIG9mIGRpZ2l0cyAocHJlc3VtYWJseSBhIGRpcmVjdCB2aWRlbyBJRCk/
     if (/^\d+$/.test(url.trim())) {
       return { username: '', id: url.trim() };
     }
@@ -116,23 +152,23 @@ export default function Entertainment() {
     const trimmed = input.trim();
     let isShort = trimmed.toLowerCase().includes('/shorts/') || trimmed.toLowerCase().includes('shorts=1');
 
-    // 1. If it's a pure 11 character ID
+    // b64:MS4gSWYgaXQncyBhIHB1cmUgMTEgY2hhcmFjdGVyIElE
     if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) {
       return { id: trimmed, isShort };
     }
 
     try {
-      // Add secure protocol so absolute URL parsing works
+      // b64:QWRkIHNlY3VyZSBwcm90b2NvbCBzbyBhYnNvbHV0ZSBVUkwgcGFyc2luZyB3b3Jrcw==
       const urlString = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
       const url = new URL(urlString);
 
-      // youtu.be/VIDEO_ID
+      // b64:eW91dHUuYmUvVklERU9fSUQ=
       if (url.hostname.includes('youtu.be')) {
         const id = url.pathname.substring(1).split('&')[0].split('?')[0].split('#')[0].split('/')[0];
         return { id: id || null, isShort };
       }
 
-      // youtube.com/shorts/VIDEO_ID
+      // b64:eW91dHViZS5jb20vc2hvcnRzL1ZJREVPX0lE
       if (url.pathname.includes('/shorts/')) {
         const parts = url.pathname.split('/shorts/');
         if (parts[1]) {
@@ -141,7 +177,7 @@ export default function Entertainment() {
         }
       }
 
-      // youtube.com/embed/VIDEO_ID or youtube-nocookie.com/embed/VIDEO_ID
+      // b64:eW91dHViZS5jb20vZW1iZWQvVklERU9fSUQgb3IgeW91dHViZS1ub2Nvb2tpZS5jb20vZW1iZWQvVklERU9fSUQ=
       if (url.pathname.includes('/embed/')) {
         const parts = url.pathname.split('/embed/');
         if (parts[1]) {
@@ -150,20 +186,20 @@ export default function Entertainment() {
         }
       }
 
-      // Standard youtube.com/watch?v=VIDEO_ID
+      // b64:U3RhbmRhcmQgeW91dHViZS5jb20vd2F0Y2g/dj1WSURFT19JRA==
       const vParam = url.searchParams.get('v');
       if (vParam) {
         return { id: vParam, isShort };
       }
 
-      // Backups for query-param strings inside path
+      // b64:QmFja3VwcyBmb3IgcXVlcnktcGFyYW0gc3RyaW5ncyBpbnNpZGUgcGF0aA==
       const pathParts = url.pathname.split('/');
-      // e.g. /v/VIDEO_ID
+      // b64:ZS5nLiAvdi9WSURFT19JRA==
       if (pathParts.includes('v') && pathParts[pathParts.indexOf('v') + 1]) {
         return { id: pathParts[pathParts.indexOf('v') + 1], isShort };
       }
     } catch (e) {
-      // Regex fallback if URL constructor fails
+      // b64:UmVnZXggZmFsbGJhY2sgaWYgVVJMIGNvbnN0cnVjdG9yIGZhaWxz
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\/shorts\/)([^#\&\?]*).*/;
       const match = trimmed.match(regExp);
       if (match && match[2] && match[2].length === 11) {
@@ -200,7 +236,7 @@ export default function Entertainment() {
          throw new Error(`Failed to fetch: ${response.status}`);
       }
 
-      // Forcefully discard responses from previous tab if active tab changes mid-request
+      // b64:Rm9yY2VmdWxseSBkaXNjYXJkIHJlc3BvbnNlcyBmcm9tIHByZXZpb3VzIHRhYiBpZiBhY3RpdmUgdGFiIGNoYW5nZXMgbWlkLXJlcXVlc3Q=
       if (tab !== activeTabRef.current) {
         return;
       }
@@ -226,14 +262,25 @@ export default function Entertainment() {
         }
 
         const isShort = tab === 'youtube' && (
-          // Standard YouTube Short is strictly 60 seconds or less
+          // b64:U3RhbmRhcmQgWW91VHViZSBTaG9ydCBpcyBzdHJpY3RseSA2MCBzZWNvbmRzIG9yIGxlc3M=
           (durationSecs <= 60) ||
-          // Fallback if metadata has no duration but title explicitly lists a shorts tag
+          // b64:RmFsbGJhY2sgaWYgbWV0YWRhdGEgaGFzIG5vIGR1cmF0aW9uIGJ1dCB0aXRsZSBleHBsaWNpdGx5IGxpc3RzIGEgc2hvcnRzIHRhZw==
           (!item.duration && (titleLower.includes('#shorts') || titleLower.includes('shorts')))
         );
 
+        let uploadedAgo = item.uploadedAgo || '';
+        if (!uploadedAgo && tab === 'tiktok' && /^\d+$/.test(item.id)) {
+          try {
+            const timeSec = Number(BigInt(item.id) >> 32n);
+            if (!isNaN(timeSec) && timeSec > 0) {
+              uploadedAgo = formatTimeAgoClient(timeSec * 1000);
+            }
+          } catch (e) {}
+        }
+
         return {
           ...item,
+          uploadedAgo,
           isTikTok: tab === 'tiktok',
           isShort: isShort
         };
@@ -277,9 +324,9 @@ export default function Entertainment() {
     setSelectedMedia(item);
     setIsPortraitPlayer(!!item.isShort);
     if (item.isTikTok) {
-      setEmbedUrl(`https://www.tiktok.com/embed/v2/${item.id}`);
+      setEmbedUrl(`https://www.tiktok.com/player/v1/${item.id}?autoplay=1`);
     } else {
-      setEmbedUrl(`https://www.youtube-nocookie.com/embed/${item.id}?autoplay=1`);
+      setEmbedUrl(`https://www.youtube.com/embed/${item.id}?autoplay=1&rel=0`);
     }
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -292,33 +339,44 @@ export default function Entertainment() {
 
     const trimmedInput = idInput.trim();
 
-    // Explicitly check for youtube/tiktok indicators first
+    // b64:RXhwbGljaXRseSBjaGVjayBmb3IgeW91dHViZS90aWt0b2sgaW5kaWNhdG9ycyBmaXJzdA==
     const isExplicitYouTube = trimmedInput.includes('youtube.com') || trimmedInput.includes('youtu.be');
     const isExplicitTikTok = trimmedInput.includes('tiktok.com');
 
-    // Default to activeTab if no explicit indicator is found in the link
+    // b64:RGVmYXVsdCB0byBhY3RpdmVUYWIgaWYgbm8gZXhwbGljaXQgaW5kaWNhdG9yIGlzIGZvdW5kIGluIHRoZSBsaW5r
     const targetPlatform = isExplicitTikTok ? 'tiktok' : (isExplicitYouTube ? 'youtube' : activeTab);
 
     if (targetPlatform === 'tiktok') {
       const parsed = extractTikTokId(trimmedInput);
       if (parsed) {
+        let uploadedAgo = '';
+        if (/^\d+$/.test(parsed.id)) {
+          try {
+            const timeSec = Number(BigInt(parsed.id) >> 32n);
+            if (!isNaN(timeSec) && timeSec > 0) {
+              uploadedAgo = formatTimeAgoClient(timeSec * 1000);
+            }
+          } catch (e) {}
+        }
+
         const item: MediaItem = {
           id: parsed.id,
           title: parsed.username ? `TikTok by @${parsed.username}` : `TikTok Video (${parsed.id})`,
           thumbnail: 'https://images.unsplash.com/photo-1611162617213-7d7a39e9b1d7?w=500&auto=format&fit=crop&q=60',
           views: 'unknown',
           channel: parsed.username ? `@${parsed.username}` : 'TikTok Creator',
+          uploadedAgo,
           isTikTok: true
         };
         setSelectedMedia(item);
-        setEmbedUrl(`https://www.tiktok.com/embed/v2/${parsed.id}`);
+        setEmbedUrl(`https://www.tiktok.com/player/v1/${parsed.id}?autoplay=1`);
         setError('');
         window.scrollTo({ top: 0, behavior: 'smooth' });
       } else {
         setError("Could not parse TikTok Video URL/ID. Double check and try again.");
       }
     } else {
-      // YouTube fallback
+      // b64:WW91VHViZSBmYWxsYmFjaw==
       const { id: finalId, isShort } = extractYouTubeId(trimmedInput);
 
       if (!finalId) {
@@ -337,7 +395,7 @@ export default function Entertainment() {
       };
       setSelectedMedia(item);
       setIsPortraitPlayer(isShort);
-      setEmbedUrl(`https://www.youtube-nocookie.com/embed/${finalId}?autoplay=1`);
+      setEmbedUrl(`https://www.youtube.com/embed/${finalId}?autoplay=1&rel=0`);
       setError('');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
@@ -385,11 +443,23 @@ export default function Entertainment() {
           <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 bg-zinc-900/40 p-4 sm:p-6 rounded-2xl border border-zinc-800">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 flex-wrap">
                      <span className={`text-[10px] px-2 py-0.5 rounded-full font-extrabold uppercase tracking-wide text-white ${isTikTokPlayer ? 'bg-teal-500' : 'bg-red-500'}`}>
                         {isTikTokPlayer ? 'TikTok' : 'YouTube'}
                      </span>
-                     <span className="text-xs text-zinc-400 font-semibold">{selectedMedia.channel}</span>
+                     <span className="text-xs text-zinc-300 font-bold">{selectedMedia.channel}</span>
+                     {selectedMedia.views && selectedMedia.views !== 'unknown' && (
+                       <>
+                         <span className="text-zinc-600 text-xs">•</span>
+                         <span className="text-xs text-zinc-400 font-medium">{selectedMedia.views} views</span>
+                       </>
+                     )}
+                     {selectedMedia.uploadedAgo && (
+                       <>
+                         <span className="text-zinc-600 text-xs">•</span>
+                         <span className="text-xs text-zinc-400 font-medium">{selectedMedia.uploadedAgo}</span>
+                       </>
+                     )}
                   </div>
                   <h2 className="text-xl sm:text-2xl font-black text-white leading-tight">
                      {selectedMedia.title || 'Playing Video'}
@@ -431,6 +501,7 @@ export default function Entertainment() {
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                     allowFullScreen
+                    referrerPolicy="strict-origin-when-cross-origin"
                     title="Embed Player"
                   />
                   <button
@@ -538,10 +609,20 @@ export default function Entertainment() {
                                         <h4 className="font-bold text-xs sm:text-sm text-zinc-100 line-clamp-2 group-hover:text-white leading-snug tracking-tight">
                                            {item.title}
                                         </h4>
-                                        <p className="text-[11px] text-zinc-500 mt-1 flex flex-col">
-                                            <span className="font-bold text-zinc-400 line-clamp-1">{item.channel}</span>
-                                            {item.views && item.views !== 'unknown' && <span>{item.views} views</span>}
-                                        </p>
+                                        <div className="text-[11px] text-zinc-400 mt-1 flex flex-col gap-0.5">
+                                            <span className="font-bold text-zinc-300 line-clamp-1">{item.channel}</span>
+                                            <div className="flex items-center gap-1.5 text-zinc-400 font-medium flex-wrap">
+                                                {item.views && item.views !== 'unknown' && (
+                                                    <span>{item.views} views</span>
+                                                )}
+                                                {item.views && item.views !== 'unknown' && item.uploadedAgo && (
+                                                    <span className="text-zinc-600 font-bold">•</span>
+                                                )}
+                                                {item.uploadedAgo && (
+                                                    <span className="text-zinc-400 font-medium">{item.uploadedAgo}</span>
+                                                )}
+                                            </div>
+                                        </div>
                                     </div>
                                 </button>
                             ))}

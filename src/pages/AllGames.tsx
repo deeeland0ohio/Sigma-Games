@@ -10,7 +10,7 @@ export default function AllGames() {
   const [visibleCount, setVisibleCount] = useState(100);
 
   useEffect(() => {
-    // Populate with only our local games list and sort alphabetically (0-9-a-z)
+    // b64:UG9wdWxhdGUgd2l0aCBvbmx5IG91ciBsb2NhbCBnYW1lcyBsaXN0IGFuZCBzb3J0IGFscGhhYmV0aWNhbGx5ICgwLTktYS16KQ==
     const initialList = allGamesList.map(g => ({ ...g, source: 'local' }));
     initialList.sort((a, b) => 
       (a.title || '').localeCompare(b.title || '', undefined, { numeric: true, sensitivity: 'base' })

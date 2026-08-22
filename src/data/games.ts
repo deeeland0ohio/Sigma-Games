@@ -82,6 +82,20 @@ export const games: Game[] = [
     icon: Box,
     type: 'folder',
   },
+  {
+    id: 'lumin',
+    title: 'Lumin Games',
+    description: "Browse the Lumin Games collection of 1253 games.",
+    icon: Box,
+    type: 'folder',
+  },
+  {
+    id: 'cvk',
+    title: "Chicken King's Vault (CVK)",
+    description: "Browse the Chicken King's Vault collection of 838 games.",
+    icon: Box,
+    type: 'folder',
+  },
 ];
 
 export const allGamesList = [...allGames].sort((a, b) => {
