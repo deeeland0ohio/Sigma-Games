@@ -119,40 +119,44 @@ export function SettingsContent() {
     setTempColors(customColors);
   }, [customColors]);
 
+  const disableAdvanced = () => {
+    setSimulationPower(Math.min(simulationPower, 100));
+    setBackgroundConfig({
+      ...backgroundConfig,
+      dots: {
+        speed: Math.min(backgroundConfig.dots.speed, 150),
+        size: Math.min(backgroundConfig.dots.size, 8),
+        density: Math.min(backgroundConfig.dots.density, 80),
+      },
+      vantaDots: {
+        springSpeed: Math.min(backgroundConfig.vantaDots.springSpeed, 100),
+        dotSize: Math.min(backgroundConfig.vantaDots.dotSize, 20),
+        splash: Math.min(backgroundConfig.vantaDots.splash, 100),
+      },
+      matrix: {
+        speed: Math.min(backgroundConfig.matrix.speed, 100),
+        size: Math.min(backgroundConfig.matrix.size, 100),
+        density: Math.min(backgroundConfig.matrix.density, 100),
+      },
+      blackHole: {
+        speed: Math.min(backgroundConfig.blackHole.speed, 100),
+        size: Math.min(backgroundConfig.blackHole.size, 100),
+        density: Math.min(backgroundConfig.blackHole.density, 100),
+      },
+      lightspeed: {
+        speed: Math.min(backgroundConfig.lightspeed.speed, 100),
+        size: Math.min(backgroundConfig.lightspeed.size, 100),
+        density: Math.min(backgroundConfig.lightspeed.density, 100),
+      },
+    });
+    setIsAdvanced(false);
+  };
+
   const toggleAdvanced = () => {
     if (!isAdvanced) {
       setShowWarning(true);
     } else {
-      setSimulationPower(Math.min(simulationPower, 100));
-      setBackgroundConfig({
-        ...backgroundConfig,
-        dots: {
-          speed: Math.min(backgroundConfig.dots.speed, 150),
-          size: Math.min(backgroundConfig.dots.size, 8),
-          density: Math.min(backgroundConfig.dots.density, 80),
-        },
-        vantaDots: {
-          springSpeed: Math.min(backgroundConfig.vantaDots.springSpeed, 100),
-          dotSize: Math.min(backgroundConfig.vantaDots.dotSize, 20),
-          splash: Math.min(backgroundConfig.vantaDots.splash, 100),
-        },
-        matrix: {
-          speed: Math.min(backgroundConfig.matrix.speed, 100),
-          size: Math.min(backgroundConfig.matrix.size, 100),
-          density: Math.min(backgroundConfig.matrix.density, 100),
-        },
-        blackHole: {
-          speed: Math.min(backgroundConfig.blackHole.speed, 100),
-          size: Math.min(backgroundConfig.blackHole.size, 100),
-          density: Math.min(backgroundConfig.blackHole.density, 100),
-        },
-        lightspeed: {
-          speed: Math.min(backgroundConfig.lightspeed.speed, 100),
-          size: Math.min(backgroundConfig.lightspeed.size, 100),
-          density: Math.min(backgroundConfig.lightspeed.density, 100),
-        },
-      });
-      setIsAdvanced(false);
+      disableAdvanced();
     }
   };
 
@@ -212,7 +216,6 @@ export function SettingsContent() {
             setCloakingIcon('/favicon.svg?v=2');
             setRunnerMode('none');
             setClosePrevention(false);
-            storage.setItem('lightspeed-evasion', 'false');
             storage.removeItem('lightspeed-popup-shown');
           }}
           className="flex items-center gap-2 px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-xl transition-all font-medium flex-shrink-0 cursor-pointer"
@@ -424,16 +427,35 @@ export function SettingsContent() {
                   </div>
                   <h2 className="text-xl font-bold">Precise Controls</h2>
                 </div>
-                <button
-                  onClick={toggleAdvanced}
-                  className={`px-4 py-2 rounded-xl font-medium transition-all flex-shrink-0 ${
-                    isAdvanced 
-                      ? 'bg-red-600 text-white' 
-                      : 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700 hover:text-white'
-                  }`}
-                >
-                  {isAdvanced ? 'Advanced (ON)' : 'Advanced'}
-                </button>
+                <div className="flex items-center bg-zinc-900 border border-zinc-800 p-1 rounded-2xl gap-1.5 flex-shrink-0 shadow-inner">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (!isAdvanced) {
+                        setShowWarning(true);
+                      }
+                    }}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                      isAdvanced 
+                        ? 'bg-red-600 text-white shadow-sm ring-1 ring-red-500/50' 
+                        : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/60'
+                    }`}
+                  >
+                    {isAdvanced && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+                    Advanced (ON)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={disableAdvanced}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                      !isAdvanced 
+                        ? 'bg-zinc-800 text-zinc-100 border border-zinc-700/60 shadow-sm' 
+                        : 'text-zinc-400 hover:text-white hover:bg-zinc-800/60'
+                    }`}
+                  >
+                    OFF
+                  </button>
+                </div>
               </div>
               
               <div className="space-y-8">

@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import ProxyIframe from '../components/ProxyIframe';
-import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw, RotateCw } from 'lucide-react';
+import ContentFrame from '../components/ContentFrame';
+import { Loader2, Search, X, Maximize, Box, RefreshCw, RotateCw, Heart } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import SourceGameCard from '../components/SourceGameCard';
 import { alexrGames as initialAlexrGames } from '../data/alexr';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -17,7 +18,7 @@ export interface AlexrGame {
 
 export default function AlexrGames() {
   const [games, setGames] = useState<AlexrGame[]>(() => {
-    // b64:RXhjbHVkZSBDb2RlIEVkaXRvciBvbiBpbml0aWFsIG1vdW50IGlmIHByZXNlbnQgaW4gYmFja3VwIGRhdGFzZXQ=
+    // Exclude Code Editor on initial mount if present in backup dataset
     return initialAlexrGames.filter(g => 
       g.title !== "Alexr Code Editor" && 
       g.path !== "https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Apps/codeeditor.html"
@@ -43,7 +44,7 @@ export default function AlexrGames() {
       if (res.ok) {
         const raw = await res.json() as AlexrGame[];
         if (Array.isArray(raw)) {
-          // b64:RmlsdGVyIG91dCAiQWxleHIgQ29kZSBFZGl0b3IiIGZyb20gZHluYW1pYyBkYXRhIHNvdXJjZQ==
+          // Filter out "Alexr Code Editor" from dynamic data source
           const parsed = raw.filter((g: AlexrGame) => 
             g.title !== "Alexr Code Editor" && 
             g.path !== "https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/Apps/codeeditor.html"
@@ -52,7 +53,7 @@ export default function AlexrGames() {
             path: g.path
           }));
           
-          // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteik=
+          // Sort alphabetically (0-9-a-z)
           parsed.sort((a, b) => {
             const titleA = (a.title || "").toLowerCase();
             const titleB = (b.title || "").toLowerCase();
@@ -77,7 +78,7 @@ export default function AlexrGames() {
 
   const openGame = (game: AlexrGame) => {
     setSelectedGame(game);
-    setReloadKey(0); // b64:UmVzZXQgcmVsb2FkIGtleSB1cG9uIG9wZW5pbmcgbmV3IGdhbWU=
+    setReloadKey(0); // Reset reload key upon opening new game
   };
 
   const filteredGames = games.filter(g => {
@@ -90,7 +91,7 @@ export default function AlexrGames() {
   const displayedGames = filteredGames.slice(0, visibleCount);
 
   return (
-    <PageLayout title="Alexr Games" showBack={true}>
+    <PageLayout title="Alexr Games" maxWidth="wide" showBack={true}>
       <div className="space-y-6">
         {/* Header Summary */}
         <div className="border-b border-zinc-800 pb-4">
@@ -142,55 +143,29 @@ export default function AlexrGames() {
             <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+          <div className="game-source-grid">
             {displayedGames.map((g, index) => {
                const gameId = `alexr:${g.title}`;
                return (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: (index % 20) * 0.005 }}
+                <SourceGameCard
                   key={`${g.title}-${index}`}
-                  className="group relative aspect-square overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800"
-                >
-                  <div onClick={() => openGame(g)} className="absolute inset-0 cursor-pointer z-10" />
-                  
-                  {g.img ? (
-                    <img 
-                      src={g.img} 
-                      alt={g.title} 
-                      className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                      loading="lazy"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-zinc-950 flex items-center justify-center">
-                      <Box className="w-12 h-12 text-zinc-800" />
-                    </div>
-                  )}
-
-                  {/* Favorites Trigger */}
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite({
-                        id: gameId,
-                        title: g.title,
-                        url: g.path,
-                        image: g.img,
-                        source: 'Alexr',
-                        description: g.description
-                      });
-                    }}
-                    className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500' : ''} />
-                  </button>
-
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                  <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
-                    <p className="text-white font-medium text-xs sm:text-sm text-center leading-tight truncate">{g.title}</p>
-                  </div>
-                </motion.div>
+                  index={index}
+                  title={g.title}
+                  image={g.img}
+                  onClick={() => openGame(g)}
+                  isFavorite={isFavorite(gameId)}
+                  onToggleFavorite={() => {
+                    toggleFavorite({
+                      id: gameId,
+                      title: g.title,
+                      url: g.path,
+                      image: g.img,
+                      source: 'Alexr',
+                      description: g.description
+                    });
+                  }}
+                  hoverBorderClass="hover:border-zinc-500/50 hover:shadow-[0_0_15px_rgba(113,113,122,0.15)]"
+                />
               );
             })}
 
@@ -229,16 +204,7 @@ export default function AlexrGames() {
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedGame.title}</h3>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    const iframe = document.getElementById('alexr-game-iframe') as HTMLIFrameElement;
-                    if (iframe) {
-                      const src = iframe.src;
-                      iframe.src = 'about:blank';
-                      setTimeout(() => { iframe.src = src; }, 50);
-                    } else {
-                      setReloadKey(prev => prev + 1);
-                    }
-                  }}
+                  onClick={() => setReloadKey(prev => prev + 1)}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                   title="Reload Game"
                 >
@@ -282,9 +248,10 @@ export default function AlexrGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <ProxyIframe
+              <ContentFrame
                 id="alexr-game-iframe"
                 key={reloadKey}
+                reloadKey={reloadKey}
                 src={selectedGame.path}
                 className="w-full h-full border-none bg-black"
                 allow="autoplay; fullscreen; pointer-lock; keyboard-map"

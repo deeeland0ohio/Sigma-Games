@@ -36,3 +36,19 @@ body {
   text-shadow: 0 0 6px rgba(255, 74, 74, 0.6), 0 0 15px rgba(255, 74, 74, 0.3);
 }
 
+/* 150x150px auto-adjusting responsive grid for game sources reaching 150px from sides */
+.game-source-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 150px);
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+}
+
+@media (max-width: 640px) {
+  .game-source-grid {
+    justify-content: center;
+  }
+}
+
+

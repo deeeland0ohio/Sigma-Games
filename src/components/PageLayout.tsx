@@ -11,7 +11,7 @@ interface PageLayoutProps {
   showBack?: boolean;
   backTo?: string;
   backText?: string;
-  maxWidth?: '5xl' | '6xl' | '7xl' | 'full';
+  maxWidth?: '5xl' | '6xl' | '7xl' | 'wide' | 'full';
   noPadding?: boolean;
 }
 
@@ -28,17 +28,22 @@ export default function PageLayout({
   const navigate = useNavigate();
 
   const maxWidthClass = {
-    '5xl': 'max-w-5xl',
-    '6xl': 'max-w-6xl',
-    '7xl': 'max-w-7xl',
-    'full': 'max-w-none'
+    '5xl': 'max-w-5xl mx-auto',
+    '6xl': 'max-w-6xl mx-auto',
+    '7xl': 'max-w-7xl mx-auto',
+    'wide': 'w-full max-w-none',
+    'full': 'w-full max-w-none'
   }[maxWidth];
+
+  const horizontalPadding = noPadding 
+    ? 'px-0' 
+    : (maxWidth === 'wide' ? 'px-4 sm:px-8 md:px-[150px]' : 'px-6');
 
   return (
     <div className={`flex flex-col min-h-[100dvh] text-zinc-300 font-sans ${colors.selection}`}>
       {/* Header */}
       <header className="border-b border-white/[0.08] bg-zinc-950/25 backdrop-blur-md sticky top-0 z-50">
-        <div className={`${maxWidthClass} mx-auto px-6 h-20 flex items-center justify-between`}>
+        <div className={`${maxWidthClass} ${horizontalPadding} h-20 flex items-center justify-between`}>
           {showBack ? (
             <Link to={backTo} className={`flex items-center gap-2 text-zinc-400 hover:${colors.primary} transition-colors font-medium`}>
               <ArrowLeft size={20} />
@@ -74,13 +79,13 @@ export default function PageLayout({
         </div>
       </header>
 
-      <main className={`flex-grow ${maxWidthClass} ${maxWidth !== 'full' ? 'mx-auto' : ''} ${noPadding ? 'px-0' : 'px-6'} py-4 md:py-6`}>
+      <main className={`flex-grow ${maxWidthClass} ${horizontalPadding} py-4 md:py-6`}>
         {children}
       </main>
 
       {/* Footer */}
       <footer className="border-t border-zinc-800 py-8 text-sm text-zinc-500 bg-zinc-950/50 backdrop-blur-sm">
-        <div className={`${maxWidthClass} mx-auto px-6 text-center space-y-1`}>
+        <div className={`${maxWidthClass} ${horizontalPadding} text-center space-y-1`}>
           <p>© 2026 Sigma Games.</p>
           <p className="text-sm text-zinc-600 max-w-2xl mx-auto">Copyright/DMCA should be brought to sources, which are linked in the credits and games will be auto updated if they remove anything.</p>
         </div>

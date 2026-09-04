@@ -121,9 +121,9 @@ export default function MatrixBackground({
     const animate = () => {
       const { speed, size } = configRef.current;
       const speedFactor = (speed / 50) * 0.6;
-      const fontSize = 12 + (size / 100) * 16; // b64:UmFuZ2UgMTItMjgsIGRlZmF1bHQgfjIw
+      const fontSize = 12 + (size / 100) * 16; // Range 12-28, default ~20
 
-      // b64:RmFkZSBlZmZlY3QgZm9yIHRyYWlscw==
+      // Fade effect for trails
       ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
       ctx.fillRect(0, 0, width, height);
 
@@ -136,11 +136,11 @@ export default function MatrixBackground({
         const currentTargetSpeed = drop.speed * speedFactor;
         const speedMult = powerRef.current === 0 ? 0.4 : powerRef.current;
         
-        // b64:R3Jhdml0eSAvIG5hdHVyYWwgZmxvdw==
+        // Gravity / natural flow
         drop.vy += 0.05 * 0.6 * speedMult;
         if (drop.vy > currentTargetSpeed * 1.5 * speedMult) drop.vy = currentTargetSpeed * 1.5 * speedMult;
         
-        // b64:TW91c2UgaW50ZXJhY3Rpb24gKGJvdW5jZSBvZmYgY3Vyc29yIGxpa2Ugd2F0ZXIp
+        // Mouse interaction (bounce off cursor like water)
         const dx = drop.x - mouse.x;
         const dy = drop.y - mouse.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
@@ -161,7 +161,7 @@ export default function MatrixBackground({
           Object.assign(drop, createDrop(-20));
         }
         
-        // b64:RHJhdw==
+        // Draw
         ctx.globalAlpha = drop.opacity;
         ctx.fillStyle = color;
         ctx.fillText(drop.char, drop.x, drop.y);

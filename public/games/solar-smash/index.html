@@ -319,7 +319,7 @@ Unarchiver.loadedFormats = {};
     const subDataStr = '.data';
     
     // loadResources is only used if you need load Zipped files for .wasm, or .data and need 
-    // them to be decompressed. If the file is not zipped we bypass decompression step automatically,
+    // them to be decompressed. If the file is not zipped we skip decompression step automatically,
     // however its best to not trigger this if you dont used compression. 
     // NOTE: GZip does not work ATM.  If this is needed Unarchiver will need to be updated.
     loadResources = (callback) => {

@@ -31,7 +31,7 @@ export default function BackgroundManager() {
 
     checkGameActive();
 
-    // b64:Q2hlY2sgcGVyaW9kaWNhbGx5IGZvciBmdWxsc2NyZWVuIGlmcmFtZSBvdmVybGF5cw==
+    // Check periodically for fullscreen iframe overlays
     const interval = setInterval(checkGameActive, 250);
 
     window.addEventListener('hashchange', checkGameActive);
@@ -48,7 +48,7 @@ export default function BackgroundManager() {
     return <div className="fixed inset-0 bg-black -z-50" />;
   }
 
-  // b64:U2NhbGUgMS0xMDAgdG8gMC4wMi0yLjAgbXVsdGlwbGllcg==
+  // Scale 1-100 to 0.02-2.0 multiplier
   const powerMultiplier = simulationPower / 50;
 
   if (background === 'vanta-dots') {

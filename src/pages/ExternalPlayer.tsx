@@ -1,5 +1,5 @@
-import ProxyIframe from '../components/ProxyIframe';
-import { useEffect } from 'react';
+import ContentFrame from '../components/ContentFrame';
+import { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { Maximize, X, Heart, RotateCw } from 'lucide-react';
@@ -15,6 +15,7 @@ export default function ExternalPlayer() {
   const description = searchParams.get('description') || '';
   
   const navigate = useNavigate();
+  const [reloadKey, setReloadKey] = useState(0);
   const { toggleFavorite, isFavorite } = useFavorites();
 
   useEffect(() => {
@@ -31,14 +32,7 @@ export default function ExternalPlayer() {
           <h3 className="text-white font-medium pl-2 truncate flex-1">{title}</h3>
           <div className="flex items-center gap-2">
             <button
-              onClick={() => {
-                const iframe = document.getElementById('external-iframe') as HTMLIFrameElement;
-                if (iframe) {
-                  const src = iframe.src;
-                  iframe.src = 'about:blank';
-                  setTimeout(() => { iframe.src = src; }, 50);
-                }
-              }}
+              onClick={() => setReloadKey(k => k + 1)}
               className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
               title="Reload Game"
             >
@@ -81,7 +75,9 @@ export default function ExternalPlayer() {
         </div>
         
         <div className="flex-1 w-full bg-black relative overflow-hidden">
-          <ProxyIframe
+          <ContentFrame
+            key={reloadKey}
+            reloadKey={reloadKey}
             id="external-iframe"
             src={url}
             className="w-full h-full border-none bg-black block"

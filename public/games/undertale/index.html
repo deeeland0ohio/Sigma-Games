@@ -1,428 +1,337 @@
 <!DOCTYPE html>
-<html lang="en-us">
-  <head>
-    <base href="https://cdn.jsdelivr.net/gh/genizy/web-port@1102f068fff0083d2a5ed979ebac6425540d78a5/undertale/" />
-    <meta charset="utf-8" />
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta
-      name="viewport"
-      content="viewport-fit=cover, width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"
-    />
-    <link rel="icon" type="x-icon" href="favicon.png" />
-    <title>UNDERTALE</title>
-    <style>
-      @-webkit-keyframes rotation {
-        from {
-          -webkit-transform: rotate(0deg);
-        }
+<html>
+<head>
+    <head>
+                <script src="https://cdn.jsdelivr.net/gh/gn-math/assets@main/184/script.js" defer></script>
 
-        to {
-          -webkit-transform: rotate(360deg);
-        }
-      }
+        <base href="https://cdn.jsdelivr.net/gh/gn-math/assets@main/184/">
+        
+        
+        <script>
+            window.dataLayer = window.dataLayer || [];
+    
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+            gtag('config', 'G-WX5VS54ZDW');
+        </script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <!-- We only include this to explicitly loosen the CSP of various packager environments. It does not provide any security. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src * 'self' 'unsafe-inline' 'unsafe-eval' data: blob:">
+  <title>UNDERTALE</title>
+  <style>
+    body {
+      color: #ffffff;
+      font-family: sans-serif;
+      overflow: hidden;
+      margin: 0;
+      padding: 0;
+    }
+    :root, body.is-fullscreen {
+      background-color: #000000;
+    }
+    [hidden] {
+      display: none !important;
+    }
+    h1 {
+      font-weight: normal;
+    }
+    a {
+      color: inherit;
+      text-decoration: underline;
+      cursor: pointer;
+    }
 
-      @-moz-keyframes rotation {
-        from {
-          -moz-transform: rotate(0deg);
-        }
+    #app, #loading, #error, #launch {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      cursor: default;
+      user-select: none;
+      -webkit-user-select: none;
+      background-color: #000000;
+    }
+    #launch {
+      background-color: rgba(0, 0, 0, 0.7);
+      cursor: pointer;
+    }
+    .green-flag {
+      width: 80px;
+      height: 80px;
+      padding: 16px;
+      border-radius: 100%;
+      background: rgba(255, 255, 255, 0.75);
+      border: 3px solid hsla(0, 100%, 100%, 1);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      box-sizing: border-box;
+    }
+    #loading {
+      
+    }
+    .progress-bar-outer {
+      border: 1px solid currentColor;
+      height: 10px;
+      width: 200px;
+      max-width: 200px;
+    }
+    .progress-bar-inner {
+      height: 100%;
+      width: 0;
+      background-color: currentColor;
+    }
+    .loading-text, noscript {
+      font-weight: normal;
+      font-size: 36px;
+      margin: 0 0 16px;
+    }
+    .loading-image {
+      margin: 0 0 16px;
+    }
+    #error-message, #error-stack {
+      font-family: monospace;
+      max-width: 600px;
+      white-space: pre-wrap;
+      user-select: text;
+      -webkit-user-select: text;
+    }
+    #error-stack {
+      text-align: left;
+      max-height: 200px;
+      overflow: auto;
+    }
+    .control-button {
+      width: 2rem;
+      height: 2rem;
+      padding: 0.375rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+      user-select: none;
+      -webkit-user-select: none;
+      cursor: pointer;
+      border: 0;
+      border-radius: 4px;
+    }
+    .control-button-highlight:hover {
+      background: #ff4c4c26;
+    }
+    .control-button-highlight.active {
+      background: #ff4c4c59;
+    }
+    .fullscreen-button {
+      background: white;
+    }
+    .standalone-fullscreen-button {
+      position: absolute;
+      top: 0;
+      right: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      border-radius: 0 0 0 4px;
+      padding: 4px;
+      cursor: pointer;
+    }
+    .sc-canvas {
+      cursor: auto;
+    }
+    .sc-monitor-root[data-opcode^="data_"] .sc-monitor-value-color {
+      background-color: #ff8c1a;
+    }
+    .sc-monitor-row-value-outer {
+      background-color: #fc662c;
+    }
+    .sc-monitor-row-value-editing .sc-monitor-row-value-outer {
+      background-color: #e25b27;
+    }
+    
+  </style>
+  <meta name="theme-color" content="#000000">
+  
+</head>
+<body>
+  <div id="app"></div>
 
-        to {
-          -moz-transform: rotate(360deg);
-        }
-      }
-
-      @-o-keyframes rotation {
-        from {
-          -o-transform: rotate(0deg);
-        }
-
-        to {
-          -o-transform: rotate(360deg);
-        }
-      }
-
-      @keyframes rotation {
-        from {
-          transform: rotate(0deg);
-        }
-
-        to {
-          transform: rotate(360deg);
-        }
-      }
-
-      html {
-        background: #ffffff;
-      }
-
-      body {
-        font-family: arial;
-        margin: 0;
-        padding: 0;
-        min-height: 100vh;
-        min-height: -webkit-fill-available;
-        min-height: fill-available;
-        min-height: 100vh; /* Otherwise contents can be covered by an address bar in Safari on iOS 15 */
-        min-width: 100vw;
-        background: radial-gradient(56.63% 56.63% at 50% 43.37%, transparent 0%, transparent 100%);
-        background-color: black;
-        display: flex;
-        flex-direction: column;
-        overflow-x: hidden;
-        place-items: center;
-      }
-
-      body.scrollingDisabled {
-        overflow: hidden;
-      }
-
-      .emscripten {
-        padding-right: 0;
-        display: block;
-      }
-
-      div.emscripten {
-        text-align: center;
-        font-family: 'Lucida Console', Monaco, monospace;
-      }
-
-      /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
-      canvas.emscripten {
-        display: none;
-        background-color: black;
-        position: flex;
-        transition: opacity 5s ease-in;
-        -webkit-transition: opacity 5s ease-in;
-        opacity: 0;
-        filter: blur(0) grayscale(0);
-        image-rendering: optimizeSpeed; /* Older versions of FF          */
-        image-rendering: -moz-crisp-edges; /* FF 6.0+                       */
-        image-rendering: -webkit-optimize-contrast; /* Safari                        */
-        image-rendering: -o-crisp-edges; /* OS X & Windows Opera (12.02+) */
-        image-rendering: pixelated; /* Awesome future-browsers       */
-        -ms-interpolation-mode: nearest-neighbor; /* IE                            */
-      }
-
-      canvas.active {
-        animation-name: fadeIn;
-        animation-duration: 2s;
-        opacity: 1;
-      }
-
-      canvas.paused {
-        animation-name: blur;
-        animation-duration: 0.5s;
-        filter: blur(2px) grayscale(1);
-      }
-
-      canvas.unpaused {
-        animation-name: none;
-      }
-
-      canvas.animatedSizeTransitions {
-        transition: width 0.3s ease, height 0.3s ease;
-      }
-
-      @keyframes fadeIn {
-        0% {
-          opacity: 0;
-        }
-
-        100% {
-          opacity: 1;
-        }
-      }
-
-      @keyframes blur {
-        0% {
-          filter: blur(0) grayscale(0);
-        }
-
-        100% {
-          filter: blur(2px) grayscale(1);
-        }
-      }
-
-      .spinner {
-        height: 30px;
-        width: 30px;
-
-        -webkit-animation: rotation 0.8s linear infinite;
-        -moz-animation: rotation 0.8s linear infinite;
-        -o-animation: rotation 0.8s linear infinite;
-        animation: rotation 0.8s linear infinite;
-
-        border: 5px solid #bdff00;
-        border-top: 5px solid #719900;
-        border-radius: 100%;
-      }
-
-      #status {
-        display: inline-block;
-        vertical-align: top;
-        font-weight: bold;
-        color: white;
-      }
-
-      #progress {
-        width: 250px;
-        height: 10px;
-        -webkit-appearance: none;
-        appearance: none;
-        padding: 5px;
-      }
-
-      /* Determines the style of the background of the progress bar */
-      progress[value]::-webkit-progress-bar {
-        background-color: #8492a6;
-        height: 10px;
-        border-radius: 15px;
-      }
-      /* Determines the style of the completed part of the progress bar */
-      progress[value]::-webkit-progress-value {
-        background-image: -webkit-linear-gradient(left, #719900, #bdff00);
-        height: 10px;
-        border-radius: 15px;
-      }
-
-      div.loading {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        pointer-events: none;
-      }
-      div.loading > * {
-        padding: 10px;
-        margin: 10px;
-      }
-
-      .output-container {
-        text-align: center;
-        margin-top: auto;
-      }
-      .output-button {
-        border: none;
-        width: 200px;
-        height: 25px;
-        margin: 5px;
-        border-radius: 5px;
-        cursor: pointer;
-        background-color: black;
-        color: white;
-        outline-color: #20c20e;
-        outline-style: dashed;
-        font-family: 'Lucida Console', Monaco, monospace;
-      }
-
-      #output {
-        display: none;
-        height: 200px;
-        background-color: black;
-        color: white;
-        font-family: 'Lucida Console', Monaco, monospace;
-        outline: none;
-        border: none;
-        padding: 0;
-        width: 100%;
-      }
-
-      #message-container {
-        display: none;
-        min-height: 50px;
-        background-color: rgba(20, 20, 20, 0.5);
-        outline: none;
-        border: none;
-        padding: 0;
-        width: 100%;
-        position: absolute;
-        top: 0;
-      }
-
-      #messages {
-        margin-left: 50px;
-        color: white;
-        font-family: 'Lucida Console', Monaco, monospace;
-        outline: none;
-        border: none;
-        padding: 0;
-      }
-
-      img.qrCode {
-        opacity: 1;
-        width: 50%;
-        height: 50%;
-      }
-
-      #pauseMenuContainer {
-        position: absolute;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      #pauseMenuContainer[hidden] {
-        display: none !important;
-        opacity: 0;
-      }
-
-      #pauseMenuBorder {
-        background: linear-gradient(135deg, #fa1e4e, transparent 40%);
-        padding: 1px;
-        border-radius: 4px;
-        clip-path: polygon(10.5px 0, 100% 0, 100% 100%, 0 100%, 0 10.5px);
-        width: 70vw;
-        max-width: 400px;
-      }
-
-      #pauseMenu {
-        display: flex;
-        flex-direction: column;
-        padding: 60px 30px 60px 30px;
-        background: linear-gradient(180deg, #2e273f 16.15%, rgba(46, 39, 63, 0.79) 56.25%, #2e273f 91.15%);
-        border-radius: 4px;
-        clip-path: polygon(10px 0, 100% 0, 100% 100%, 0 100%, 0 10px);
-        animation-name: fadeIn;
-        animation-duration: 0.5s;
-        opacity: 1;
-      }
-
-      #pauseMenu button {
-        font-weight: 500;
-        font-size: 17px;
-        color: white;
-        background: #fa1e4e;
-        border: 1px solid #fa1e4e;
-        border-radius: 6px;
-        padding: 12px 24px;
-        margin: 5px 0;
-        -webkit-user-select: none;
-        user-select: none;
-      }
-
-      #pauseMenu button#quitButton {
-        background: #fa1e4e40;
-      }
-
-      #pauseMenu button:hover {
-        filter: brightness(1.15);
-      }
-
-      #pauseMenu button:active {
-        filter: brightness(0.85);
-      }
-
-      #pauseMenu button[hidden] {
-        display: none;
-      }
-    </style>
-  </head>
-  <body>
-    <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex="-1"> </canvas>
-    <div id="pauseMenuContainer" hidden>
-      <div id="pauseMenuBorder">
-        <div id="pauseMenu">
-          <button id="resumeButton" onclick="resume()">Resume</button>
-          <button id="quitButton" onclick="quitIfSupported()">Quit</button>
-        </div>
-      </div>
+  <div id="launch" class="screen" hidden title="Click to start">
+    <div class="green-flag">
+      <svg viewBox="0 0 16.63 17.5" width="42" height="44">
+        <defs><style>.cls-1,.cls-2{fill:#4cbf56;stroke:#45993d;stroke-linecap:round;stroke-linejoin:round;}.cls-2{stroke-width:1.5px;}</style></defs>
+        <path class="cls-1" d="M.75,2A6.44,6.44,0,0,1,8.44,2h0a6.44,6.44,0,0,0,7.69,0V12.4a6.44,6.44,0,0,1-7.69,0h0a6.44,6.44,0,0,0-7.69,0"/>
+        <line class="cls-2" x1="0.75" y1="16.75" x2="0.75" y2="0.75"/>
+      </svg>
     </div>
-    <div class="loading">
-      <div class="spinner" id="spinner"></div>
-      <div class="emscripten" id="status">Downloading...</div>
+  </div>
 
-      <progress value="0" max="100" id="progress"></progress>
-    </div>
+  <div id="loading" class="screen">
+    <noscript>Enable JavaScript</noscript>
+    
+    
+    <div class="progress-bar-outer"><div class="progress-bar-inner" id="loading-inner"></div></div>
+  </div>
 
-    <div id="message-container">
-      <div id="messages"></div>
-    </div>
+  <div id="error" class="screen" hidden>
+    <h1>Error</h1>
+    <details>
+      <summary id="error-message"></summary>
+      <p id="error-stack"></p>
+    </details>
+  </div>
+
+  <script src="script.js"></script>
+  <script>
+    const appElement = document.getElementById('app');
+    const launchScreen = document.getElementById('launch');
+    const loadingScreen = document.getElementById('loading');
+    const loadingInner = document.getElementById('loading-inner');
+    const errorScreen = document.getElementById('error');
+    const errorScreenMessage = document.getElementById('error-message');
+    const errorScreenStack = document.getElementById('error-stack');
+
+    const handleError = (error) => {
+      console.error(error);
+      if (!errorScreen.hidden) return;
+      errorScreen.hidden = false;
+      errorScreenMessage.textContent = '' + error;
+      let debug = error && error.stack || 'no stack';
+      debug += '\nUser agent: ' + navigator.userAgent;
+      errorScreenStack.textContent = debug;
+    };
+    const setProgress = (progress) => {
+      if (loadingInner) loadingInner.style.width = progress * 100 + '%';
+    };
+    const interpolate = (a, b, t) => a + t * (b - a);
+
+    try {
+      setProgress(0.1);
+
+      const scaffolding = new Scaffolding.Scaffolding();
+      scaffolding.width = 480;
+      scaffolding.height = 360;
+      scaffolding.resizeMode = "preserve-ratio";
+      scaffolding.editableLists = false;
+      scaffolding.usePackagedRuntime = true;
+      scaffolding.setup();
+      scaffolding.appendTo(appElement);
+
+      const vm = scaffolding.vm;
+      window.scaffolding = scaffolding;
+      window.vm = scaffolding.vm;
+      window.Scratch = {
+        vm,
+        renderer: vm.renderer,
+        audioEngine: vm.runtime.audioEngine,
+        bitmapAdapter: vm.runtime.v2BitmapAdapter,
+        videoProvider: vm.runtime.ioDevices.video.provider
+      };
+
+      scaffolding.setUsername("player####".replace(/#/g, () => Math.floor(Math.random() * 10)));
+      scaffolding.setAccentColor("#ff4c4c");
+
+      try {
+        scaffolding.addCloudProvider(new Scaffolding.Cloud.WebSocketProvider(["wss://clouddata.turbowarp.org","wss://clouddata.turbowarp.xyz"], "791527350"));
+      } catch (error) {
+        console.error(error);
+      }
+
+      vm.setTurboMode(false);
+      if (vm.setInterpolation) vm.setInterpolation(false);
+      if (vm.setFramerate) vm.setFramerate(30);
+      if (vm.renderer.setUseHighQualityRender) vm.renderer.setUseHighQualityRender(false);
+      if (vm.setRuntimeOptions) vm.setRuntimeOptions({
+        fencing: true,
+        miscLimits: true,
+        maxClones: 300,
+      });
+      if (vm.setCompilerOptions) vm.setCompilerOptions({
+        enabled: true,
+        warpTimer: false
+      });
+      if (vm.renderer.setMaxTextureDimension) vm.renderer.setMaxTextureDimension(2048);
+
+      // enforcePrivacy threat model only makes sense in the editor
+      if (vm.runtime.setEnforcePrivacy) vm.runtime.setEnforcePrivacy(false);
+
+      if (typeof ScaffoldingAddons !== 'undefined') {
+        ScaffoldingAddons.run(scaffolding, {"gamepad":false,"pointerlock":false,"specialCloudBehaviors":false,"unsafeCloudBehaviors":false,"pause":false});
+      }
+
+      scaffolding.setExtensionSecurityManager({
+        getSandboxMode: () => 'unsandboxed',
+        canLoadExtensionFromProject: () => true
+      });
+      for (const extension of []) {
+        vm.extensionManager.loadExtensionURL(extension);
+      }
+
+    } catch (e) {
+      handleError(e);
+    }
+  </script>
+  
+  
     <script>
-      function mergeFiles(fileParts) {
-        return new Promise((resolve, reject) => {
-          let buffers = []
-
-          function fetchPart(index) {
-            if (index >= fileParts.length) {
-              let mergedBlob = new Blob(buffers)
-              let mergedFileUrl = URL.createObjectURL(mergedBlob)
-              resolve(mergedFileUrl)
-              return
-            }
-            fetch(fileParts[index])
-              .then((response) => {
-                if (!response.ok) {
-                  throw new Error('Failed to load part ' + (index + 1) + ': HTTP ' + response.status)
-                }
-                return response.arrayBuffer()
-              })
-              .then((data) => {
-                console.log('Loaded part', index + 1, 'size:', data.byteLength)
-                buffers.push(data)
-                document.getElementById('progress').value = ((index + 1) / fileParts.length) * 100
-                document.getElementById('status').innerText =
-                  'Downloading... ' + Math.round(((index + 1) / fileParts.length) * 100) + '%'
-                fetchPart(index + 1)
-              })
-              .catch(reject)
+      const getProjectData = (function() {
+        const storage = scaffolding.storage;
+        storage.onprogress = (total, loaded) => {
+          setProgress(interpolate(0.2, 0.98, loaded / total));
+        };
+        
+        storage.addWebStore(
+          [
+            storage.AssetType.ImageVector,
+            storage.AssetType.ImageBitmap,
+            storage.AssetType.Sound,
+            storage.AssetType.Font
+          ].filter(i => i),
+          (asset) => new URL('https://cdn.jsdelivr.net/gh/gn-math/assets@main/184/assets/' + asset.assetId + '.' + asset.dataFormat, location).href
+        );
+        return () => new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        xhr.onload = () => {
+          resolve(xhr.response);
+        };
+        xhr.onerror = () => {
+          reject(new Error('Request to load project data failed.'));
+        };
+        xhr.onprogress = (e) => {
+          if (e.lengthComputable) {
+            setProgress(interpolate(0.1, 0.2, e.loaded / e.total));
           }
-          fetchPart(0)
-        })
-      }
-
-      function getParts(file, start, end) {
-        let parts = []
-        for (let i = start; i <= end; i++) {
-          parts.push(file + '.part' + i)
-        }
-        return parts
-      }
-
-      mergeFiles(getParts('game.unx', 1, 5))
-        .then(async (url) => {
-          window.gameUnxUrl = url
-
-          const originalFetch = window.fetch
-          window.fetch = async function (...args) {
-            let [url, options] = args
-            if (typeof url === 'string' && url.includes('game.unx')) {
-              console.log('fetch:', url)
-              url = window.gameUnxUrl
-            } else if (url instanceof Request && url.url.includes('game.unx')) {
-              console.log('fetch request:', url.url)
-              url = new Request(window.gameUnxUrl, url)
-            }
-            return originalFetch.call(this, url, options)
-          }
-
-          const originalOpen = XMLHttpRequest.prototype.open
-          XMLHttpRequest.prototype.open = function (method, url, ...rest) {
-            if (url.includes('game.unx')) {
-              console.log('XHR:', url)
-              url = window.gameUnxUrl
-            }
-            return originalOpen.call(this, method, url, ...rest)
-          }
-          let index = document.createElement('script')
-          index.src = 'index.js'
-          document.body.appendChild(index)
-
-          let runner = document.createElement('script')
-          runner.src = 'runner.js'
-          document.body.appendChild(runner)
-        })
-        .catch((error) => {
-          console.error('Failed to merge files:', error)
-        })
+        };
+        xhr.responseType = 'arraybuffer';
+        xhr.open('GET', "./assets/project.json");
+        xhr.send();
+      });
+      })();
     </script>
-	</body>
+  <script>
+    const run = async () => {
+      const projectData = await getProjectData();
+      await scaffolding.loadProject(projectData);
+      setProgress(1);
+      loadingScreen.hidden = true;
+      if (true) {
+        scaffolding.start();
+      } else {
+        launchScreen.hidden = false;
+        launchScreen.addEventListener('click', () => {
+          launchScreen.hidden = true;
+          scaffolding.start();
+        });
+        launchScreen.focus();
+      }
+    };
+    run().catch(handleError);
+  </script>
+</body>
 </html>

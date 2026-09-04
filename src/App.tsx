@@ -31,11 +31,11 @@ function AnalyticsTracker() {
   useEffect(() => {
     const currentPath = location.pathname;
 
-    // b64:VHJhY2sgT05MWSB0aGUgaG9tZSBwYWdl
+    // Track ONLY the home page
     if (currentPath === '/') {
       const umami = (window as any).umami;
       if (umami && typeof umami.track === 'function') {
-        // b64:VHJhY2sgcGFnZSB2aWV3IG1hbnVhbGx5
+        // Track page view manually
         umami.track();
       }
     }

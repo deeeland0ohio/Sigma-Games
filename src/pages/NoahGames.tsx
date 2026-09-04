@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import ProxyIframe from '../components/ProxyIframe';
-import { Search, X, Maximize, Box, Heart, Loader2, RefreshCw, RotateCw } from 'lucide-react';
+import ContentFrame from '../components/ContentFrame';
+import { Search, X, Maximize, Box, Loader2, RefreshCw, RotateCw, Heart } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import SourceGameCard from '../components/SourceGameCard';
 import { noahGames as initialNoahGames } from '../data/noah';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -11,6 +12,7 @@ export default function NoahGames() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedGame, setSelectedGame] = useState<{ url: string, title: string, desc: string, image: string } | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
 
@@ -73,7 +75,7 @@ export default function NoahGames() {
   const displayedGames = filteredGames.slice(0, visibleCount);
 
   return (
-    <PageLayout title="Noah's Hub Games">
+    <PageLayout title="Noah's Hub Games" maxWidth="wide" showBack={true}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
@@ -101,58 +103,32 @@ export default function NoahGames() {
             <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <div className="game-source-grid">
             {displayedGames.map((g, index) => {
               const displayName = g.title || formatFileName(g.url.split('/').pop() || g.url);
               const imageSrc = g.image || null;
               const gameId = `noah:${displayName}`;
               
               return (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: (index % 20) * 0.005 }}
+                <SourceGameCard
                   key={`${g.url}-${index}`}
-                  className="group relative aspect-square overflow-hidden flex flex-col justify-center items-center rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all text-center"
-                >
-                  <div onClick={() => openGame(g)} className="absolute inset-0 cursor-pointer z-10" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite({
-                        id: gameId,
-                        title: displayName,
-                        url: g.url.replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com'),
-                        image: imageSrc || '',
-                        source: "Noah's Hub",
-                        description: g.desc
-                      });
-                    }}
-                    className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500' : ''} />
-                  </button>
-                  {imageSrc ? (
-                    <>
-                      <img 
-                        src={imageSrc} 
-                        alt={displayName} 
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                      <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
-                        <p className="text-white font-medium text-xs sm:text-sm text-center leading-tight truncate">{displayName}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center p-4 hover:bg-zinc-800/50">
-                      <p className="text-white font-medium text-sm break-all line-clamp-3 group-hover:text-zinc-300">
-                        {displayName}
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
+                  index={index}
+                  title={displayName}
+                  image={imageSrc}
+                  onClick={() => openGame(g)}
+                  isFavorite={isFavorite(gameId)}
+                  onToggleFavorite={() => {
+                    toggleFavorite({
+                      id: gameId,
+                      title: displayName,
+                      url: g.url.replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com'),
+                      image: imageSrc || '',
+                      source: "Noah's Hub",
+                      description: g.desc
+                    });
+                  }}
+                  hoverBorderClass="hover:border-orange-500/50 hover:shadow-[0_0_15px_rgba(249,115,22,0.15)]"
+                />
               );
             })}
             
@@ -190,14 +166,7 @@ export default function NoahGames() {
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedGame.title || formatFileName(selectedGame.url)}</h3>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    const iframe = document.getElementById('noah-iframe') as HTMLIFrameElement;
-                    if (iframe) {
-                      const src = iframe.src;
-                      iframe.src = 'about:blank';
-                      setTimeout(() => { iframe.src = src; }, 50);
-                    }
-                  }}
+                  onClick={() => setReloadKey(k => k + 1)}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                   title="Reload Game"
                 >
@@ -242,7 +211,9 @@ export default function NoahGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <ProxyIframe
+              <ContentFrame
+                key={reloadKey}
+                reloadKey={reloadKey}
                 id="noah-iframe"
                 src={selectedGame.url.replace('/refs/heads/master/', '/master/').replace('raw.githubusercontent.com', 'raw.githack.com')}
                 className="w-full h-full border-none bg-black"

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import PageLayout from '../components/PageLayout';
 import { useThemeColors } from '../context/ThemeContext';
-import ProxyIframe from '../components/ProxyIframe';
+import ContentFrame from '../components/ContentFrame';
 import { Play, Youtube, Search, Loader2, Maximize, X, Video, Smartphone, Music, Tv } from 'lucide-react';
 
 interface MediaItem {
@@ -68,7 +68,7 @@ function TikTokEmbed({ videoId }: { videoId: string; username?: string }) {
           height: '580px',
         }}
       >
-        <ProxyIframe
+        <ContentFrame
           src={`https://www.tiktok.com/player/v1/${videoId}?autoplay=1`}
           className="absolute inset-0 w-full h-full border-none"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
@@ -99,12 +99,12 @@ export default function Entertainment() {
   const playerRef = useRef<HTMLDivElement>(null);
   const activeTabRef = useRef(activeTab);
 
-  // b64:S2VlcCB0aGUgcmVmIGluIHN5bmMgd2l0aCB0aGUgc3RhdGU=
+  // Keep the ref in sync with the state
   useEffect(() => {
     activeTabRef.current = activeTab;
   }, [activeTab]);
 
-  // b64:VHJpZ2dlciByZXN1bHRzIGZldGNoIG9uIGFjdGl2ZSB0YWIgY2hhbmdl
+  // Trigger results fetch on active tab change
   useEffect(() => {
     setSearchQuery('');
     setSelectedMedia(null);
@@ -122,25 +122,25 @@ export default function Entertainment() {
       }
     } catch (e) {}
 
-    // b64:TWF0Y2g6IHRpa3Rvay5jb20vQHVzZXJuYW1lL3ZpZGVvLzEyMzQ1Njc4OTA=
+    // Match: tiktok.com/@username/video/1234567890
     const match1 = decoded.match(/tiktok\.com\/@([^\/]+)\/video\/(\d+)/i);
     if (match1) {
       return { username: match1[1], id: match1[2] };
     }
 
-    // b64:TWF0Y2g6IHRpa3Rvay5jb20vdi8xMjM0NTY3ODkwIG9yIHRpa3Rvay5jb20vZW1iZWQvMTIzNDU2Nzg5MA==
+    // Match: tiktok.com/v/1234567890 or tiktok.com/embed/1234567890
     const match2 = decoded.match(/tiktok\.com\/(?:v|embed|embed\/v2)\/(\d+)/i);
     if (match2) {
       return { username: '', id: match2[1] };
     }
 
-    // b64:R2VuZXJhbCBkaWdpdHMgYXQgdGhlIGVuZA==
+    // General digits at the end
     const match3 = decoded.match(/tiktok\.com\/.*\/(\d+)/i);
     if (match3) {
       return { username: '', id: match3[1] };
     }
 
-    // b64:SXMgaXQganVzdCBhIG51bWVyaWMgc3RyaW5nIG9mIGRpZ2l0cyAocHJlc3VtYWJseSBhIGRpcmVjdCB2aWRlbyBJRCk/
+    // Is it just a numeric string of digits (presumably a direct video ID)?
     if (/^\d+$/.test(url.trim())) {
       return { username: '', id: url.trim() };
     }
@@ -152,23 +152,23 @@ export default function Entertainment() {
     const trimmed = input.trim();
     let isShort = trimmed.toLowerCase().includes('/shorts/') || trimmed.toLowerCase().includes('shorts=1');
 
-    // b64:MS4gSWYgaXQncyBhIHB1cmUgMTEgY2hhcmFjdGVyIElE
+    // 1. If it's a pure 11 character ID
     if (/^[A-Za-z0-9_-]{11}$/.test(trimmed)) {
       return { id: trimmed, isShort };
     }
 
     try {
-      // b64:QWRkIHNlY3VyZSBwcm90b2NvbCBzbyBhYnNvbHV0ZSBVUkwgcGFyc2luZyB3b3Jrcw==
+      // Add secure protocol so absolute URL parsing works
       const urlString = trimmed.startsWith('http') ? trimmed : `https://${trimmed}`;
       const url = new URL(urlString);
 
-      // b64:eW91dHUuYmUvVklERU9fSUQ=
+      // youtu.be/VIDEO_ID
       if (url.hostname.includes('youtu.be')) {
         const id = url.pathname.substring(1).split('&')[0].split('?')[0].split('#')[0].split('/')[0];
         return { id: id || null, isShort };
       }
 
-      // b64:eW91dHViZS5jb20vc2hvcnRzL1ZJREVPX0lE
+      // youtube.com/shorts/VIDEO_ID
       if (url.pathname.includes('/shorts/')) {
         const parts = url.pathname.split('/shorts/');
         if (parts[1]) {
@@ -177,7 +177,7 @@ export default function Entertainment() {
         }
       }
 
-      // b64:eW91dHViZS5jb20vZW1iZWQvVklERU9fSUQgb3IgeW91dHViZS1ub2Nvb2tpZS5jb20vZW1iZWQvVklERU9fSUQ=
+      // youtube.com/embed/VIDEO_ID or youtube-nocookie.com/embed/VIDEO_ID
       if (url.pathname.includes('/embed/')) {
         const parts = url.pathname.split('/embed/');
         if (parts[1]) {
@@ -186,20 +186,20 @@ export default function Entertainment() {
         }
       }
 
-      // b64:U3RhbmRhcmQgeW91dHViZS5jb20vd2F0Y2g/dj1WSURFT19JRA==
+      // Standard youtube.com/watch?v=VIDEO_ID
       const vParam = url.searchParams.get('v');
       if (vParam) {
         return { id: vParam, isShort };
       }
 
-      // b64:QmFja3VwcyBmb3IgcXVlcnktcGFyYW0gc3RyaW5ncyBpbnNpZGUgcGF0aA==
+      // Backups for query-param strings inside path
       const pathParts = url.pathname.split('/');
-      // b64:ZS5nLiAvdi9WSURFT19JRA==
+      // e.g. /v/VIDEO_ID
       if (pathParts.includes('v') && pathParts[pathParts.indexOf('v') + 1]) {
         return { id: pathParts[pathParts.indexOf('v') + 1], isShort };
       }
     } catch (e) {
-      // b64:UmVnZXggZmFsbGJhY2sgaWYgVVJMIGNvbnN0cnVjdG9yIGZhaWxz
+      // Regex fallback if URL constructor fails
       const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=|\/shorts\/)([^#\&\?]*).*/;
       const match = trimmed.match(regExp);
       if (match && match[2] && match[2].length === 11) {
@@ -236,7 +236,7 @@ export default function Entertainment() {
          throw new Error(`Failed to fetch: ${response.status}`);
       }
 
-      // b64:Rm9yY2VmdWxseSBkaXNjYXJkIHJlc3BvbnNlcyBmcm9tIHByZXZpb3VzIHRhYiBpZiBhY3RpdmUgdGFiIGNoYW5nZXMgbWlkLXJlcXVlc3Q=
+      // Forcefully discard responses from previous tab if active tab changes mid-request
       if (tab !== activeTabRef.current) {
         return;
       }
@@ -262,9 +262,9 @@ export default function Entertainment() {
         }
 
         const isShort = tab === 'youtube' && (
-          // b64:U3RhbmRhcmQgWW91VHViZSBTaG9ydCBpcyBzdHJpY3RseSA2MCBzZWNvbmRzIG9yIGxlc3M=
+          // Standard YouTube Short is strictly 60 seconds or less
           (durationSecs <= 60) ||
-          // b64:RmFsbGJhY2sgaWYgbWV0YWRhdGEgaGFzIG5vIGR1cmF0aW9uIGJ1dCB0aXRsZSBleHBsaWNpdGx5IGxpc3RzIGEgc2hvcnRzIHRhZw==
+          // Fallback if metadata has no duration but title explicitly lists a shorts tag
           (!item.duration && (titleLower.includes('#shorts') || titleLower.includes('shorts')))
         );
 
@@ -339,11 +339,11 @@ export default function Entertainment() {
 
     const trimmedInput = idInput.trim();
 
-    // b64:RXhwbGljaXRseSBjaGVjayBmb3IgeW91dHViZS90aWt0b2sgaW5kaWNhdG9ycyBmaXJzdA==
+    // Explicitly check for youtube/tiktok indicators first
     const isExplicitYouTube = trimmedInput.includes('youtube.com') || trimmedInput.includes('youtu.be');
     const isExplicitTikTok = trimmedInput.includes('tiktok.com');
 
-    // b64:RGVmYXVsdCB0byBhY3RpdmVUYWIgaWYgbm8gZXhwbGljaXQgaW5kaWNhdG9yIGlzIGZvdW5kIGluIHRoZSBsaW5r
+    // Default to activeTab if no explicit indicator is found in the link
     const targetPlatform = isExplicitTikTok ? 'tiktok' : (isExplicitYouTube ? 'youtube' : activeTab);
 
     if (targetPlatform === 'tiktok') {
@@ -376,7 +376,7 @@ export default function Entertainment() {
         setError("Could not parse TikTok Video URL/ID. Double check and try again.");
       }
     } else {
-      // b64:WW91VHViZSBmYWxsYmFjaw==
+      // YouTube fallback
       const { id: finalId, isShort } = extractYouTubeId(trimmedInput);
 
       if (!finalId) {
@@ -495,7 +495,7 @@ export default function Entertainment() {
                     isPortraitPlayer ? 'aspect-[9/16] w-full max-w-[340px]' : 'aspect-video w-full'
                   }`}
                 >
-                  <ProxyIframe
+                  <ContentFrame
                     src={embedUrl}
                     className="absolute inset-0 w-full h-full bg-black"
                     frameBorder="0"

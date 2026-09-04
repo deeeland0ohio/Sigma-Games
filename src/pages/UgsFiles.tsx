@@ -1,8 +1,9 @@
-import ProxyIframe from '../components/ProxyIframe';
+import ContentFrame from '../components/ContentFrame';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw, RotateCw } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import SourceGameCard from '../components/SourceGameCard';
 import { useFavorites } from '../context/FavoritesContext';
 
 export default function UgsFiles() {
@@ -10,6 +11,7 @@ export default function UgsFiles() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
 
@@ -25,7 +27,7 @@ export default function UgsFiles() {
         const stringMatches = [...arrayText.matchAll(/"([^"]+)"|'([^']+)'/g)];
         const parsedFiles = stringMatches.map(m => m[1] || m[2]).filter(f => f !== '?');
         
-        // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteikgYnkgdGhlaXIgZm9ybWF0dGVkIG5hbWVz
+        // Sort alphabetically (0-9-a-z) by their formatted names
         parsedFiles.sort((a, b) => {
           const nameA = formatFileName(a).toLowerCase();
           const nameB = formatFileName(b).toLowerCase();
@@ -71,7 +73,7 @@ export default function UgsFiles() {
   const displayedFiles = filteredFiles.slice(0, visibleCount);
 
   return (
-    <PageLayout title="UGS Games">
+    <PageLayout title="UGS Games" maxWidth="wide" showBack={true}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
@@ -99,39 +101,32 @@ export default function UgsFiles() {
             <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <div className="game-source-grid">
             {displayedFiles.map((f, index) => {
               const displayName = formatFileName(f);
               const gameId = `ugs:${displayName}`;
               
               return (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: (index % 20) * 0.005 }}
+                <SourceGameCard
                   key={`${f}-${index}`}
-                  className="group relative flex flex-col justify-center items-center h-24 p-4 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:bg-zinc-800/50 transition-all text-center"
-                >
-                  <div onClick={() => openFile(f)} className="absolute inset-0 cursor-pointer z-10" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite({
-                        id: gameId,
-                        title: displayName || f,
-                        url: getUrl(f),
-                        source: 'UGS',
-                        description: `Play ${displayName || f} from UGS.`
-                      });
-                    }}
-                    className="absolute top-2 right-2 z-20 p-2 text-zinc-500 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500 opacity-100' : ''} />
-                  </button>
-                  <p className="text-white font-medium text-sm break-all line-clamp-3 group-hover:text-zinc-300">
-                    {displayName || f}
-                  </p>
-                </motion.div>
+                  index={index}
+                  title={displayName || f}
+                  image={null}
+                  onClick={() => openFile(f)}
+                  isFavorite={isFavorite(gameId)}
+                  onToggleFavorite={() => {
+                    toggleFavorite({
+                      id: gameId,
+                      title: displayName || f,
+                      url: getUrl(f),
+                      source: 'UGS',
+                      description: `Play ${displayName || f} from UGS.`
+                    });
+                  }}
+                  fallbackIcon={Box}
+                  fallbackIconClassName="text-blue-400"
+                  hoverBorderClass="hover:border-blue-500/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.2)]"
+                />
               );
             })}
             
@@ -169,14 +164,7 @@ export default function UgsFiles() {
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedFile.replace(/^cl/i, '')}</h3>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    const iframe = document.getElementById('ugs-iframe') as HTMLIFrameElement;
-                    if (iframe) {
-                      const src = iframe.src;
-                      iframe.src = 'about:blank';
-                      setTimeout(() => { iframe.src = src; }, 50);
-                    }
-                  }}
+                  onClick={() => setReloadKey(k => k + 1)}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                   title="Reload Game"
                 >
@@ -220,7 +208,9 @@ export default function UgsFiles() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <ProxyIframe
+              <ContentFrame
+                key={reloadKey}
+                reloadKey={reloadKey}
                 id="ugs-iframe"
                 src={getUrl(selectedFile)}
                 className="w-full h-full border-none bg-black"
