@@ -1,8 +1,9 @@
-import ProxyIframe from '../components/ProxyIframe';
+import ContentFrame from '../components/ContentFrame';
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Loader2, Search, X, Maximize, Box, Heart, RefreshCw, RotateCw } from 'lucide-react';
+import { Loader2, Search, X, Maximize, Box, RefreshCw, RotateCw, Heart } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import SourceGameCard from '../components/SourceGameCard';
 import { useFavorites } from '../context/FavoritesContext';
 
 const COVER_BASE = "https://cdn.jsdelivr.net/gh/freebuisness/covers@main";
@@ -22,6 +23,7 @@ export default function GnMath() {
   const [selectedTag, setSelectedTag] = useState('');
   const [tags, setTags] = useState<string[]>([]);
   const [selectedZone, setSelectedZone] = useState<Zone | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [visibleCount, setVisibleCount] = useState(100);
   
   const { toggleFavorite, isFavorite } = useFavorites();
@@ -49,7 +51,7 @@ export default function GnMath() {
           tags: z.special || []
         }));
       
-      // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteik=
+      // Sort alphabetically (0-9-a-z)
       parsedZones.sort((a: any, b: any) => {
         const nameA = (a.name || "").toLowerCase();
         const nameB = (b.name || "").toLowerCase();
@@ -87,7 +89,7 @@ export default function GnMath() {
   const displayedZones = filteredZones.slice(0, visibleCount);
 
   return (
-    <PageLayout title="GN-Math">
+    <PageLayout title="GN-Math" maxWidth="wide" showBack={true}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
@@ -126,48 +128,35 @@ export default function GnMath() {
             <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
-            {displayedZones.map((z, index) => {
-              const gameId = `gnmath:${z.name}`;
-              return (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: (index % 20) * 0.002 }}
-                key={`${z.name}-${index}`}
-                className="group relative aspect-square overflow-hidden rounded-xl bg-zinc-900 border border-zinc-800"
-              >
-                <div onClick={() => openZone(z)} className="absolute inset-0 cursor-pointer z-10" />
-                <img 
-                  src={z.cover} 
-                  alt={z.name} 
-                  className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                  loading="lazy"
-                />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    toggleFavorite({
-                      id: gameId,
-                      title: z.name,
-                      url: z.url,
-                      image: z.cover,
-                      source: 'gn-math'
-                    });
-                  }}
-                  className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100"
-                >
-                  <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500' : ''} />
-                </button>
-                <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
-                  <p className="text-white font-medium text-xs sm:text-sm text-center leading-tight truncate">{z.name}</p>
-                </div>
-              </motion.div>
-            )})}
-            
+          <>
+            <div className="game-source-grid">
+              {displayedZones.map((z, index) => {
+                const gameId = `gnmath:${z.name}`;
+                return (
+                  <SourceGameCard
+                    key={`${z.name}-${index}`}
+                    index={index}
+                    title={z.name}
+                    image={z.cover}
+                    onClick={() => openZone(z)}
+                    isFavorite={isFavorite(gameId)}
+                    onToggleFavorite={() => {
+                      toggleFavorite({
+                        id: gameId,
+                        title: z.name,
+                        url: z.url,
+                        image: z.cover,
+                        source: 'gn-math'
+                      });
+                    }}
+                    hoverBorderClass="hover:border-red-500/50 hover:shadow-[0_0_15px_rgba(239,68,68,0.15)]"
+                  />
+                );
+              })}
+            </div>
+              
             {visibleCount < filteredZones.length && (
-              <div className="col-span-full flex justify-center mt-6">
+              <div className="flex justify-center mt-6">
                 <button
                   onClick={() => setVisibleCount(c => c + 100)}
                   className="px-6 py-3 rounded-lg font-medium bg-zinc-800 text-white hover:bg-zinc-700 transition-colors border border-zinc-700 cursor-pointer"
@@ -178,12 +167,12 @@ export default function GnMath() {
             )}
 
             {filteredZones.length === 0 && (
-              <div className="col-span-full flex flex-col items-center justify-center py-20 text-zinc-500">
+              <div className="flex flex-col items-center justify-center py-20 text-zinc-500">
                 <Box className="w-12 h-12 mb-4 opacity-20" />
                 <p>No titles found matching your search.</p>
               </div>
             )}
-          </div>
+          </>
         )}
       </div>
 
@@ -200,14 +189,7 @@ export default function GnMath() {
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedZone.name}</h3>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    const iframe = document.getElementById('game-iframe') as HTMLIFrameElement;
-                    if (iframe) {
-                      const src = iframe.src;
-                      iframe.src = 'about:blank';
-                      setTimeout(() => { iframe.src = src; }, 50);
-                    }
-                  }}
+                  onClick={() => setReloadKey(k => k + 1)}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                   title="Reload Game"
                 >
@@ -250,7 +232,9 @@ export default function GnMath() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <ProxyIframe
+              <ContentFrame
+                key={reloadKey}
+                reloadKey={reloadKey}
                 id="game-iframe"
                 src={selectedZone.url}
                 className="w-full h-full border-none bg-black"

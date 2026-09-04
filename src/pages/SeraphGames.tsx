@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import ProxyIframe from '../components/ProxyIframe';
-import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2, RotateCw } from 'lucide-react';
+import ContentFrame from '../components/ContentFrame';
+import { Search, X, Maximize, Box, RefreshCw, Loader2, RotateCw, Heart } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
+import SourceGameCard from '../components/SourceGameCard';
 import { seraphGames as initialSeraphGames } from '../data/seraph';
 import { useFavorites } from '../context/FavoritesContext';
 
@@ -11,6 +12,7 @@ export default function SeraphGames() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [visibleCount, setVisibleCount] = useState(100);
   const { toggleFavorite, isFavorite } = useFavorites();
 
@@ -32,7 +34,7 @@ export default function SeraphGames() {
             });
           
           if (gameFolders.length > 0) {
-            // b64:U29ydCBhbHBoYWJldGljYWxseSAoMC05LWEteikgYnkgZm9ybWF0dGVkIHRpdGxl
+            // Sort alphabetically (0-9-a-z) by formatted title
             gameFolders.sort((a: any, b: any) => {
               const nameA = formatFileName(a.id).toLowerCase();
               const nameB = formatFileName(b.id).toLowerCase();
@@ -73,7 +75,7 @@ export default function SeraphGames() {
   const displayedFiles = filteredFiles.slice(0, visibleCount);
 
   return (
-    <PageLayout title="Seraph Games">
+    <PageLayout title="Seraph Games" maxWidth="wide" showBack={true}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
@@ -101,57 +103,31 @@ export default function SeraphGames() {
             <Loader2 className="w-8 h-8 animate-spin text-zinc-500" />
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <div className="game-source-grid">
             {displayedFiles.map((f, index) => {
               const displayName = formatFileName(f.id);
               const gameId = `seraph:${displayName}`;
               
               return (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: (index % 20) * 0.005 }}
+                <SourceGameCard
                   key={`${f.id}-${index}`}
-                  className="group relative aspect-square overflow-hidden flex flex-col justify-center items-center rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all text-center"
-                >
-                  <div onClick={() => openFile(f.id)} className="absolute inset-0 cursor-pointer z-10" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite({
-                        id: gameId,
-                        title: displayName || f.id,
-                        url: getUrl(f.id),
-                        image: f.image || '',
-                        source: 'Seraph',
-                        description: `Play ${displayName || f.id} from Seraph.`
-                      });
-                    }}
-                    className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500' : ''} />
-                  </button>
-                  {f.image ? (
-                    <>
-                      <img 
-                        src={f.image} 
-                        alt={displayName} 
-                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                        loading="lazy"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                      <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
-                        <p className="text-white font-medium text-xs sm:text-sm text-center leading-tight truncate">{displayName || f.id}</p>
-                      </div>
-                    </>
-                  ) : (
-                    <div className="h-full w-full flex items-center justify-center p-4 hover:bg-zinc-800/50">
-                      <p className="text-white font-medium text-sm break-all line-clamp-3 group-hover:text-zinc-300">
-                        {displayName || f.id}
-                      </p>
-                    </div>
-                  )}
-                </motion.div>
+                  index={index}
+                  title={displayName || f.id}
+                  image={f.image || null}
+                  onClick={() => openFile(f.id)}
+                  isFavorite={isFavorite(gameId)}
+                  onToggleFavorite={() => {
+                    toggleFavorite({
+                      id: gameId,
+                      title: displayName || f.id,
+                      url: getUrl(f.id),
+                      image: f.image || '',
+                      source: 'Seraph',
+                      description: `Play ${displayName || f.id} from Seraph.`
+                    });
+                  }}
+                  hoverBorderClass="hover:border-zinc-500/50 hover:shadow-[0_0_15px_rgba(113,113,122,0.15)]"
+                />
               );
             })}
             
@@ -189,14 +165,7 @@ export default function SeraphGames() {
               <h3 className="text-white font-medium pl-2 truncate flex-1">{formatFileName(selectedFile)}</h3>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    const iframe = document.getElementById('seraph-iframe') as HTMLIFrameElement;
-                    if (iframe) {
-                      const src = iframe.src;
-                      iframe.src = 'about:blank';
-                      setTimeout(() => { iframe.src = src; }, 50);
-                    }
-                  }}
+                  onClick={() => setReloadKey(k => k + 1)}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                   title="Reload Game"
                 >
@@ -242,7 +211,9 @@ export default function SeraphGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <ProxyIframe
+              <ContentFrame
+                key={reloadKey}
+                reloadKey={reloadKey}
                 id="seraph-iframe"
                 src={getUrl(selectedFile)}
                 className="w-full h-full border-none bg-black"

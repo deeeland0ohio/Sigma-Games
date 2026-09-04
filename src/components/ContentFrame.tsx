@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 
-interface ProxyIframeProps extends React.IframeHTMLAttributes<HTMLIFrameElement> {
+export interface ContentFrameProps extends React.IframeHTMLAttributes<HTMLIFrameElement> {
   src?: string;
   srcDoc?: string;
+  reloadKey?: number;
 }
+
+const gameHtmlCache = new Map<string, string>();
 
 export function getJsDelivrUrl(url: string | undefined | null): string {
   if (!url || typeof url !== 'string') return '';
@@ -30,9 +33,11 @@ export function cleanGameUrl(url: string | undefined | null): string {
   if (!url || typeof url !== 'string') return '';
   let cleaned = getJsDelivrUrl(url);
   if (!cleaned || typeof cleaned !== 'string') return '';
-  // b64:S2VlcCBkb21haW4gKHRlc3RpbmdjZi9mYXN0bHkvY2RuL3F1YW50aWwpIGFzIGlzLCBidXQgbm9ybWFsaXplIGFueSBvdXRkYXRlZCBjb21taXQgaGFzaGVzIG9yIGJyYW5jaGVzIHdpdGggQG1haW4gZm9yIGtub3duIHJlcG9zaXRvcmllcw==
+  // Normalize gn-math asset sources
+  cleaned = cleaned.replace(/\/gh\/gn-math\//gi, '/gh/freebuisness/');
+  // Keep domain as is, but normalize any outdated commit hashes or branches with @main for known repositories
   cleaned = cleaned.replace(
-    /(https?:\/\/(?:testingcf|fastly|cdn|quantil)\.jsdelivr\.net\/gh\/(?:aDiesmos|WanoCapy|3kh0|a456pur|greenday894|HydroXide1|Noah-Is-Awesome|alexr-hub)\/([a-zA-Z0-9_-]+))@[a-zA-Z0-9_.-]+(\/|$)/g,
+    /(https?:\/\/(?:testingcf|fastly|cdn|quantil)\.jsdelivr\.net\/gh\/(?:aDiesmos|WanoCapy|3kh0|a456pur|greenday894|HydroXide1|Noah-Is-Awesome|alexr-hub|bubbls|lonya-k|genizy|degloved-net|freebuisness)\/([a-zA-Z0-9_-]+))@[a-zA-Z0-9_.-]+(\/|$)/g,
     '$1@main$3'
   );
   return cleaned;
@@ -60,7 +65,7 @@ export function normalizeEmbedUrl(url: string | undefined | null): string {
   if (!url || typeof url !== 'string') return '';
   const trimmed = url.trim();
 
-  // b64:WW91VHViZSBub3JtYWxpemF0aW9uICh3YXRjaCwgc2hvcnRzLCB5b3V0dS5iZSwgZW1iZWQp
+  // YouTube normalization (watch, shorts, youtu.be, embed)
   if (trimmed.includes('youtube.com') || trimmed.includes('youtu.be')) {
     const ytMatch = trimmed.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/))([a-zA-Z0-9_-]{11})/);
     if (ytMatch && ytMatch[1]) {
@@ -68,7 +73,7 @@ export function normalizeEmbedUrl(url: string | undefined | null): string {
     }
   }
 
-  // b64:VGlrVG9rIG5vcm1hbGl6YXRpb24gKHZpZGVvIGxpbmtzLCB2LCBlbWJlZCk=
+  // TikTok normalization (video links, v, embed)
   if (trimmed.includes('tiktok.com')) {
     const ttMatch = trimmed.match(/tiktok\.com\/(?:@[^\/]+\/video\/|v\/|embed\/v2\/|embed\/v3\/|embed\/|player\/v1\/)(\d+)/i) ||
                     trimmed.match(/tiktok\.com\/.*\/(\d+)/i);
@@ -80,12 +85,12 @@ export function normalizeEmbedUrl(url: string | undefined | null): string {
   return cleanGameUrl(trimmed);
 }
 
-export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true, ...props }: ProxyIframeProps) {
+export default function ContentFrame({ src, srcDoc, reloadKey, allow, allowFullScreen = true, ...props }: ContentFrameProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [fallbackSrc, setFallbackSrc] = useState<string | undefined>(undefined);
 
   useEffect(() => {
-    // b64:SWYgc3JjRG9jIGlzIHByb3ZpZGVkIGRpcmVjdGx5LCBsZXQgUmVhY3QgaGFuZGxlIGl0IHZpYSB0aGUgcHJvcA==
+    // If srcDoc is provided directly, let React handle it via the prop
     if (srcDoc) return;
     
     if (src && iframeRef.current) {
@@ -95,10 +100,23 @@ export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true
       
       let isMounted = true;
 
-      // b64:VmlkZW8gZW1iZWRzIChZb3VUdWJlLCBUaWtUb2spIG11c3QgcnVuIG5hdGl2ZWx5IGluIHRoZSBpZnJhbWUgdG8gYWxsb3cgcGxheWVyIHNjcmlwdHMgJiBtZWRpYSBkZWNvZGVycw==
+      // Video embeds (YouTube, TikTok) run natively in the iframe
       if (isVideoEmbed(targetUrl)) {
         setFallbackSrc(targetUrl);
         return;
+      }
+
+      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+
+      // If already cached, directly re-inject the pristine game code
+      if (gameHtmlCache.has(targetUrl)) {
+        const cachedHtml = gameHtmlCache.get(targetUrl)!;
+        if (doc) {
+          doc.open();
+          doc.write(cachedHtml);
+          doc.close();
+          return;
+        }
       }
 
       const fetchHtml = async (fetchUrl: string): Promise<string | null> => {
@@ -108,15 +126,15 @@ export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true
             return await response.text();
           }
         } catch (err) {
-          // Direct fetch failed, fallback to server evasion proxy
+          // Fallback to server content loader
         }
         try {
-          const proxyRes = await fetch(`/api/evasion-proxy?url=${encodeURIComponent(fetchUrl)}`);
+          const proxyRes = await fetch(`/api/content-loader?url=${encodeURIComponent(fetchUrl)}`);
           if (proxyRes.ok) {
             return await proxyRes.text();
           }
         } catch (proxyErr) {
-          console.warn("Proxy fallback fetch failed:", proxyErr);
+          console.warn("Content loader fetch failed:", proxyErr);
         }
         return null;
       };
@@ -125,14 +143,12 @@ export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true
         let currentUrl = targetUrl;
         let html: string | null = null;
 
-        // b64:UmVjdXJzaXZlIHVud3JhcHBpbmcgKHVwIHRvIDMgbGV2ZWxzKSBmb3Igd3JhcHBlciBwYWdlcyB0aGF0IGhvc3QgdGhlIGdhbWUgaW4gYW4gaW5uZXIgaWZyYW1l
+        // Recursive unwrapping (up to 3 levels) for wrapper pages
         for (let depth = 0; depth < 3; depth++) {
           const fetched = await fetchHtml(currentUrl);
           if (!fetched) break;
           html = fetched;
 
-          // b64:Q2hlY2sgaWYgdGhpcyBIVE1MIGlzIGFuIGlmcmFtZSB3cmFwcGVyIHBhZ2UgKGUuZy4sIENWSyB3cmFwcGVycyB0aGF0IGVtYmVkIHRoZSBhY3R1YWwgZ2FtZSBpbiBhbiBpZnJhbWUp
-          // b64:V3JhcHBlciBwYWdlcyBoYXZlIGFuIGlmcmFtZSB3aXRoIGEgc3JjIGF0dHJpYnV0ZSBhbmQgRE8gTk9UIHRoZW1zZWx2ZXMgaGF2ZSBnYW1lIGNhbnZhcy9lbmdpbmVz
           const hasGameEngine = (
             html.includes('<canvas') ||
             html.includes('data.unityweb') ||
@@ -151,7 +167,7 @@ export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true
                 try {
                   const resolvedUrl = new URL(innerSrc, currentUrl).href;
                   currentUrl = cleanGameUrl(resolvedUrl);
-                  continue; // b64:TG9vcCB0byBmZXRjaCB0aGUgYWN0dWFsIGlubmVyIGdhbWUgSFRNTA==
+                  continue;
                 } catch (urlErr) {
                   // Fall through
                 }
@@ -162,23 +178,35 @@ export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true
         }
 
         if (html && isMounted) {
-          // b64:MS4gUmV3cml0ZSBicm9rZW4gY29tbWl0IGhhc2hlcyBnbG9iYWxseSBpbnNpZGUgdGhlIEhUTUwsIHByZXNlcnZpbmcgdGhlIG9yaWdpbmFsIGRvbWFpbg==
+          // 1. Switch any gn-math to freebuisness
+          html = html.replace(/\/gh\/gn-math\//gi, '/gh/freebuisness/');
+
+          // 2. Rewrite broken commit hashes globally inside the HTML, preserving the original domain
           html = html.replace(
-            /(https?:\/\/(?:testingcf|fastly|cdn|quantil)\.jsdelivr\.net\/gh\/(?:aDiesmos|WanoCapy|3kh0|a456pur|greenday894|HydroXide1|Noah-Is-Awesome|alexr-hub)\/([a-zA-Z0-9_-]+))@[a-zA-Z0-9_.-]+(\/|$)/g,
+            /(https?:\/\/(?:testingcf|fastly|cdn|quantil)\.jsdelivr\.net\/gh\/(?:aDiesmos|WanoCapy|3kh0|a456pur|greenday894|HydroXide1|Noah-Is-Awesome|alexr-hub|bubbls|lonya-k|degloved-net|freebuisness)\/([a-zA-Z0-9_-]+))@[a-zA-Z0-9_.-]+(\/|$)/g,
             '$1@main$3'
           );
 
-          // b64:Mi4gU3RyaXAgYW5ub3lpbmcgbW9uZXRpemVkIG92ZXJsYXkgd2lkZ2V0cyAobGlrZSBhcmMuaW8pIHRoYXQgY2x1dHRlci9icmVhayB0aGUgZ2FtZSBVSQ==
-          html = html.replace(/<script[^>]*src="[^"]*arc\.io[^"]*"[^>]*><\/script>/gi, '<!-- stripped arc.io -->');
+          // 2b. Map blocked jsdelivr genizy repositories to content-loader proxy
+          html = html.replace(
+            /https?:\/\/(?:testingcf|fastly|cdn|quantil)\.jsdelivr\.net\/gh\/genizy\/([^/@]+)(?:@([^\/'" >]+))?\//gi,
+            (_match, repo, branch) => {
+              const b = branch && branch !== 'latest' ? branch : 'main';
+              return `/api/content-loader/raw.githubusercontent.com/genizy/${repo}/${b}/`;
+            }
+          );
 
-          // b64:My4gU3RyaXAgYW5hbHl0aWNzL3RyYWNrZXJzIChHb29nbGV0YWdtYW5hZ2VyLCBndGFnKQ==
-          html = html.replace(/<script[^>]*src="[^"]*googletagmanager\.com[^"]*"[^>]*><\/script>/gi, '<!-- stripped google tag manager -->');
+          // 3. Strip overlay widgets that clutter the UI
+          html = html.replace(/<script[^>]*src="[^"]*arc\.io[^"]*"[^>]*><\/script>/gi, '<!-- stripped overlay -->');
+
+          // 4. Strip external analytics scripts
+          html = html.replace(/<script[^>]*src="[^"]*googletagmanager\.com[^"]*"[^>]*><\/script>/gi, '<!-- stripped analytics -->');
           html = html.replace(/gtag\s*\([^)]*\);?/gi, '');
 
-          // b64:NC4gQnlwYXNzIHJvb3QtcmVsYXRpdmUgL2pzL21haW4uanMgd2hpY2ggZmFpbHMgb24gb3VyIGRvbWFpbg==
-          html = html.replace(/src=["']\/js\/main\.js["']/gi, 'src="data:text/javascript,console.log(\'main.js bypassed\')"');
+          // 5. Replace missing root-relative script references
+          html = html.replace(/src=["']\/js\/main\.js["']/gi, 'src="data:text/javascript,console.log(\'main.js loaded\')"');
 
-          // b64:NS4gSW5qZWN0IHNhZmUgbG9jYWxTdG9yYWdlIC8gc2Vzc2lvblN0b3JhZ2UgcG9seWZpbGwgdG8gcHJldmVudCBBY2Nlc3MgRGVuaWVkIGV4Y2VwdGlvbnMgaW4gc2FuZGJveGVkIGRvY3VtZW50cw==
+          // 6. Inject safe localStorage / sessionStorage polyfill to prevent access errors in sandboxed documents
           const storagePolyfill = `<script>
             (function() {
               var mem = {};
@@ -216,17 +244,36 @@ export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true
             })();
           </script>`;
 
-          // b64:Ni4gSW5qZWN0IGJhc2UgdGFnIHNvIHJlbGF0aXZlIGFzc2V0cyBsb2FkIGNvcnJlY3RseQ==
-          const baseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
-          const baseTag = `<base href="${baseUrl}">`;
-
+          // 7. Inject base tag so relative assets load correctly:
           if (!html.includes('<base ')) {
-            if (html.includes('<head>')) {
-              html = html.replace('<head>', `<head>\n${baseTag}\n${storagePolyfill}`);
-            } else if (html.includes('<html>')) {
-              html = html.replace('<html>', `<html>\n<head>\n${baseTag}\n${storagePolyfill}\n</head>`);
+            let effectiveBaseUrl = '';
+            const cdnMatch = html.match(/(https?:\/\/(?:testingcf|fastly|cdn|quantil)\.jsdelivr\.net\/gh\/[^\s"'><]+|https?:\/\/(?:raw\.githack\.com|rawcdn\.githack\.com)\/[^\s"'><]+)/i);
+            if (cdnMatch && cdnMatch[1]) {
+              const cdnAssetUrl = cleanGameUrl(cdnMatch[1]);
+              effectiveBaseUrl = cdnAssetUrl.substring(0, cdnAssetUrl.lastIndexOf('/') + 1);
+            } else if (currentUrl.startsWith('http://') || currentUrl.startsWith('https://')) {
+              effectiveBaseUrl = currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+            } else if (currentUrl.startsWith('/')) {
+              effectiveBaseUrl = window.location.origin + currentUrl.substring(0, currentUrl.lastIndexOf('/') + 1);
+            }
+
+            if (effectiveBaseUrl) {
+              const baseTag = `<base href="${effectiveBaseUrl}">`;
+              if (html.includes('<head>')) {
+                html = html.replace('<head>', `<head>\n${baseTag}\n${storagePolyfill}`);
+              } else if (html.includes('<html>')) {
+                html = html.replace('<html>', `<html>\n<head>\n${baseTag}\n${storagePolyfill}\n</head>`);
+              } else {
+                html = `${baseTag}\n${storagePolyfill}\n${html}`;
+              }
             } else {
-              html = `${baseTag}\n${storagePolyfill}\n${html}`;
+              if (html.includes('<head>')) {
+                html = html.replace('<head>', `<head>\n${storagePolyfill}`);
+              } else if (html.includes('<html>')) {
+                html = html.replace('<html>', `<html>\n<head>\n${storagePolyfill}\n</head>`);
+              } else {
+                html = `${storagePolyfill}\n${html}`;
+              }
             }
           } else {
             if (html.includes('<head>')) {
@@ -235,6 +282,8 @@ export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true
               html = `${storagePolyfill}\n${html}`;
             }
           }
+
+          gameHtmlCache.set(targetUrl, html);
 
           const doc = iframe.contentDocument || iframe.contentWindow?.document;
           if (doc) {
@@ -264,7 +313,7 @@ export default function ProxyIframe({ src, srcDoc, allow, allowFullScreen = true
         }
       };
     }
-  }, [src, srcDoc]);
+  }, [src, srcDoc, reloadKey]);
 
   const defaultAllow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
 

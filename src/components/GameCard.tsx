@@ -16,6 +16,7 @@ export default function GameCard({ game, to }: GameCardProps) {
   const { isFavorite } = useFavorites();
   const navigate = useNavigate();
   const [showWarning, setShowWarning] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const Icon = game.icon;
   let defaultPath = `/play/${game.id}`;
@@ -120,13 +121,20 @@ export default function GameCard({ game, to }: GameCardProps) {
         </div>
       )}
 
-      {game.image ? (
-        <div className={`w-full aspect-video rounded-xl overflow-hidden mb-2 border border-zinc-800`}>
-          <img src={game.image} alt={game.title} className="w-full h-full object-cover" />
+      {game.image && !imgError ? (
+        <div className={`w-full aspect-video rounded-xl overflow-hidden mb-2 border border-zinc-800 bg-zinc-950 flex items-center justify-center`}>
+          <img 
+            src={game.image} 
+            alt={game.title} 
+            className="w-full h-full object-cover" 
+            loading="lazy"
+            referrerPolicy="no-referrer"
+            onError={() => setImgError(true)}
+          />
         </div>
       ) : (
         <div className={`p-3 bg-zinc-950 rounded-xl border border-zinc-800 ${cardTertiary} group-hover:scale-110 ${cardGroupHoverText} ${cardGroupHoverBorder} transition-all`}>
-          <Icon size={24} />
+          {Icon ? <Icon size={24} /> : <div className="w-6 h-6 flex items-center justify-center font-bold text-xs">{game.title.slice(0, 2).toUpperCase()}</div>}
         </div>
       )}
       <div className="relative z-10 w-full">

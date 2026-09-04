@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { Search, X, Maximize, Box, Heart, RefreshCw, Loader2, Crown, RotateCw } from 'lucide-react';
+import { Search, X, Maximize, Box, RefreshCw, Loader2, Crown, RotateCw, Heart } from 'lucide-react';
 import PageLayout from '../components/PageLayout';
-import ProxyIframe from '../components/ProxyIframe';
+import SourceGameCard from '../components/SourceGameCard';
+import ContentFrame from '../components/ContentFrame';
 import { useFavorites } from '../context/FavoritesContext';
 import { cvkGames, CvkGameItem } from '../data/cvk';
 
@@ -11,13 +12,14 @@ export default function CvkGames() {
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
   const [selectedGame, setSelectedGame] = useState<CvkGameItem | null>(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [visibleCount, setVisibleCount] = useState(60);
   const { toggleFavorite, isFavorite } = useFavorites();
 
   const loadCvkGames = async () => {
     setLoading(true);
     try {
-      // b64:RmV0Y2ggZHluYW1pYyBnYW1lcyBsaXN0IHVzaW5nIHF1YW50aWwgQ0ROIGFzIG1hbmRhdGVk
+      // Fetch dynamic games list using quantil CDN as mandated
       const res = await fetch("https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main/games.js");
       if (res.ok) {
         const text = await res.text();
@@ -61,7 +63,7 @@ export default function CvkGames() {
   const displayedGames = filteredGames.slice(0, visibleCount);
 
   return (
-    <PageLayout title="Chicken King's Vault (CVK)">
+    <PageLayout title="Chicken King's Vault (CVK)" maxWidth="wide" showBack={true}>
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
           <div className="relative flex-1 w-full max-w-md">
@@ -90,59 +92,31 @@ export default function CvkGames() {
             <p className="text-zinc-500 text-sm font-medium">Loading Chicken King's Vault games...</p>
           </div>
         ) : (
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <div className="game-source-grid">
             {displayedGames.map((g, index) => {
               const gameId = `cvk:${g.title}`;
               return (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: (index % 20) * 0.005 }}
+                <SourceGameCard
                   key={`${g.file}-${index}`}
-                  className="group relative aspect-square overflow-hidden flex flex-col justify-center items-center rounded-xl bg-zinc-900 border border-zinc-800 hover:border-amber-500/60 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)] transition-all text-center"
-                >
-                  <div onClick={() => openGame(g)} className="absolute inset-0 cursor-pointer z-10" />
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      toggleFavorite({
-                        id: gameId,
-                        title: g.title,
-                        url: g.url,
-                        image: g.image,
-                        source: 'CVK',
-                        description: `Play ${g.title} from Chicken King's Vault.`
-                      });
-                    }}
-                    className="absolute top-2 right-2 z-20 p-2 bg-black/50 hover:bg-black/80 rounded-full text-white transition-colors opacity-0 group-hover:opacity-100"
-                  >
-                    <Heart size={16} className={isFavorite(gameId) ? 'fill-red-500 text-red-500' : ''} />
-                  </button>
-                  <div className="absolute inset-0 bg-gradient-to-br from-zinc-800 to-zinc-950 flex flex-col items-center justify-center p-3 text-center select-none">
-                    <div className="w-10 h-10 rounded-xl bg-zinc-700/60 border border-zinc-600/40 flex items-center justify-center text-amber-400 font-bold text-sm mb-2 shadow-inner">
-                      <Crown className="w-5 h-5" />
-                    </div>
-                    <span className="text-zinc-200 text-xs font-semibold leading-tight line-clamp-2 px-1">{g.title}</span>
-                  </div>
-                  {g.image && (
-                    <>
-                      <img 
-                        src={g.image} 
-                        alt={g.title} 
-                        className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-110" 
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
-                      <div className="absolute inset-x-0 bottom-0 p-3 translate-y-2 group-hover:translate-y-0 transition-transform duration-300 pointer-events-none">
-                        <p className="text-white font-medium text-xs sm:text-sm text-center leading-tight truncate">{g.title}</p>
-                      </div>
-                    </>
-                  )}
-                </motion.div>
+                  index={index}
+                  title={g.title}
+                  image={g.image || null}
+                  onClick={() => openGame(g)}
+                  isFavorite={isFavorite(gameId)}
+                  onToggleFavorite={() => {
+                    toggleFavorite({
+                      id: gameId,
+                      title: g.title,
+                      url: g.url,
+                      image: g.image,
+                      source: 'CVK',
+                      description: `Play ${g.title} from Chicken King's Vault.`
+                    });
+                  }}
+                  fallbackIcon={Crown}
+                  fallbackIconClassName="text-amber-400"
+                  hoverBorderClass="hover:border-amber-500/60 hover:shadow-[0_0_15px_rgba(245,158,11,0.2)]"
+                />
               );
             })}
             
@@ -180,14 +154,7 @@ export default function CvkGames() {
               <h3 className="text-white font-medium pl-2 truncate flex-1">{selectedGame.title}</h3>
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    const iframe = document.getElementById('cvk-iframe') as HTMLIFrameElement;
-                    if (iframe) {
-                      const src = iframe.src;
-                      iframe.src = 'about:blank';
-                      setTimeout(() => { iframe.src = src; }, 50);
-                    }
-                  }}
+                  onClick={() => setReloadKey(k => k + 1)}
                   className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors cursor-pointer"
                   title="Reload Game"
                 >
@@ -231,7 +198,9 @@ export default function CvkGames() {
             </div>
             
             <div className="flex-1 w-full bg-black relative">
-              <ProxyIframe
+              <ContentFrame
+                key={reloadKey}
+                reloadKey={reloadKey}
                 id="cvk-iframe"
                 src={selectedGame.url}
                 className="w-full h-full border-none bg-black"

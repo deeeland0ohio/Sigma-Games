@@ -28,9 +28,9 @@ export default function Home() {
   const [dynamicGames, setDynamicGames] = useState(games);
 
   useEffect(() => {
-    // b64:RHluYW1pY2FsbHkgZmV0Y2ggYW5kIHVwZGF0ZSBjb2xsZWN0aW9uIGdhbWUgY291bnRzIHRvIGd1YXJhbnRlZSBhY2N1cmFjeQ==
+    // Dynamically fetch and update collection game counts to guarantee accuracy
     const fetchCounts = async () => {
-      // b64:MS4gR04gTWF0aA==
+      // 1. GN Math
       fetch("https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json")
         .then(res => res.json())
         .then((raw: any) => {
@@ -40,7 +40,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // b64:Mi4gVUdTIChVbHRpbWF0ZSBHYW1lIFN0YXNoKQ==
+      // 2. UGS (Ultimate Game Stash)
       fetch("https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js")
         .then(res => res.text())
         .then(text => {
@@ -55,7 +55,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // b64:My4gU2VyYXBoIEdhbWVz
+      // 3. Seraph Games
       fetch('https://api.github.com/repos/a456pur/seraph/git/trees/main?recursive=1')
         .then(res => res.json())
         .then((data: any) => {
@@ -67,7 +67,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // b64:NC4gM2toMCBHYW1lcw==
+      // 4. 3kh0 Games
       fetch('https://api.github.com/repos/3kh0/3kh0-lite/git/trees/main?recursive=1')
         .then(res => res.json())
         .then((data: any) => {
@@ -79,7 +79,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // b64:NS4gTm9haCdzIEh1YiBHYW1lcw==
+      // 5. Noah's Hub Games
       fetch('https://cdn.jsdelivr.net/gh/NoahsAmazingTutoringHelp/Noahs-Calculus-Tutor@master/games.js')
         .then(async (res) => {
           if (!res.ok) throw new Error("Fetch failed");
@@ -92,7 +92,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // b64:Ni4gQWxleHIgR2FtZXM=
+      // 6. Alexr Games
       fetch("https://cdn.jsdelivr.net/gh/dskjfoisjfsjio/alexrsworld@main/singlefilegames.json")
         .then(res => res.json())
         .then((raw: any) => {
@@ -102,7 +102,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // b64:Ny4gSHlkcmEgR2FtZXM=
+      // 7. Hydra Games
       fetch("https://cdn.jsdelivr.net/gh/zennedu/hydra@main/gmes.json")
         .then(res => res.json())
         .then((raw: any) => {
@@ -111,7 +111,7 @@ export default function Home() {
           }
         }).catch(() => {});
 
-      // b64:OC4gQ2hpY2tlbiBLaW5nJ3MgVmF1bHQgKENWSyk=
+      // 8. Chicken King's Vault (CVK)
       fetch("https://cdn.jsdelivr.net/gh/WanoCapy/ChickenKingsVault@main/games.js")
         .then(res => res.text())
         .then(text => {

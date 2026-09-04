@@ -2,7 +2,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { games, allGamesList } from '../data/games';
 import { Game } from '../types';
-import ProxyIframe from '../components/ProxyIframe';
+import ContentFrame from '../components/ContentFrame';
 import { ArrowLeft, Maximize2, Terminal, Github, RefreshCcw, Heart, AlertTriangle } from 'lucide-react';
 import { useState, useEffect, useRef } from 'react';
 import SettingsMenu from '../components/SettingsMenu';
@@ -137,7 +137,7 @@ export default function GamePlayer() {
           className="w-full h-full bg-black flex flex-col items-center justify-center overflow-hidden"
         >
           {game.type === 'iframe' && (iframeUrl || game.srcdoc) ? (
-            <ProxyIframe 
+            <ContentFrame 
               key={reloadKey}
               src={iframeUrl}
               srcDoc={game.srcdoc}
