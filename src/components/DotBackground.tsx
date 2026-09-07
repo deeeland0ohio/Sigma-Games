@@ -35,7 +35,7 @@ function parseToRgba(colorStr: string, alpha: number): string {
   return colorStr;
 }
 
-export default function DotBackground({ color1, color2, color3, color4, power = 1.0, config }: { color1: string, color2: string, color3?: string, color4?: string, power?: number, config: { speed: number, size: number, density: number } }) {
+export default function DotBackground({ color1, color2, color3, color4, palette, power = 1.0, config }: { color1: string, color2: string, color3?: string, color4?: string, palette?: string[], power?: number, config: { speed: number, size: number, density: number } }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const powerRef = useRef(power);
   const configRef = useRef(config);
@@ -109,6 +109,10 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
 
     const dots: { x: number, y: number, baseX: number, baseY: number, vx: number, vy: number, color: string }[] = [];
     
+    const activePalette = (palette && palette.length > 0)
+      ? palette
+      : [color1, color2, color3, color4].filter(Boolean) as string[];
+
     const initDots = () => {
       dots.length = 0;
       width = window.innerWidth;
@@ -125,10 +129,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       
       for (let x = 0; x < width + spacing; x += spacing) {
         for (let y = 0; y < height + spacing; y += spacing) {
-          const palette = [color1, color2];
-          if (color3) palette.push(color3);
-          if (color4) palette.push(color4);
-          let color = palette[Math.floor(Math.random() * palette.length)];
+          let color = activePalette[Math.floor(Math.random() * activePalette.length)];
           
           dots.push({
             x, y,
@@ -153,28 +154,7 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
       ctx.clearRect(0, 0, width, height);
 
       // Draw the fluid liquid drifting background blobs directly on the canvas
-      // This is extremely high-performance (completely hardware-accelerated, zero DOM blur filters or layout thrashing)
-      const driftTime = Date.now() * 0.0000195; // Beautiful slow, flowing drift (1.3x faster than before)
-
-      // Blob 1: color1 (drifting top-left area)
-      const bx1 = width * 0.25 + Math.sin(driftTime * 0.5) * width * 0.15;
-      const by1 = height * 0.25 + Math.cos(driftTime * 0.4) * height * 0.15;
-      const r1 = Math.max(width, height) * 0.5;
-
-      // Blob 2: color2 (drifting bottom-right area)
-      const bx2 = width * 0.75 + Math.sin(driftTime * -0.4) * width * 0.15;
-      const by2 = height * 0.75 + Math.cos(driftTime * 0.5) * height * 0.15;
-      const r2 = Math.max(width, height) * 0.5;
-
-      // Blob 3: color3 || color1 (drifting middle-right area)
-      const bx3 = width * 0.7 + Math.sin(driftTime * 0.6) * width * 0.15;
-      const by3 = height * 0.3 + Math.cos(driftTime * -0.5) * height * 0.15;
-      const r3 = Math.max(width, height) * 0.45;
-
-      // Blob 4: color4 || color2 (drifting bottom-left area)
-      const bx4 = width * 0.3 + Math.sin(driftTime * -0.6) * width * 0.15;
-      const by4 = height * 0.7 + Math.cos(driftTime * 0.4) * height * 0.15;
-      const r4 = Math.max(width, height) * 0.5;
+      const driftTime = Date.now() * 0.0000195;
 
       const drawBlob = (cx: number, cy: number, radius: number, col: string, maxAlpha: number) => {
         if (radius <= 0) return;
@@ -188,10 +168,15 @@ export default function DotBackground({ color1, color2, color3, color4, power = 
         ctx.fill();
       };
 
-      drawBlob(bx1, by1, r1, color1, 0.065);
-      drawBlob(bx2, by2, r2, color2, 0.055);
-      drawBlob(bx3, by3, r3, color3 || color1, 0.06);
-      drawBlob(bx4, by4, r4, color4 || color2, 0.055);
+      // Render drifting background ambient blobs for each color in activePalette
+      activePalette.forEach((col, idx) => {
+        const offsetAngle = (idx / activePalette.length) * Math.PI * 2;
+        const speedPhase = 0.4 + (idx * 0.15);
+        const bx = width * 0.5 + Math.sin(driftTime * speedPhase + offsetAngle) * width * 0.35;
+        const by = height * 0.5 + Math.cos(driftTime * (speedPhase * 0.9) + offsetAngle) * height * 0.35;
+        const r = Math.max(width, height) * (0.4 + (idx % 2) * 0.1);
+        drawBlob(bx, by, r, col, 0.055);
+      });
       
       // Draw faint grid on top of background
       ctx.beginPath();

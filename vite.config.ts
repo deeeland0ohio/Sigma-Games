@@ -18,13 +18,22 @@ export default defineConfig(({mode}) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
-        'react': path.resolve(__dirname, 'node_modules/react'),
-        'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
       },
       dedupe: ['react', 'react-dom', 'react/jsx-runtime', 'react/jsx-dev-runtime'],
     },
     optimizeDeps: {
-      include: ['react', 'react-dom', 'react-router-dom', 'motion/react', 'lucide-react'],
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'react-router-dom',
+        'motion/react',
+        'lucide-react',
+        'ably',
+        'three',
+      ],
     },
     server: {
       // Do not modifyâfile watching is disabled to prevent flickering during agent edits.

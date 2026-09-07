@@ -11,6 +11,7 @@ export default function BlackHoleBackground({
   color2, 
   color3, 
   color4, 
+  palette,
   power = 1.0,
   config = { speed: 50, size: 50, density: 50 }
 }: { 
@@ -18,6 +19,7 @@ export default function BlackHoleBackground({
   color2: string, 
   color3?: string, 
   color4?: string, 
+  palette?: string[],
   power?: number,
   config?: BlackHoleConfig
 }) {
@@ -92,11 +94,12 @@ export default function BlackHoleBackground({
 
     let dashes: Dash[] = [];
     
+    const activePalette = (palette && palette.length > 0) 
+      ? palette 
+      : [color1, color2, color3, color4].filter(Boolean) as string[];
+
     const createDash = (xStart?: number, fixedZ?: number): Dash => {
-      const palette = [color1, color2];
-      if (color3) palette.push(color3);
-      if (color4) palette.push(color4);
-      const color = palette[Math.floor(Math.random() * palette.length)];
+      const color = activePalette[Math.floor(Math.random() * activePalette.length)];
       
       const baseSpeed = (1 + Math.random() * 3);
       const baseLength = (10 + Math.random() * 30);
@@ -148,9 +151,7 @@ export default function BlackHoleBackground({
       return c;
     };
 
-    const fluidPalette = [getFluidColor(color1), getFluidColor(color2)];
-    if (color3) fluidPalette.push(getFluidColor(color3));
-    if (color4) fluidPalette.push(getFluidColor(color4));
+    const fluidPalette = activePalette.map(c => getFluidColor(c));
     
     for (let i = 0; i < 45; i++) {
       blobs.push({

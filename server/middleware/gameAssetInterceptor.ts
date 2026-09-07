@@ -6,8 +6,15 @@ import { Request, Response, NextFunction } from "express";
 // and rewrite old commit hashes to prevent crashes
 export async function gameAssetInterceptor(req: Request, res: Response, next: NextFunction) {
   try {
-    const filePath = path.join(process.cwd(), 'public', decodeURIComponent(req.path));
-    if (fs.existsSync(filePath)) {
+    let reqPath = decodeURIComponent(req.path);
+    let filePath = path.join(process.cwd(), 'public', reqPath);
+
+    if (fs.existsSync(filePath) && fs.statSync(filePath).isDirectory()) {
+      filePath = path.join(filePath, 'index.html');
+      reqPath = reqPath.endsWith('/') ? `${reqPath}index.html` : `${reqPath}/index.html`;
+    }
+
+    if (filePath.endsWith('.html') && fs.existsSync(filePath)) {
       let html = await fs.promises.readFile(filePath, 'utf-8');
       
       // Switch gn-math to freebuisness & normalize hashes
@@ -63,22 +70,29 @@ export async function gameAssetInterceptor(req: Request, res: Response, next: Ne
 
       // Inject base tag if not present so relative paths resolve correctly
       if (!html.includes('<base ')) {
-        const gameDir = req.path.substring(0, req.path.lastIndexOf('/') + 1);
+        const gameDir = reqPath.substring(0, reqPath.lastIndexOf('/') + 1);
         const baseTag = `<base href="${gameDir}">`;
         if (html.includes('<head>')) {
           html = html.replace('<head>', '<head>\n' + baseTag + '\n' + mockScript);
+        } else if (html.includes('<html>')) {
+          html = html.replace('<html>', '<html>\n<head>\n' + baseTag + '\n' + mockScript + '\n</head>');
         } else {
           html = baseTag + '\n' + mockScript + '\n' + html;
         }
       } else {
         if (html.includes('<head>')) {
           html = html.replace('<head>', '<head>\n' + mockScript);
+        } else if (html.includes('<html>')) {
+          html = html.replace('<html>', '<html>\n<head>\n' + mockScript + '\n</head>');
         } else {
-          html = mockScript + html;
+          html = mockScript + '\n' + html;
         }
       }
       
-      res.setHeader('Content-Type', 'text/html');
+      res.setHeader('Content-Type', 'text/html; charset=utf-8');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.removeHeader('X-Frame-Options');
+      res.removeHeader('Content-Security-Policy');
       res.send(html);
       return;
     }

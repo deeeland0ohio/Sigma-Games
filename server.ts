@@ -17,7 +17,7 @@ async function startServer() {
   app.use("/api", apiRouter);
 
   // Intercept local game HTML to inject storage polyfill & fix CDN hashes
-  app.get("/games/*/index.html", gameAssetInterceptor);
+  app.get(["/games/*/index.html", "/games/*"], gameAssetInterceptor);
 
   // Serve static fallback files directly from workspace root
   app.get("/static.html", (req, res) => {

@@ -15,9 +15,10 @@ export type Theme =
   | 'lightspeed-special'
   | 'event-horizon-special'
   | 'event-horizon-blue-orange'
+  | 'rainbow'
   | 'custom';
 
-export type BackgroundStyle = 'dots' | 'vanta-dots' | 'matrix' | 'black-hole' | 'lightspeed' | 'blank';
+export type BackgroundStyle = 'dots' | 'vanta-dots' | 'matrix' | 'black-hole' | 'lightspeed' | 'fluid' | 'blank';
 
 export interface BackgroundConfig {
   dots: {
@@ -45,9 +46,13 @@ export interface BackgroundConfig {
     size: number;
     density: number;
   };
+  fluid: {
+    curl: number;
+    dissipation: number;
+    splatRadius: number;
+    speed: number;
+  };
 }
-
-export type RunnerMode = 'none' | 'html' | 'javascript' | 'python';
 
 interface ThemeContextType {
   theme: Theme;
@@ -72,8 +77,6 @@ interface ThemeContextType {
   setCloakingTitle: (title: string) => void;
   cloakingIcon: string;
   setCloakingIcon: (icon: string) => void;
-  runnerMode: RunnerMode;
-  setRunnerMode: (mode: RunnerMode) => void;
   closePrevention: boolean;
   setClosePrevention: (prevent: boolean) => void;
 }
@@ -109,21 +112,28 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   });
 
   const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>(() => {
-    const saved = storage.getItem('app-background-config');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Failed to parse background config', e);
-      }
-    }
-    return {
+    const defaultConfig: BackgroundConfig = {
       dots: { speed: 40, size: 2, density: 35 },
       vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
       matrix: { speed: 40, size: 40, density: 40 },
       blackHole: { speed: 40, size: 40, density: 40 },
-      lightspeed: { speed: 40, size: 40, density: 40 }
+      lightspeed: { speed: 40, size: 40, density: 40 },
+      fluid: { curl: 8, dissipation: 70, splatRadius: 40, speed: 40 }
     };
+    const saved = storage.getItem('app-background-config');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        return {
+          ...defaultConfig,
+          ...parsed,
+          fluid: parsed.fluid ? { ...defaultConfig.fluid, ...parsed.fluid } : defaultConfig.fluid
+        };
+      } catch (e) {
+        console.error('Failed to parse background config', e);
+      }
+    }
+    return defaultConfig;
   });
 
   const [customColors, setCustomColors] = useState<string[]>(() => {
@@ -163,10 +173,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const [cloakingIcon, setCloakingIcon] = useState(() => {
     return storage.getItem('app-cloaking-icon') || '/favicon.svg?v=2';
-  });
-
-  const [runnerMode, setRunnerMode] = useState<RunnerMode>(() => {
-    return (storage.getItem('app-runner-mode') as RunnerMode) || 'none';
   });
 
   const [closePrevention, setClosePrevention] = useState<boolean>(() => {
@@ -248,10 +254,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [settingsBoxPosition]);
 
   useEffect(() => {
-    storage.setItem('app-runner-mode', runnerMode);
-  }, [runnerMode]);
-
-  useEffect(() => {
     storage.setItem('app-close-prevention', closePrevention.toString());
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -284,7 +286,6 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       customColors, setCustomColors,
       cloakingTitle, setCloakingTitle,
       cloakingIcon, setCloakingIcon,
-      runnerMode, setRunnerMode,
       closePrevention, setClosePrevention
     }}>
       <style>
@@ -629,6 +630,47 @@ export function useThemeColors() {
       hexTertiary: '#22d3ee', // cyan-400
       hexQuaternary: '#fbbf24', // amber-400
       hexMatrix: '#3b82f6' // blue-500
+    },
+    'rainbow': {
+      primary: 'text-red-500',
+      secondary: 'text-orange-500',
+      tertiary: 'text-yellow-500',
+      quaternary: 'text-green-500',
+      tertiaryBg: 'bg-yellow-500',
+      quaternaryBg: 'bg-green-500',
+      primaryBg: 'bg-red-500',
+      secondaryBg: 'bg-orange-500',
+      hoverBorder: 'hover:border-red-500/50',
+      hoverShadow: 'hover:shadow-red-500/10',
+      shadow: 'shadow-red-500/10',
+      gradientFrom: 'from-red-500/10',
+      gradientVia: 'via-green-500/10',
+      gradientTo: 'to-purple-500/10',
+      textGradient: 'text-transparent bg-clip-text bg-gradient-to-r from-red-500 via-yellow-500 via-green-500 via-blue-500 to-purple-500',
+      groupHoverText: 'group-hover:text-red-500',
+      groupHoverQuaternary: 'group-hover:text-purple-500',
+      groupHoverBorder: 'group-hover:border-red-500/30',
+      focusRing: 'focus:ring-red-500',
+      focusBorder: 'focus:border-red-500',
+      selection: 'selection:bg-red-500/30',
+      terminalText: 'text-green-400',
+      cursor: 'bg-red-500',
+      popupBg: 'bg-zinc-950/90',
+      popupText: 'text-zinc-50',
+      hexPrimary: '#ef4444',
+      hexSecondary: '#f97316',
+      hexTertiary: '#eab308',
+      hexQuaternary: '#22c55e',
+      hexMatrix: '#ef4444',
+      palette: [
+        '#ef4444', // Red
+        '#f97316', // Orange
+        '#eab308', // Yellow
+        '#22c55e', // Green
+        '#3b82f6', // Blue
+        '#6366f1', // Indigo
+        '#a855f7'  // Violet
+      ]
     },
     'custom': {
       primary: 'text-[rgba(var(--custom-1),1)]',
