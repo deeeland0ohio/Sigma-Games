@@ -85,6 +85,17 @@ export function normalizeEmbedUrl(url: string | undefined | null): string {
   return cleanGameUrl(trimmed);
 }
 
+export function isLocalGame(url: string | undefined | null): boolean {
+  if (!url || typeof url !== 'string') return false;
+  const trimmed = url.trim();
+  return (
+    trimmed.startsWith('/games/') ||
+    trimmed.startsWith('/static') ||
+    trimmed.startsWith('/sigmastatic') ||
+    (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('//') && !trimmed.startsWith('data:'))
+  );
+}
+
 export default function ContentFrame({ src, srcDoc, reloadKey, allow, allowFullScreen = true, ...props }: ContentFrameProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [fallbackSrc, setFallbackSrc] = useState<string | undefined>(undefined);
@@ -93,20 +104,20 @@ export default function ContentFrame({ src, srcDoc, reloadKey, allow, allowFullS
     // If srcDoc is provided directly, let React handle it via the prop
     if (srcDoc) return;
     
-    if (src && iframeRef.current) {
-      const iframe = iframeRef.current;
+    if (src) {
       const targetUrl = normalizeEmbedUrl(src);
       if (!targetUrl) return;
       
       let isMounted = true;
 
-      // Video embeds (YouTube, TikTok) run natively in the iframe
-      if (isVideoEmbed(targetUrl)) {
+      // Video embeds (YouTube, TikTok) and local game files run natively in the iframe
+      if (isVideoEmbed(targetUrl) || isLocalGame(targetUrl)) {
         setFallbackSrc(targetUrl);
         return;
       }
 
-      const doc = iframe.contentDocument || iframe.contentWindow?.document;
+      const iframe = iframeRef.current;
+      const doc = iframe?.contentDocument || iframe?.contentWindow?.document;
 
       // If already cached, directly re-inject the pristine game code
       if (gameHtmlCache.has(targetUrl)) {
@@ -285,11 +296,11 @@ export default function ContentFrame({ src, srcDoc, reloadKey, allow, allowFullS
 
           gameHtmlCache.set(targetUrl, html);
 
-          const doc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (doc) {
-            doc.open();
-            doc.write(html);
-            doc.close();
+          const curDoc = iframeRef.current?.contentDocument || iframeRef.current?.contentWindow?.document;
+          if (curDoc) {
+            curDoc.open();
+            curDoc.write(html);
+            curDoc.close();
             return;
           }
         }
@@ -304,11 +315,13 @@ export default function ContentFrame({ src, srcDoc, reloadKey, allow, allowFullS
       return () => {
         isMounted = false;
         if (iframeRef.current) {
-           const doc = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
-           if (doc) {
-               doc.open();
-               doc.write('');
-               doc.close();
+           const docToClean = iframeRef.current.contentDocument || iframeRef.current.contentWindow?.document;
+           if (docToClean) {
+               try {
+                 docToClean.open();
+                 docToClean.write('');
+                 docToClean.close();
+               } catch (e) {}
            }
         }
       };

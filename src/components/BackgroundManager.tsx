@@ -4,10 +4,11 @@ import DotBackground from './DotBackground';
 import MatrixBackground from './MatrixBackground';
 import BlackHoleBackground from './BlackHoleBackground';
 import LightspeedBackground from './LightspeedBackground';
+import FluidBackground from './FluidBackground';
 import { VantaDotsBackground } from './VantaDotsBackground';
 
 export default function BackgroundManager() {
-  const { background, simulationPower, backgroundConfig } = useTheme();
+  const { background, theme, simulationPower, backgroundConfig } = useTheme();
   const colors = useThemeColors();
   const [isGameActive, setIsGameActive] = useState(false);
 
@@ -50,22 +51,31 @@ export default function BackgroundManager() {
 
   // Scale 1-100 to 0.02-2.0 multiplier
   const powerMultiplier = simulationPower / 50;
+  // Multi-color palette for backgrounds with multiple color elements
+  const multiColorPalette = colors.palette || [colors.hexPrimary, colors.hexSecondary, colors.hexTertiary, colors.hexQuaternary].filter(Boolean);
+  
+  // Matrix Flow and 3D Dots are single-color backgrounds unless on the Rainbow theme
+  const singleOrRainbowPalette = theme === 'rainbow' ? colors.palette : undefined;
 
   if (background === 'vanta-dots') {
-    return <VantaDotsBackground color={colors.hexMatrix} backgroundColor="#09090b" config={backgroundConfig.vantaDots} power={powerMultiplier} />;
+    return <VantaDotsBackground color={colors.hexMatrix} palette={singleOrRainbowPalette} backgroundColor="#09090b" config={backgroundConfig.vantaDots} power={powerMultiplier} />;
   }
 
   if (background === 'matrix') {
-    return <MatrixBackground color={colors.hexMatrix} power={powerMultiplier} config={backgroundConfig.matrix} />;
+    return <MatrixBackground color={colors.hexMatrix} palette={singleOrRainbowPalette} power={powerMultiplier} config={backgroundConfig.matrix} />;
   }
   
   if (background === 'black-hole') {
-    return <BlackHoleBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} power={powerMultiplier} config={backgroundConfig.blackHole} />;
+    return <BlackHoleBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} palette={multiColorPalette} power={powerMultiplier} config={backgroundConfig.blackHole} />;
   }
 
   if (background === 'lightspeed') {
-    return <LightspeedBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} power={powerMultiplier} config={backgroundConfig.lightspeed} />;
+    return <LightspeedBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} palette={multiColorPalette} power={powerMultiplier} config={backgroundConfig.lightspeed} />;
   }
 
-  return <DotBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} power={powerMultiplier} config={backgroundConfig.dots} />;
+  if (background === 'fluid') {
+    return <FluidBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} palette={multiColorPalette} power={powerMultiplier} config={backgroundConfig.fluid} />;
+  }
+
+  return <DotBackground color1={colors.hexPrimary} color2={colors.hexSecondary} color3={colors.hexTertiary} color4={colors.hexQuaternary} palette={multiColorPalette} power={powerMultiplier} config={backgroundConfig.dots} />;
 }

@@ -8,10 +8,12 @@ interface MatrixConfig {
 
 export default function MatrixBackground({ 
   color, 
+  palette,
   power = 1.0,
   config = { speed: 50, size: 50, density: 50 }
 }: { 
   color: string, 
+  palette?: string[],
   power?: number,
   config?: MatrixConfig
 }) {
@@ -70,12 +72,16 @@ export default function MatrixBackground({
       char: string;
       speed: number;
       opacity: number;
+      color: string;
     }
     
     let drops: Drop[] = [];
+
+    const activePalette = (palette && palette.length > 0) ? palette : [color];
     
-    const createDrop = (yStart = -20) => {
+    const createDrop = (yStart = -20): Drop => {
       const baseSpeed = (2 + Math.random() * 3);
+      const dropColor = activePalette[Math.floor(Math.random() * activePalette.length)];
       
       return {
         x: Math.random() * width,
@@ -84,7 +90,8 @@ export default function MatrixBackground({
         vy: baseSpeed,
         char: Math.random() > 0.5 ? '1' : '0',
         speed: baseSpeed,
-        opacity: 0.3 + Math.random() * 0.7
+        opacity: 0.3 + Math.random() * 0.7,
+        color: dropColor
       };
     };
 
@@ -163,7 +170,7 @@ export default function MatrixBackground({
         
         // Draw
         ctx.globalAlpha = drop.opacity;
-        ctx.fillStyle = color;
+        ctx.fillStyle = drop.color;
         ctx.fillText(drop.char, drop.x, drop.y);
         ctx.globalAlpha = 1.0;
       }
@@ -179,7 +186,7 @@ export default function MatrixBackground({
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, [color]);
+  }, [color, palette]);
 
   return (
     <canvas 

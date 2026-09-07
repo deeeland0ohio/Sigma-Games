@@ -3,6 +3,7 @@ import * as THREE from 'three';
 
 interface VantaDotsBackgroundProps {
   color?: string;
+  palette?: string[];
   backgroundColor?: string;
   config?: {
     springSpeed: number;
@@ -26,7 +27,7 @@ function createCircleTexture() {
   return new THREE.CanvasTexture(canvas);
 }
 
-export function VantaDotsBackground({ color, backgroundColor, config, power = 1 }: VantaDotsBackgroundProps) {
+export function VantaDotsBackground({ color, palette, backgroundColor, config, power = 1 }: VantaDotsBackgroundProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const configRef = useRef(config);
   const powerRef = useRef(power);
@@ -70,9 +71,11 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
     
     const circleTexture = createCircleTexture();
 
+    const hasMultiColor = !!(palette && palette.length > 1);
     const geometry = new THREE.BufferGeometry();
     const material = new THREE.PointsMaterial({
-      color: dotsColor,
+      color: hasMultiColor ? 0xffffff : dotsColor,
+      vertexColors: hasMultiColor,
       size: initialDotSizeVal,
       map: circleTexture,
       transparent: true,
@@ -82,8 +85,12 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
 
     const positions: number[] = [];
     const basePositions: number[] = [];
+    const pointColors: number[] = [];
     const gridScale = 50; 
     
+    const activePalette = (palette && palette.length > 0) ? palette : [color || '#00ff00'];
+    const parsedColors = activePalette.map(c => new THREE.Color(c));
+
     // Create an expansive grid
     for (let i = -gridScale; i <= gridScale; i++) {
         for (let j = -gridScale; j <= gridScale; j++) {
@@ -93,10 +100,17 @@ export function VantaDotsBackground({ color, backgroundColor, config, power = 1 
             
             positions.push(x, y, z);
             basePositions.push(x, y, z);
+
+            const colorIndex = Math.abs(i + j) % parsedColors.length;
+            const c = parsedColors[colorIndex];
+            pointColors.push(c.r, c.g, c.b);
         }
     }
     
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+    if (hasMultiColor) {
+      geometry.setAttribute('color', new THREE.Float32BufferAttribute(pointColors, 3));
+    }
     const dots = new THREE.Points(geometry, material);
     scene.add(dots);
 

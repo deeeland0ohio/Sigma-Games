@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme, useThemeColors, Theme, BackgroundStyle } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
-import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus, Terminal, ShieldAlert } from 'lucide-react';
+import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus, ShieldAlert } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export function SettingsContent() {
@@ -18,7 +18,6 @@ export function SettingsContent() {
     customColors, setCustomColors,
     cloakingTitle, setCloakingTitle,
     cloakingIcon, setCloakingIcon,
-    runnerMode, setRunnerMode,
     closePrevention, setClosePrevention
   } = useTheme();
   const colors = useThemeColors();
@@ -56,14 +55,17 @@ export function SettingsContent() {
   const lightspeedTheme = { id: 'lightspeed-special', label: background === 'lightspeed' ? 'LIGHTSPEED' : 'Blue Mix', colors: ['bg-cyan-400', 'bg-blue-500', 'bg-[#a1cff0]'] } as { id: Theme; label: string; colors: string[] };
   const eventHorizonTheme = { id: 'event-horizon-special', label: background === 'black-hole' ? 'SINGULARITY' : 'Violet & Gold', colors: ['bg-violet-600', 'bg-orange-500', 'bg-amber-400', 'bg-rose-600'] } as { id: Theme; label: string; colors: string[] };
   const pointOfNoReturnTheme = { id: 'event-horizon-blue-orange', label: background === 'black-hole' ? 'POINT OF NO RETURN' : 'Cyan & Orange', colors: ['bg-cyan-400', 'bg-orange-500', 'bg-blue-500', 'bg-amber-400'] } as { id: Theme; label: string; colors: string[] };
+  const rainbowTheme = { id: 'rainbow', label: background === 'fluid' ? 'RAINBOW' : 'Rainbow', colors: ['bg-red-500', 'bg-orange-500', 'bg-yellow-500', 'bg-green-500', 'bg-blue-500', 'bg-indigo-500', 'bg-purple-500'] } as { id: Theme; label: string; colors: string[] };
 
   let themes = [...baseThemes];
-  if (background === 'lightspeed') {
-    themes = [lightspeedTheme, ...baseThemes, eventHorizonTheme, pointOfNoReturnTheme];
+  if (background === 'fluid') {
+    themes = [rainbowTheme, ...baseThemes, lightspeedTheme, eventHorizonTheme, pointOfNoReturnTheme];
+  } else if (background === 'lightspeed') {
+    themes = [lightspeedTheme, ...baseThemes, eventHorizonTheme, pointOfNoReturnTheme, rainbowTheme];
   } else if (background === 'black-hole') {
-    themes = [eventHorizonTheme, pointOfNoReturnTheme, ...baseThemes, lightspeedTheme];
+    themes = [eventHorizonTheme, pointOfNoReturnTheme, ...baseThemes, lightspeedTheme, rainbowTheme];
   } else {
-    themes = [...baseThemes, lightspeedTheme, eventHorizonTheme, pointOfNoReturnTheme];
+    themes = [...baseThemes, lightspeedTheme, eventHorizonTheme, pointOfNoReturnTheme, rainbowTheme];
   }
   themes.push({ id: 'custom', label: 'Custom Theme', colors: [] });
 
@@ -73,6 +75,7 @@ export function SettingsContent() {
     { id: 'matrix', label: 'Matrix Flow' },
     { id: 'black-hole', label: 'Event Horizon' },
     { id: 'lightspeed', label: 'Light Speed' },
+    { id: 'fluid', label: 'Fluid Smoke' },
     { id: 'blank', label: 'Blank (Black)' },
   ];
 
@@ -108,6 +111,13 @@ export function SettingsContent() {
     setBackgroundConfig({
       ...backgroundConfig,
       lightspeed: { ...backgroundConfig.lightspeed, [key]: value }
+    });
+  };
+
+  const updateFluidConfig = (key: keyof typeof backgroundConfig.fluid, value: number) => {
+    setBackgroundConfig({
+      ...backgroundConfig,
+      fluid: { ...backgroundConfig.fluid, [key]: value }
     });
   };
 
@@ -147,6 +157,12 @@ export function SettingsContent() {
         speed: Math.min(backgroundConfig.lightspeed.speed, 100),
         size: Math.min(backgroundConfig.lightspeed.size, 100),
         density: Math.min(backgroundConfig.lightspeed.density, 100),
+      },
+      fluid: {
+        curl: Math.min(backgroundConfig.fluid.curl, 100),
+        dissipation: Math.min(backgroundConfig.fluid.dissipation, 100),
+        splatRadius: Math.min(backgroundConfig.fluid.splatRadius, 100),
+        speed: Math.min(backgroundConfig.fluid.speed, 100),
       },
     });
     setIsAdvanced(false);
@@ -206,7 +222,8 @@ export function SettingsContent() {
               vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
               matrix: { speed: 40, size: 40, density: 40 },
               blackHole: { speed: 40, size: 40, density: 40 },
-              lightspeed: { speed: 40, size: 40, density: 40 }
+              lightspeed: { speed: 40, size: 40, density: 40 },
+              fluid: { curl: 8, dissipation: 70, splatRadius: 40, speed: 40 }
             });
             setSettingsViewMode('page');
             setSettingsBoxSize({ width: 1000, height: 700 });
@@ -214,7 +231,6 @@ export function SettingsContent() {
             setCustomColors(['#ffffff', '#ffffff', '#ffffff', '#ffffff']);
             setCloakingTitle('Sigma Games');
             setCloakingIcon('/favicon.svg?v=2');
-            setRunnerMode('none');
             setClosePrevention(false);
             storage.removeItem('lightspeed-popup-shown');
           }}
@@ -242,9 +258,10 @@ export function SettingsContent() {
                   onClick={() => {
                     const prevBg = background;
                     setBackground(bg.id);
-                    if (bg.id === 'lightspeed') setTheme('lightspeed-special');
+                    if (bg.id === 'fluid') setTheme('rainbow');
+                    else if (bg.id === 'lightspeed') setTheme('lightspeed-special');
                     else if (bg.id === 'black-hole') setTheme('event-horizon-special');
-                    else if (prevBg === 'lightspeed' || prevBg === 'black-hole') setTheme('red-green');
+                    else if (prevBg === 'lightspeed' || prevBg === 'black-hole' || prevBg === 'fluid') setTheme('red-green');
                   }}
                   className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
                     background === bg.id 
@@ -284,14 +301,14 @@ export function SettingsContent() {
                       : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                   }`}
                 >
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 flex-wrap">
                     {t.id === 'custom' ? (
                       customColors.map((c, i) => (
-                        <div key={i} className="w-4 h-4 rounded-full border border-black/20" style={{ backgroundColor: c }} />
+                        <div key={i} className="w-4 h-4 rounded-full border border-black/20 flex-shrink-0" style={{ backgroundColor: c }} />
                       ))
                     ) : (
                       t.colors.map((c, i) => (
-                        <div key={i} className={`w-4 h-4 rounded-full ${c} border border-black/20`} />
+                        <div key={i} className={`w-4 h-4 rounded-full ${c} border border-black/20 flex-shrink-0`} />
                       ))
                     )}
                   </div>
@@ -353,66 +370,6 @@ export function SettingsContent() {
                 </button>
               </div>
             )}
-          </section>
-
-          {/* Terminal Features */}
-          <section className="space-y-6 bg-zinc-900/30 border border-zinc-800/50 p-8 rounded-3xl min-w-[300px]">
-            <div className="flex items-center gap-3 text-zinc-100">
-              <div className="p-2 bg-zinc-900 rounded-lg border border-zinc-800 flex-shrink-0">
-                <Terminal size={20} style={{ color: colors.hexPrimary }} />
-              </div>
-              <h2 className="text-xl font-bold">Terminal Features</h2>
-            </div>
-            
-            <div className="space-y-4">
-              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
-                <div>
-                  <span className="font-medium text-white block">HTML Runner</span>
-                  <span className="text-sm text-zinc-500">Enable HTML code execution in the home terminal</span>
-                </div>
-                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'html' ? 'bg-emerald-500' : 'bg-zinc-700'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'html' ? 'translate-x-6' : 'translate-x-1'}`} />
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={runnerMode === 'html'}
-                    onChange={(e) => setRunnerMode(e.target.checked ? 'html' : 'none')}
-                  />
-                </div>
-              </label>
-
-              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
-                <div>
-                  <span className="font-medium text-white block">JavaScript Runner</span>
-                  <span className="text-sm text-zinc-500">Enable JavaScript code execution in the home terminal</span>
-                </div>
-                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'javascript' ? 'bg-blue-500' : 'bg-zinc-700'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'javascript' ? 'translate-x-6' : 'translate-x-1'}`} />
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={runnerMode === 'javascript'}
-                    onChange={(e) => setRunnerMode(e.target.checked ? 'javascript' : 'none')}
-                  />
-                </div>
-              </label>
-
-              <label className="flex items-center justify-between p-4 bg-zinc-900/50 border border-zinc-800 rounded-2xl cursor-pointer hover:border-zinc-700 transition-colors">
-                <div>
-                  <span className="font-medium text-white block">Python Runner</span>
-                  <span className="text-sm text-zinc-500">Enable Python code execution in the home terminal</span>
-                </div>
-                <div className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${runnerMode === 'python' ? 'bg-yellow-500' : 'bg-zinc-700'}`}>
-                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${runnerMode === 'python' ? 'translate-x-6' : 'translate-x-1'}`} />
-                  <input
-                    type="checkbox"
-                    className="sr-only"
-                    checked={runnerMode === 'python'}
-                    onChange={(e) => setRunnerMode(e.target.checked ? 'python' : 'none')}
-                  />
-                </div>
-              </label>
-            </div>
           </section>
         </div>
 
@@ -680,6 +637,47 @@ export function SettingsContent() {
                     </div>
                   </>
                 )}
+
+                {background === 'fluid' && (
+                  <>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Fade Speed (Dissipation)</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.fluid.dissipation}%</span>
+                      </div>
+                      <input
+                        type="range" min="5" max={100 * multiplier} step="1"
+                        value={backgroundConfig.fluid.dissipation}
+                        onChange={(e) => updateFluidConfig('dissipation', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Swirl / Vorticity</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.fluid.curl}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.fluid.curl}
+                        onChange={(e) => updateFluidConfig('curl', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Fluid Splat Size</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.fluid.splatRadius}%</span>
+                      </div>
+                      <input
+                        type="range" min="10" max={100 * multiplier} step="1"
+                        value={backgroundConfig.fluid.splatRadius}
+                        onChange={(e) => updateFluidConfig('splatRadius', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                  </>
+                )}
               </div>
             </section>
           )}
@@ -758,7 +756,7 @@ export function SettingsContent() {
                   }`}
                 >
                   <span className={`w-2 h-2 rounded-full ${closePrevention ? 'bg-white font-bold' : 'bg-zinc-600'}`} />
-                  Turn On
+                  {closePrevention ? 'On' : 'Turn On'}
                 </button>
                 <button
                   onClick={() => setClosePrevention(false)}
@@ -769,7 +767,7 @@ export function SettingsContent() {
                   }`}
                 >
                   <span className={`w-2 h-2 rounded-full ${!closePrevention ? 'bg-white' : 'bg-zinc-600'}`} />
-                  Turn Off
+                  {closePrevention ? 'Turn Off' : 'Off'}
                 </button>
               </div>
             </div>
@@ -794,7 +792,7 @@ export function SettingsContent() {
                     { id: 'ixl', label: 'IXL Learning', title: 'IXL | Dashboard', icon: 'https://upload.wikimedia.org/wikipedia/commons/7/7d/IXL_Learning.png' },
                     { id: 'powerschool', label: 'Schoology (PowerSchool)', title: 'Home | Schoology', icon: 'https://resources.finalsite.net/images/f_auto,q_auto/v1626100427/k12albemarleorg/uj41eppe27bunrvhwnep/PowerSchoolLogos_Vertical-01.png' },
                     { id: 'iready', label: 'i-Ready', title: 'Choose a subject, i-Ready', icon: 'https://assets.clever.com/resource-icons/apps/5148b6242e35482071000011/icon_964188f.png' },
-                    { id: 'khan', label: 'Khan Academy', title: 'Khan Academy | Free Online Courses, Lessons & Practice', icon: 'https://www.svgrepo.com/show/353965/khan-academy-icon.svg' },
+                    { id: 'khan', label: 'Khan Academy', title: 'Khan Academy | Free Online Courses, Lessons & Practice', icon: 'https://img.icons8.com/?size=512&id=pvi2QSAAgwyj&format=png' },
                   ].map((option) => (
                     <button
                       key={option.id}
