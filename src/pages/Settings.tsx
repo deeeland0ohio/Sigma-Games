@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useTheme, useThemeColors, Theme, BackgroundStyle } from '../context/ThemeContext';
 import PageLayout from '../components/PageLayout';
-import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus, ShieldAlert } from 'lucide-react';
+import { Palette, Monitor, Zap, Bug, Sliders, RefreshCw, Layout, Maximize2, Square, Lock, Trash2, Plus, ShieldAlert, Image as ImageIcon, Upload, Sparkles, Check, RotateCcw } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 export function SettingsContent() {
@@ -69,7 +69,7 @@ export function SettingsContent() {
   }
   themes.push({ id: 'custom', label: 'Custom Theme', colors: [] });
 
-  const backgrounds: { id: BackgroundStyle; label: string }[] = [
+  const baseBackgrounds: { id: BackgroundStyle; label: string; badge?: string }[] = [
     { id: 'dots', label: 'Interactive Dots' },
     { id: 'vanta-dots', label: '3D Dots (Vantajs)' },
     { id: 'matrix', label: 'Matrix Flow' },
@@ -77,6 +77,11 @@ export function SettingsContent() {
     { id: 'lightspeed', label: 'Light Speed' },
     { id: 'fluid', label: 'Fluid Smoke' },
     { id: 'blank', label: 'Blank (Black)' },
+  ];
+
+  const advancedBackgrounds: { id: BackgroundStyle; label: string; badge?: string }[] = [
+    { id: 'custom-image-dots', label: 'Custom Image 3D Dots', badge: 'ADVANCED' },
+    { id: 'custom-image-bg', label: 'Blank (Custom Image)', badge: 'ADVANCED' },
   ];
 
   const updateDotsConfig = (key: keyof typeof backgroundConfig.dots, value: number) => {
@@ -90,6 +95,20 @@ export function SettingsContent() {
     setBackgroundConfig({
       ...backgroundConfig,
       vantaDots: { ...backgroundConfig.vantaDots, [key]: value }
+    });
+  };
+
+  const updateCustomImageDotsConfig = (key: keyof typeof backgroundConfig.customImageDots, value: any) => {
+    setBackgroundConfig({
+      ...backgroundConfig,
+      customImageDots: { ...backgroundConfig.customImageDots, [key]: value }
+    });
+  };
+
+  const updateCustomImageBgConfig = (key: keyof typeof backgroundConfig.customImageBg, value: any) => {
+    setBackgroundConfig({
+      ...backgroundConfig,
+      customImageBg: { ...backgroundConfig.customImageBg, [key]: value }
     });
   };
 
@@ -121,9 +140,15 @@ export function SettingsContent() {
     });
   };
 
-  const [isAdvanced, setIsAdvanced] = useState(false);
+  const [isAdvanced, setIsAdvanced] = useState(() => {
+    return background === 'custom-image-dots' || background === 'custom-image-bg';
+  });
   const [showWarning, setShowWarning] = useState(false);
   const [tempColors, setTempColors] = useState(customColors);
+
+  const backgrounds = isAdvanced || background === 'custom-image-dots' || background === 'custom-image-bg'
+    ? [...baseBackgrounds, ...advancedBackgrounds]
+    : baseBackgrounds;
 
   useEffect(() => {
     setTempColors(customColors);
@@ -142,6 +167,20 @@ export function SettingsContent() {
         springSpeed: Math.min(backgroundConfig.vantaDots.springSpeed, 100),
         dotSize: Math.min(backgroundConfig.vantaDots.dotSize, 20),
         splash: Math.min(backgroundConfig.vantaDots.splash, 100),
+      },
+      customImageDots: {
+        springSpeed: Math.min(backgroundConfig.customImageDots?.springSpeed ?? 38, 100),
+        dotSize: Math.min(backgroundConfig.customImageDots?.dotSize ?? 40, 50),
+        splash: Math.min(backgroundConfig.customImageDots?.splash ?? 43, 100),
+        imageUrl: backgroundConfig.customImageDots?.imageUrl || 'https://sigma-games.dev/favicon.svg',
+        opacity: Math.min(backgroundConfig.customImageDots?.opacity ?? 100, 100),
+      },
+      customImageBg: {
+        imageUrl: backgroundConfig.customImageBg?.imageUrl || 'https://sigma-games.dev/favicon.svg',
+        fit: backgroundConfig.customImageBg?.fit || 'contain',
+        tileSize: Math.min(backgroundConfig.customImageBg?.tileSize ?? 140, 300),
+        opacity: Math.min(backgroundConfig.customImageBg?.opacity ?? 100, 100),
+        blur: Math.min(backgroundConfig.customImageBg?.blur ?? 0, 20),
       },
       matrix: {
         speed: Math.min(backgroundConfig.matrix.speed, 100),
@@ -220,6 +259,20 @@ export function SettingsContent() {
             setBackgroundConfig({
               dots: { speed: 40, size: 2, density: 35 },
               vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
+              customImageDots: {
+                springSpeed: 38,
+                dotSize: 40,
+                splash: 43,
+                imageUrl: 'https://sigma-games.dev/favicon.svg',
+                opacity: 100
+              },
+              customImageBg: {
+                imageUrl: 'https://sigma-games.dev/favicon.svg',
+                fit: 'contain',
+                tileSize: 140,
+                opacity: 100,
+                blur: 0
+              },
               matrix: { speed: 40, size: 40, density: 40 },
               blackHole: { speed: 40, size: 40, density: 40 },
               lightspeed: { speed: 40, size: 40, density: 40 },
@@ -269,7 +322,14 @@ export function SettingsContent() {
                       : 'bg-zinc-900/50 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
                   }`}
                 >
-                  <span className="font-medium">{bg.label}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="font-medium">{bg.label}</span>
+                    {bg.badge && (
+                      <span className="text-[10px] font-bold tracking-wider px-2 py-0.5 rounded-full bg-red-500/15 text-red-400 border border-red-500/30">
+                        {bg.badge}
+                      </span>
+                    )}
+                  </div>
                   {background === bg.id && (
                     <div 
                       className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(0,0,0,0.5)] ${colors.primaryBg}`}
@@ -417,20 +477,22 @@ export function SettingsContent() {
               
               <div className="space-y-8">
                 {/* Global Energy */}
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
-                      <Zap size={14} /> Global Energy
-                    </label>
-                    <span className="text-xs font-mono text-emerald-400">{simulationPower}%</span>
+                {background !== 'custom-image-bg' && (
+                  <div className="space-y-4">
+                    <div className="flex justify-between items-center">
+                      <label className="text-sm font-medium text-zinc-400 flex items-center gap-2">
+                        <Zap size={14} /> Global Energy
+                      </label>
+                      <span className="text-xs font-mono text-emerald-400">{simulationPower}%</span>
+                    </div>
+                    <input
+                      type="range" min="0" max={100 * multiplier} step="1"
+                      value={simulationPower}
+                      onChange={(e) => setSimulationPower(parseInt(e.target.value, 10))}
+                      className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                    />
                   </div>
-                  <input
-                    type="range" min="0" max={100 * multiplier} step="1"
-                    value={simulationPower}
-                    onChange={(e) => setSimulationPower(parseInt(e.target.value, 10))}
-                    className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-                  />
-                </div>
+                )}
 
                 {/* Background Specific Controls */}
                 {background === 'dots' && (
@@ -677,6 +739,222 @@ export function SettingsContent() {
                       />
                     </div>
                   </>
+                )}
+
+                {background === 'custom-image-dots' && (
+                  <div className="space-y-6">
+                    <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="text-sm font-bold text-white flex items-center gap-2">
+                          <ImageIcon size={16} className="text-emerald-400" /> Dot Image Texture
+                        </label>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-14 h-14 rounded-xl border border-zinc-700 overflow-hidden bg-black/40 flex-shrink-0 flex items-center justify-center">
+                          {backgroundConfig.customImageDots?.imageUrl ? (
+                            <img
+                              src={backgroundConfig.customImageDots.imageUrl}
+                              alt="Dot Texture"
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <ImageIcon size={20} className="text-zinc-600" />
+                          )}
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Paste image URL..."
+                            value={backgroundConfig.customImageDots?.imageUrl || ''}
+                            onChange={(e) => updateCustomImageDotsConfig('imageUrl', e.target.value)}
+                            className="w-full px-3 py-1.5 text-xs bg-zinc-950 border border-zinc-700/80 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                          />
+                          <div className="flex items-center gap-2">
+                            <label className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium cursor-pointer transition-colors">
+                              <Upload size={13} />
+                              Upload Image
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = () => {
+                                      if (typeof reader.result === 'string') {
+                                        updateCustomImageDotsConfig('imageUrl', reader.result);
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Dot Size (Image Size)</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.customImageDots?.dotSize ?? 40}px</span>
+                      </div>
+                      <input
+                        type="range" min="4" max={50 * multiplier} step="1"
+                        value={backgroundConfig.customImageDots?.dotSize ?? 40}
+                        onChange={(e) => updateCustomImageDotsConfig('dotSize', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Spring Speed</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.customImageDots?.springSpeed ?? 38}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.customImageDots?.springSpeed ?? 38}
+                        onChange={(e) => updateCustomImageDotsConfig('springSpeed', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Splash Ripple</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.customImageDots?.splash ?? 43}%</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={100 * multiplier} step="1"
+                        value={backgroundConfig.customImageDots?.splash ?? 43}
+                        onChange={(e) => updateCustomImageDotsConfig('splash', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {background === 'custom-image-bg' && (
+                  <div className="space-y-6">
+                    <div className="p-4 bg-zinc-900/60 border border-zinc-800 rounded-2xl space-y-4">
+                      <div className="flex items-center justify-between gap-2">
+                        <label className="text-sm font-bold text-white flex items-center gap-2">
+                          <ImageIcon size={16} className="text-emerald-400" /> Background Wallpaper Image
+                        </label>
+                        {backgroundConfig.customImageBg?.imageUrl && (
+                          <button
+                            type="button"
+                            onClick={() => updateCustomImageBgConfig('imageUrl', '')}
+                            className="text-xs text-zinc-400 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
+                          >
+                            <Trash2 size={12} /> Clear
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <div className="w-16 h-16 rounded-xl border border-zinc-700 overflow-hidden bg-black/40 flex-shrink-0 flex items-center justify-center">
+                          {backgroundConfig.customImageBg?.imageUrl ? (
+                            <img
+                              src={backgroundConfig.customImageBg.imageUrl}
+                              alt="Custom Background"
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                          ) : (
+                            <ImageIcon size={24} className="text-zinc-600" />
+                          )}
+                        </div>
+
+                        <div className="flex-1 space-y-2">
+                          <input
+                            type="text"
+                            placeholder="Paste background image URL..."
+                            value={backgroundConfig.customImageBg?.imageUrl || ''}
+                            onChange={(e) => updateCustomImageBgConfig('imageUrl', e.target.value)}
+                            className="w-full px-3 py-1.5 text-xs bg-zinc-950 border border-zinc-700/80 rounded-lg text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500"
+                          />
+                          <div className="flex items-center gap-2">
+                            <label className="inline-flex items-center gap-1.5 px-3 py-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg text-xs font-medium cursor-pointer transition-colors">
+                              <Upload size={13} />
+                              Upload Image
+                              <input
+                                type="file"
+                                accept="image/*"
+                                className="hidden"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    const reader = new FileReader();
+                                    reader.onload = () => {
+                                      if (typeof reader.result === 'string') {
+                                        updateCustomImageBgConfig('imageUrl', reader.result);
+                                      }
+                                    };
+                                    reader.readAsDataURL(file);
+                                  }
+                                }}
+                              />
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="space-y-3">
+                      <label className="text-sm font-medium text-zinc-400">Background Fit</label>
+                      <div className="grid grid-cols-3 gap-2">
+                        {(['contain', 'cover', 'repeat'] as const).map((fitMode) => (
+                          <button
+                            key={fitMode}
+                            type="button"
+                            onClick={() => updateCustomImageBgConfig('fit', fitMode)}
+                            className={`py-2 px-3 rounded-xl text-xs font-semibold uppercase tracking-wider transition-all cursor-pointer border ${
+                              (backgroundConfig.customImageBg?.fit || 'contain') === fitMode
+                                ? 'bg-zinc-800 border-zinc-600 text-white shadow-sm'
+                                : 'bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
+                            }`}
+                          >
+                            {fitMode === 'contain' ? 'Fit (Contain)' : fitMode === 'cover' ? 'Fill (Cover)' : 'Tile (Repeat)'}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {(backgroundConfig.customImageBg?.fit === 'repeat') && (
+                      <div className="space-y-4">
+                        <div className="flex justify-between items-center">
+                          <label className="text-sm font-medium text-zinc-400">Tile Size</label>
+                          <span className="text-xs font-mono text-emerald-400">{backgroundConfig.customImageBg?.tileSize ?? 140}px</span>
+                        </div>
+                        <input
+                          type="range" min="30" max={300 * multiplier} step="5"
+                          value={backgroundConfig.customImageBg?.tileSize ?? 140}
+                          onChange={(e) => updateCustomImageBgConfig('tileSize', parseInt(e.target.value, 10))}
+                          className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                        />
+                      </div>
+                    )}
+
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm font-medium text-zinc-400">Background Blur</label>
+                        <span className="text-xs font-mono text-emerald-400">{backgroundConfig.customImageBg?.blur ?? 0}px</span>
+                      </div>
+                      <input
+                        type="range" min="0" max={20} step="1"
+                        value={backgroundConfig.customImageBg?.blur ?? 0}
+                        onChange={(e) => updateCustomImageBgConfig('blur', parseInt(e.target.value, 10))}
+                        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                      />
+                    </div>
+                  </div>
                 )}
               </div>
             </section>

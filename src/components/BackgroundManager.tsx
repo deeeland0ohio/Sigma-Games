@@ -6,6 +6,8 @@ import BlackHoleBackground from './BlackHoleBackground';
 import LightspeedBackground from './LightspeedBackground';
 import FluidBackground from './FluidBackground';
 import { VantaDotsBackground } from './VantaDotsBackground';
+import { CustomImageDotsBackground } from './CustomImageDotsBackground';
+import { CustomImageBackground } from './CustomImageBackground';
 
 export default function BackgroundManager() {
   const { background, theme, simulationPower, backgroundConfig } = useTheme();
@@ -59,6 +61,14 @@ export default function BackgroundManager() {
 
   if (background === 'vanta-dots') {
     return <VantaDotsBackground color={colors.hexMatrix} palette={singleOrRainbowPalette} backgroundColor="#09090b" config={backgroundConfig.vantaDots} power={powerMultiplier} />;
+  }
+
+  if (background === 'custom-image-dots') {
+    return <CustomImageDotsBackground backgroundColor="#09090b" config={backgroundConfig.customImageDots} power={powerMultiplier} />;
+  }
+
+  if (background === 'custom-image-bg') {
+    return <CustomImageBackground config={backgroundConfig.customImageBg} />;
   }
 
   if (background === 'matrix') {

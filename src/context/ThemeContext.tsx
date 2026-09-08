@@ -18,7 +18,16 @@ export type Theme =
   | 'rainbow'
   | 'custom';
 
-export type BackgroundStyle = 'dots' | 'vanta-dots' | 'matrix' | 'black-hole' | 'lightspeed' | 'fluid' | 'blank';
+export type BackgroundStyle = 
+  | 'dots' 
+  | 'vanta-dots' 
+  | 'matrix' 
+  | 'black-hole' 
+  | 'lightspeed' 
+  | 'fluid' 
+  | 'blank'
+  | 'custom-image-dots'
+  | 'custom-image-bg';
 
 export interface BackgroundConfig {
   dots: {
@@ -30,6 +39,20 @@ export interface BackgroundConfig {
     springSpeed: number;
     dotSize: number;
     splash: number;
+  };
+  customImageDots: {
+    springSpeed: number;
+    dotSize: number;
+    splash: number;
+    imageUrl: string;
+    opacity: number;
+  };
+  customImageBg: {
+    imageUrl: string;
+    fit: 'cover' | 'contain' | 'repeat';
+    tileSize?: number;
+    opacity: number;
+    blur: number;
   };
   matrix: {
     speed: number;
@@ -108,13 +131,27 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       console.warn("Could not load simulation power from storage", e);
     }
     const bg = (storage.getItem('app-background') as BackgroundStyle) || 'dots';
-    return bg === 'vanta-dots' ? 36 : 40;
+    return (bg === 'vanta-dots' || bg === 'custom-image-dots') ? 36 : 40;
   });
 
   const [backgroundConfig, setBackgroundConfig] = useState<BackgroundConfig>(() => {
     const defaultConfig: BackgroundConfig = {
       dots: { speed: 40, size: 2, density: 35 },
       vantaDots: { springSpeed: 38, dotSize: 12, splash: 43 },
+      customImageDots: {
+        springSpeed: 38,
+        dotSize: 40,
+        splash: 43,
+        imageUrl: 'https://sigma-games.dev/favicon.svg',
+        opacity: 100
+      },
+      customImageBg: {
+        imageUrl: 'https://sigma-games.dev/favicon.svg',
+        fit: 'contain',
+        tileSize: 140,
+        opacity: 100,
+        blur: 0
+      },
       matrix: { speed: 40, size: 40, density: 40 },
       blackHole: { speed: 40, size: 40, density: 40 },
       lightspeed: { speed: 40, size: 40, density: 40 },
@@ -127,6 +164,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         return {
           ...defaultConfig,
           ...parsed,
+          customImageDots: parsed.customImageDots ? { ...defaultConfig.customImageDots, ...parsed.customImageDots } : defaultConfig.customImageDots,
+          customImageBg: parsed.customImageBg ? { ...defaultConfig.customImageBg, ...parsed.customImageBg } : defaultConfig.customImageBg,
           fluid: parsed.fluid ? { ...defaultConfig.fluid, ...parsed.fluid } : defaultConfig.fluid
         };
       } catch (e) {
@@ -222,9 +261,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     storage.setItem('app-background', background);
     // Automatically adjust simulation power based on background type
-    if (background === 'vanta-dots') {
+    if (background === 'vanta-dots' || background === 'custom-image-dots') {
       setSimulationPower(36);
-    } else if (background !== 'blank') {
+    } else if (background !== 'blank' && background !== 'custom-image-bg') {
       setSimulationPower(40);
     }
   }, [background]);
