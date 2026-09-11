@@ -612,7 +612,7 @@
     </div>
     
     <div class="flex-1 w-full bg-black relative">
-      <iframe id="player-iframe" class="w-full h-full border-none bg-black" allow="autoplay; fullscreen; pointer-lock; keyboard-map" allowfullscreen></iframe>
+      <iframe id="player-iframe" class="w-full h-full border-none bg-black" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen; pointer-lock; keyboard-map" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
     </div>
   </div>
 
@@ -1150,12 +1150,25 @@
       if (!targetUrl) return;
 
       const fetchHtml = async (fetchUrl) => {
-        try {
-          const response = await fetch(fetchUrl);
-          if (response.ok) {
-            return await response.text();
-          }
-        } catch (err) {}
+        const fetchUrls = [fetchUrl];
+        if (fetchUrl.includes('cdn.jsdelivr.net/gh/freebuisness/html@main/')) {
+          fetchUrls.push(fetchUrl.replace('cdn.jsdelivr.net/gh/freebuisness/html@main/', 'raw.githubusercontent.com/freebuisness/html/main/'));
+          fetchUrls.push(fetchUrl.replace('cdn.jsdelivr.net/gh/freebuisness/html@main/', 'fastly.jsdelivr.net/gh/freebuisness/html@main/'));
+        } else if (fetchUrl.includes('cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/')) {
+          fetchUrls.push(fetchUrl.replace('cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/', 'raw.githubusercontent.com/bubbls/ugs-singlefile/main/'));
+          fetchUrls.push(fetchUrl.replace('cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/', 'fastly.jsdelivr.net/gh/bubbls/ugs-singlefile@main/'));
+        } else if (fetchUrl.includes('cdn.jsdelivr.net/gh/')) {
+          fetchUrls.push(fetchUrl.replace('cdn.jsdelivr.net/gh/', 'fastly.jsdelivr.net/gh/'));
+        }
+
+        for (const u of fetchUrls) {
+          try {
+            const response = await fetch(u);
+            if (response.ok) {
+              return await response.text();
+            }
+          } catch (err) {}
+        }
         try {
           const proxyRes = await fetch(`/api/content-loader?url=${encodeURIComponent(fetchUrl)}`);
           if (proxyRes.ok) {
@@ -1299,17 +1312,23 @@
             }
           }
 
-          const doc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (doc) {
-            doc.open();
-            doc.write(html);
-            doc.close();
+          try {
+            iframe.srcdoc = html;
             return;
+          } catch (srcDocErr) {
+            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+            if (doc) {
+              doc.open();
+              doc.write(html);
+              doc.close();
+              return;
+            }
           }
         }
       } catch (e) {
         console.warn("Proxy fallback failed, setting direct src:", e);
       }
+      iframe.removeAttribute("srcdoc");
       iframe.src = targetUrl;
     }
 
@@ -1332,8 +1351,21 @@
 
     const CollectionLoaders = {
       "gn-math": async () => {
-        const res = await fetch("https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json");
-        const list = await res.json();
+        let list = null;
+        const urls = [
+          "https://cdn.jsdelivr.net/gh/freebuisness/assets@latest/zones.json",
+          "https://fastly.jsdelivr.net/gh/freebuisness/assets@main/zones.json",
+          "https://raw.githubusercontent.com/freebuisness/assets/main/zones.json"
+        ];
+        for (const u of urls) {
+          try {
+            const res = await fetch(u);
+            if (res.ok) {
+              list = await res.json();
+              if (Array.isArray(list) && list.length > 0) break;
+            }
+          } catch(e) {}
+        }
         if (!Array.isArray(list)) return [];
 
         const filtered = list.filter(g => {
@@ -1344,6 +1376,12 @@
           if (name.includes('comment') || name.includes('discord') || name.includes('suggest game') || name.includes('suggest a game')) return false;
           if (url.includes('discord.gg') || url.includes('forms.gle') || url.includes('docs.google.com/forms')) return false;
           return true;
+        });
+
+        filtered.sort((a, b) => {
+          const nameA = (a.name || "").toLowerCase();
+          const nameB = (b.name || "").toLowerCase();
+          return nameA.localeCompare(nameB, undefined, { numeric: true, sensitivity: 'base' });
         });
 
         const categories = Array.from(new Set(filtered.flatMap(g => g.special || []).filter(Boolean)));
@@ -1358,8 +1396,23 @@
       },
 
       "ugs": async () => {
-        const res = await fetch('https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js');
-        const text = await res.text();
+        let text = null;
+        const urls = [
+          'https://cdn.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js',
+          'https://fastly.jsdelivr.net/gh/bubbls/ugs-singlefile@main/games.js',
+          'https://raw.githubusercontent.com/bubbls/ugs-singlefile/main/games.js'
+        ];
+        for (const u of urls) {
+          try {
+            const res = await fetch(u);
+            if (res.ok) {
+              text = await res.text();
+              if (text && text.includes('let files =')) break;
+            }
+          } catch(e) {}
+        }
+        if (!text) return [];
+
         const match = text.match(/let files = \[(.*?)\];/s);
         if (!match) return [];
 
