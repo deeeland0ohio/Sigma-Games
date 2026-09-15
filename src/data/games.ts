@@ -1,4 +1,4 @@
-import { Folder, Heart, Puzzle, Skull, Zap, FlaskConical, Box, Video } from 'lucide-react';
+import { Folder, Heart, Puzzle, Skull, Zap, FlaskConical, Box, Video, Bot } from 'lucide-react';
 import { Game } from '../types';
 import { allGames } from './games/index';
 
@@ -10,6 +10,13 @@ export const games: Game[] = [
     title: 'Our Games',
     description: 'Browse our selection of Games!',
     icon: Folder,
+    type: 'folder',
+  },
+  {
+    id: 'ai-chat',
+    title: 'AI Chatbots',
+    description: 'Chat with AI models like GLM, Claude, GPT, Gemini, Grok & more.',
+    icon: Bot,
     type: 'folder',
   },
   {

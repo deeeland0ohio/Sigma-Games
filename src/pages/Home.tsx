@@ -187,6 +187,7 @@ export default function Home() {
                 game={game} 
                 to={
                   game.id === 'all-games' ? '/our-games' : 
+                  game.id === 'ai-chat' ? '/ai-chat' :
                   game.id === 'entertainment' ? '/entertainment' :
                   game.id === 'popular' ? '/popular' : 
                   game.id === 'favorites' ? '/favorites' : 

@@ -65,6 +65,12 @@ export default function Credits() {
                   <span className="glow-green font-medium">All aspects of the website are my ideas, although it is coded by Gemini</span>
                 </p>
                 <p className="text-zinc-300">
+                  <span className="text-zinc-500">AI Chatbot:</span>{' '}
+                  <span className="text-emerald-400 font-medium">
+                    Powered by <a href="https://emis.zxs-is-very.cool/" target="_blank" rel="noopener noreferrer" className="hover:underline">emis.zxs-is-very.cool</a>
+                  </span>
+                </p>
+                <p className="text-zinc-300">
                   <span className="text-zinc-500">Inspiration:</span>{' '}
                   <span className="text-orange-500 font-medium">
                     <a href="https://noahstutoring.academy/" target="_blank" rel="noopener noreferrer" className="hover:underline">Noah's Tutoring Hub</a>
