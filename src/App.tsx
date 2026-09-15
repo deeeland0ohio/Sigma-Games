@@ -24,6 +24,7 @@ import CvkGames from './pages/CvkGames';
 import ExternalPlayer from './pages/ExternalPlayer';
 import NotFound from './pages/NotFound';
 import Entertainment from './pages/Entertainment';
+import AiChat from './pages/AiChat';
 
 function AnalyticsTracker() {
   const location = useLocation();
@@ -72,6 +73,9 @@ export default function App() {
                 <Route path="/lumin" element={<LuminGames />} />
                 <Route path="/cvk" element={<CvkGames />} />
                 <Route path="/entertainment" element={<Entertainment />} />
+                <Route path="/ai-chat" element={<AiChat />} />
+                <Route path="/ai" element={<AiChat />} />
+                <Route path="/chatbots" element={<AiChat />} />
               <Route path="/external-player" element={<ExternalPlayer />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
