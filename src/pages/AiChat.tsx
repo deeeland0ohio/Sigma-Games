@@ -204,17 +204,70 @@ export default function AiChat() {
     setIsSidebarOpen(false);
   };
 
+  // Purge session and associated keys from local and session storage
+  const purgeSessionFromStorage = (sessionId: string, updatedSessions: ChatSession[]) => {
+    try {
+      // 1. Immediately persist the updated session list without the deleted chat
+      storage.setItem('ai_chat_sessions', JSON.stringify(updatedSessions));
+
+      // 2. Remove any session-specific storage keys
+      storage.removeItem(`ai_chat_${sessionId}`);
+      storage.removeItem(`ai_session_${sessionId}`);
+      storage.removeItem(`chat_${sessionId}`);
+      storage.removeItem(sessionId);
+
+      // 3. Purge any matching keys from browser localStorage and sessionStorage directly
+      if (typeof window !== 'undefined') {
+        if (window.localStorage) {
+          window.localStorage.removeItem(`ai_chat_${sessionId}`);
+          window.localStorage.removeItem(`ai_session_${sessionId}`);
+          window.localStorage.removeItem(`chat_${sessionId}`);
+          window.localStorage.removeItem(sessionId);
+          for (let i = window.localStorage.length - 1; i >= 0; i--) {
+            const key = window.localStorage.key(i);
+            if (key && (key.includes(sessionId) || key.startsWith(`ai_chat_${sessionId}`))) {
+              window.localStorage.removeItem(key);
+            }
+          }
+        }
+        if (window.sessionStorage) {
+          window.sessionStorage.removeItem(`ai_chat_${sessionId}`);
+          window.sessionStorage.removeItem(`ai_session_${sessionId}`);
+          window.sessionStorage.removeItem(`chat_${sessionId}`);
+          window.sessionStorage.removeItem(sessionId);
+          for (let i = window.sessionStorage.length - 1; i >= 0; i--) {
+            const key = window.sessionStorage.key(i);
+            if (key && (key.includes(sessionId) || key.startsWith(`ai_chat_${sessionId}`))) {
+              window.sessionStorage.removeItem(key);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.warn('Storage purge error:', err);
+    }
+  };
+
   const deleteSession = (sessionId: string, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
+
+    if (isGenerating && activeSessionId === sessionId) {
+      handleStopGenerating();
+    }
+
     if (sessions.length <= 1) {
-      setSessions([{
+      const freshSession: ChatSession = {
         id: 'session_' + Date.now(),
         title: 'New Chat',
         model: currentModel || 'glm-5.3',
         messages: [],
         createdAt: Date.now(),
         updatedAt: Date.now()
-      }]);
+      };
+      setSessions([freshSession]);
+      setActiveSessionId(freshSession.id);
+      setInputMessage('');
+      purgeSessionFromStorage(sessionId, [freshSession]);
       return;
     }
 
@@ -222,17 +275,65 @@ export default function AiChat() {
     setSessions(filtered);
     if (activeSessionId === sessionId) {
       setActiveSessionId(filtered[0].id);
+      setInputMessage('');
     }
+    purgeSessionFromStorage(sessionId, filtered);
   };
 
   const clearCurrentChat = () => {
     if (!activeSession) return;
-    setSessions(prev => prev.map(s => {
+    if (isGenerating) {
+      handleStopGenerating();
+    }
+    const updated = sessions.map(s => {
       if (s.id === activeSession.id) {
         return { ...s, messages: [], updatedAt: Date.now() };
       }
       return s;
-    }));
+    });
+    setSessions(updated);
+    purgeSessionFromStorage(activeSession.id, updated);
+  };
+
+  const deleteAllSessions = () => {
+    if (isGenerating) {
+      handleStopGenerating();
+    }
+    const freshSession: ChatSession = {
+      id: 'session_' + Date.now(),
+      title: 'New Chat',
+      model: currentModel || 'glm-5.3',
+      messages: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    };
+    setSessions([freshSession]);
+    setActiveSessionId(freshSession.id);
+    setInputMessage('');
+
+    try {
+      storage.setItem('ai_chat_sessions', JSON.stringify([freshSession]));
+      if (typeof window !== 'undefined') {
+        if (window.localStorage) {
+          for (let i = window.localStorage.length - 1; i >= 0; i--) {
+            const key = window.localStorage.key(i);
+            if (key && (key.startsWith('ai_chat_') || key.startsWith('ai_session_') || key.includes('session_'))) {
+              window.localStorage.removeItem(key);
+            }
+          }
+        }
+        if (window.sessionStorage) {
+          for (let i = window.sessionStorage.length - 1; i >= 0; i--) {
+            const key = window.sessionStorage.key(i);
+            if (key && (key.startsWith('ai_chat_') || key.startsWith('ai_session_') || key.includes('session_'))) {
+              window.sessionStorage.removeItem(key);
+            }
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to clear all sessions from storage:', e);
+    }
   };
 
   const handleSendMessage = async (textToSend?: string) => {
@@ -685,6 +786,20 @@ export default function AiChat() {
               );
             })}
           </div>
+
+          {/* Sidebar Footer with Clear All History */}
+          {sessions.some(s => s.messages.length > 0) && (
+            <div className="p-2 border-t border-zinc-800/60 select-none">
+              <button
+                onClick={deleteAllSessions}
+                className="w-full flex items-center justify-center gap-2 py-2 px-3 text-xs text-zinc-400 hover:text-red-400 hover:bg-zinc-800/60 rounded-xl transition-colors font-medium"
+                title="Clear all chats and wipe storage"
+              >
+                <Trash2 size={13} />
+                <span>Clear All History</span>
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Main Chat Area */}
