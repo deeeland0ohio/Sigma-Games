@@ -175,18 +175,33 @@ export default function AiChat() {
     setIsUserScrolledUp(false);
   };
 
+  const prevSessionIdRef = useRef(activeSessionId);
+
   // Auto-scroll messages ONLY if user hasn't scrolled up
   useEffect(() => {
-    if (!isUserScrolledUp) {
-      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (prevSessionIdRef.current !== activeSessionId) {
+      prevSessionIdRef.current = activeSessionId;
+      setIsUserScrolledUp(false);
+      return;
     }
-  }, [activeSession?.messages, isGenerating, isUserScrolledUp]);
+
+    if (!isUserScrolledUp) {
+      scrollToBottom('smooth');
+    }
+  }, [activeSession?.messages, isGenerating, isUserScrolledUp, activeSessionId]);
 
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 200) + 'px';
+      const scrollH = textareaRef.current.scrollHeight;
+      const newHeight = Math.min(Math.max(scrollH, 40), 160);
+      textareaRef.current.style.height = `${newHeight}px`;
+      if (scrollH > 160) {
+        textareaRef.current.style.overflowY = 'auto';
+      } else {
+        textareaRef.current.style.overflowY = 'hidden';
+      }
     }
   }, [inputMessage]);
 
@@ -1084,7 +1099,7 @@ export default function AiChat() {
                 placeholder={`Type a message... (Shift+Enter for newline)`}
                 rows={1}
                 disabled={isGenerating}
-                className="flex-1 bg-transparent px-3 py-2 text-white placeholder:text-zinc-600 focus:outline-none resize-none text-sm font-sans max-h-48 scrollbar-thin scrollbar-thumb-zinc-800"
+                className="flex-1 bg-transparent px-3 py-2 text-white placeholder:text-zinc-600 focus:outline-none resize-none text-sm font-sans box-border max-h-48 scrollbar-thin scrollbar-thumb-zinc-800"
               />
               
               {isGenerating ? (
@@ -1106,8 +1121,7 @@ export default function AiChat() {
               )}
             </div>
 
-            <div className="mt-2 flex items-center justify-between px-2 text-[10px] text-zinc-500 font-mono">
-              <span>Active Model: <strong className="text-zinc-400">{currentModel}</strong></span>
+            <div className="mt-2 flex items-center justify-end px-2 text-[10px] text-zinc-500 font-mono">
               <span>Press Enter to send</span>
             </div>
           </div>
