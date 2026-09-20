@@ -23,7 +23,6 @@ import LuminGames from './pages/LuminGames';
 import CvkGames from './pages/CvkGames';
 import ExternalPlayer from './pages/ExternalPlayer';
 import NotFound from './pages/NotFound';
-import Entertainment from './pages/Entertainment';
 import AiChat from './pages/AiChat';
 
 function AnalyticsTracker() {
@@ -72,7 +71,6 @@ export default function App() {
                 <Route path="/diesmos" element={<DiesmosGames />} />
                 <Route path="/lumin" element={<LuminGames />} />
                 <Route path="/cvk" element={<CvkGames />} />
-                <Route path="/entertainment" element={<Entertainment />} />
                 <Route path="/ai-chat" element={<AiChat />} />
                 <Route path="/ai" element={<AiChat />} />
                 <Route path="/chatbots" element={<AiChat />} />

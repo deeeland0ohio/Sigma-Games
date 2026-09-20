@@ -107,21 +107,10 @@ export default function ChatPage() {
   const isOwnerRef = useRef(isOwner);
   const isTypingRef = useRef(isTyping);
 
-  useEffect(() => {
-    nicknameRef.current = nickname;
-  }, [nickname]);
-
-  useEffect(() => {
-    userIdRef.current = userId;
-  }, [userId]);
-
-  useEffect(() => {
-    isOwnerRef.current = isOwner;
-  }, [isOwner]);
-
-  useEffect(() => {
-    isTypingRef.current = isTyping;
-  }, [isTyping]);
+  nicknameRef.current = nickname;
+  userIdRef.current = userId;
+  isOwnerRef.current = isOwner;
+  isTypingRef.current = isTyping;
 
   // Clean kick_end checks on mount
   useEffect(() => {
@@ -170,21 +159,6 @@ export default function ChatPage() {
       setError("You are currently kicked from this chatroom.");
     }
   }, [nickname, userId, bannedUserIds, bannedNicknames]);
-
-  // Automatically clear the kicked error string once the ban timer expires
-  useEffect(() => {
-    if (error === "You are currently kicked from this chatroom.") {
-      const activeIdKickEnd = bannedUserIds[userId];
-      const isIdBanned = activeIdKickEnd ? Date.now() < activeIdKickEnd : false;
-
-      const activeNickKickEnd = bannedNicknames[inputNickname.trim().toLowerCase()];
-      const isNickBanned = activeNickKickEnd ? Date.now() < activeNickKickEnd : false;
-
-      if (!isIdBanned && !isNickBanned) {
-        setError(null);
-      }
-    }
-  }, [error, bannedUserIds, bannedNicknames, userId, inputNickname]);
 
   const lastEnforcedTimes = useRef<Record<string, number>>({});
 
@@ -936,7 +910,10 @@ export default function ChatPage() {
                           <input
                             type="text"
                             value={inputNickname}
-                            onChange={(e) => setInputNickname(e.target.value)}
+                            onChange={(e) => {
+                              setInputNickname(e.target.value);
+                              if (error) setError(null);
+                            }}
                             placeholder={ablyActive ? "CHOOSE A NICKNAME..." : "CHAT CURRENTLY CLOSED"}
                             maxLength={25}
                             disabled={!ablyActive}

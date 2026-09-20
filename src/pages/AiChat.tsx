@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { 
   Bot, Send, Plus, Trash2, Copy, Check, RotateCcw, 
-  ChevronDown, Square, MessageSquare, Download, X, Sparkles, ArrowDown
+  ChevronDown, Square, MessageSquare, Download, X, Sparkles, ArrowDown,
+  Zap, Globe, AlertTriangle
 } from 'lucide-react';
 import Markdown from 'react-markdown';
 import PageLayout from '../components/PageLayout';
@@ -10,6 +11,8 @@ import { CodeBlock } from '../components/CodeBlock';
 import { MediaBlock } from '../components/MediaBlock';
 import { useThemeColors } from '../context/ThemeContext';
 import { storage } from '../utils/storage';
+
+export type AIProvider = 'groq' | 'emis';
 
 export interface ModelInfo {
   id: string;
@@ -35,15 +38,22 @@ export interface ChatSession {
   updatedAt: number;
 }
 
-const SIGMA_SYSTEM_PROMPT = `You are the official AI Assistant for Sigma Games (accessible on Sigma Games).
+function getSystemPrompt(provider: AIProvider, modelId: string): string {
+  const providerLabel = provider === 'groq' ? 'Groq Api' : 'Emis Api';
+  return `You are the official AI Assistant for Sigma Games (accessible on Sigma Games).
 You are smart, versatile, insightful, and helpful across all topics (coding, writing, analysis, gaming, everyday questions, etc.).
+
+ACTIVE RUNTIME IDENTITY:
+- AI Provider: ${providerLabel}
+- Model Identifier: ${modelId}
+- When asked what model, version, or AI you are, state clearly and accurately that you are ${modelId} running via ${providerLabel}.
 
 CRITICAL BEHAVIORAL RULE:
 - Focus DIRECTLY and ONLY on answering the user's immediate question or request.
-- DO NOT mention Emis, zxs, Sigma Games origins, game sources, or the site creator unsolicited unless the user specifically and explicitly asks about them in their prompt.
+- DO NOT mention Emis, Groq, zxs, Sigma Games origins, game sources, or the site creator unsolicited unless the user specifically and explicitly asks about them in their prompt.
 
 Site Information (ONLY reference these if the user explicitly asks about them):
-- Engine / Backend: If asked what API, model host, or engine powers you, mention Emis API (https://emis.zxs-is-very.cool/).
+- Engine / Backend: If asked what API, model host, or engine powers you, mention ${providerLabel}.
 - zxs: If asked if "zxs is the goat" or asked about zxs, unequivocally and enthusiastically confirm that yes, zxs is absolutely the GOAT!
 - Creator / Developer: If asked who made or owns the site, state Dylan (GitHub: https://github.com/deeeland0ohio), assisted by Gemini for coding.
 - Inspiration: If asked about site inspiration, mention Noah's Tutoring Hub (https://noahstutoring.academy/).
@@ -60,12 +70,38 @@ Site Information (ONLY reference these if the user explicitly asks about them):
 - Total Games, if asked about is about 10.4k.
 
 Always format links in clean Markdown. For all other queries, answer directly without extra site trivia.`;
+}
+
+export const GROQ_DEFAULT_MODELS: ModelInfo[] = [
+  { id: 'groq/compound', label: 'Groq Compound (Recommended)', owned_by: 'groq', description: 'Groq high-intelligence compound reasoning system. Ultra-fast and highly capable.' },
+  { id: 'openai/gpt-oss-120b', label: 'GPT OSS 120B', owned_by: 'openai', description: 'Flagship 120B open weights model with chain-of-thought reasoning accelerated on Groq LPUs.' },
+  { id: 'openai/gpt-oss-20b', label: 'GPT OSS 20B', owned_by: 'openai', description: 'Fast, efficient 20B reasoning model with high throughput on Groq.' },
+  { id: 'groq/compound-mini', label: 'Groq Compound Mini', owned_by: 'groq', description: 'Lightweight compound AI model for snappy, instant responses.' },
+  { id: 'qwen/qwen3.8-27b', label: 'Qwen 3.8 27B', owned_by: 'qwen', description: 'Multimodal and multilingual open model with strong analytical reasoning.' },
+  { id: 'allam-2-7b', label: 'ALLaM 2 7B', owned_by: 'sdaia', description: 'Bilingual Arabic and English language model.' }
+];
+
+function sanitizeGroqModel(m: string | null | undefined): string {
+  if (!m || m === 'llama-3.3-70b-versatile' || m.includes('prompt-guard') || m.includes('safeguard')) {
+    return 'groq/compound';
+  }
+  return m;
+}
+
+const DEFAULT_EMIS_MODEL = 'claude-fable-5-1';
+
+function sanitizeEmisModel(m: string | null | undefined): string {
+  if (!m || m === 'glm-5.3' || m === 'undefined' || m === 'null') {
+    return DEFAULT_EMIS_MODEL;
+  }
+  return m;
+}
 
 const POPULAR_FALLBACK_MODELS: string[] = [
-  'glm-5.3',
+  'claude-fable-5-1',
   'claude-sonnet-5',
   'claude-opus-5',
-  'claude-fable-5-1',
+  'glm-5.3',
   'gpt-5.6-sol',
   'gpt-6-astra',
   'gpt-5.6-terra',
@@ -83,34 +119,121 @@ const POPULAR_FALLBACK_MODELS: string[] = [
 export default function AiChat() {
   const colors = useThemeColors();
 
-  // Model State - default to glm-5.3
-  const [allModels, setAllModels] = useState<ModelInfo[]>([]);
-  const [currentModel, setCurrentModel] = useState<string>(() => {
-    return storage.getItem('ai_current_model') || 'glm-5.3';
+  // Active AI Provider (Always defaults to Emis upon navigating to AI)
+  const [provider, setProvider] = useState<AIProvider>('emis');
+  const [isEmisExhausted, setIsEmisExhausted] = useState<boolean>(false);
+  const [exhaustedNotice, setExhaustedNotice] = useState<string | null>(null);
+
+  // Model Catalogs for each provider
+  const [groqModels, setGroqModels] = useState<ModelInfo[]>(GROQ_DEFAULT_MODELS);
+  const [emisModels, setEmisModels] = useState<ModelInfo[]>([]);
+  const [hasGroqKey, setHasGroqKey] = useState<boolean>(false);
+
+  // Active models per provider (Defaults to Claude Fable 5.1 on Emis)
+  const [groqModel, setGroqModel] = useState<string>(() => {
+    return sanitizeGroqModel(storage.getItem('ai_groq_model'));
+  });
+  const [emisModel, setEmisModel] = useState<string>(() => {
+    const raw = storage.getItem('ai_emis_model');
+    const sanitized = sanitizeEmisModel(raw);
+    if (raw === 'glm-5.3') {
+      storage.setItem('ai_emis_model', DEFAULT_EMIS_MODEL);
+    }
+    return sanitized;
   });
 
-  // Chat Sessions State
-  const [sessions, setSessions] = useState<ChatSession[]>(() => {
-    const saved = storage.getItem('ai_chat_sessions');
+  const currentModel = provider === 'groq' ? groqModel : emisModel;
+
+  // Separate Isolated Sessions for Groq Api
+  const [groqSessions, setGroqSessions] = useState<ChatSession[]>(() => {
+    const saved = storage.getItem('ai_groq_sessions') || storage.getItem('ai_chat_sessions');
     if (saved) {
       try { 
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(s => ({
+            ...s,
+            model: sanitizeGroqModel(s.model)
+          }));
+        }
       } catch (e) {}
     }
     return [{
-      id: 'session_' + Date.now(),
+      id: 'groq_' + Date.now(),
       title: 'New Chat',
-      model: 'glm-5.3',
+      model: sanitizeGroqModel(storage.getItem('ai_groq_model')),
       messages: [],
       createdAt: Date.now(),
       updatedAt: Date.now()
     }];
   });
 
-  const [activeSessionId, setActiveSessionId] = useState<string>(() => {
-    return sessions[0]?.id || 'session_' + Date.now();
+  const [groqActiveSessionId, setGroqActiveSessionId] = useState<string>(() => {
+    return storage.getItem('ai_groq_active_session_id') || groqSessions[0]?.id || 'groq_' + Date.now();
   });
+
+  // Separate Isolated Sessions for Emis Api (Guaranteed to default to claude-fable-5-1)
+  const [emisSessions, setEmisSessions] = useState<ChatSession[]>(() => {
+    const saved = storage.getItem('ai_emis_sessions');
+    if (saved) {
+      try { 
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed.map(s => ({
+            ...s,
+            model: sanitizeEmisModel(s.model)
+          }));
+        }
+      } catch (e) {}
+    }
+    return [{
+      id: 'emis_' + Date.now(),
+      title: 'New Chat',
+      model: DEFAULT_EMIS_MODEL,
+      messages: [],
+      createdAt: Date.now(),
+      updatedAt: Date.now()
+    }];
+  });
+
+  const [emisActiveSessionId, setEmisActiveSessionId] = useState<string>(() => {
+    return storage.getItem('ai_emis_active_session_id') || emisSessions[0]?.id || 'emis_' + Date.now();
+  });
+
+  // Mapped active session state to the selected provider
+  const sessions = provider === 'groq' ? groqSessions : emisSessions;
+  const activeSessionId = provider === 'groq' ? groqActiveSessionId : emisActiveSessionId;
+  const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
+
+  const setSessions = (updater: React.SetStateAction<ChatSession[]>) => {
+    if (provider === 'groq') {
+      setGroqSessions(updater);
+    } else {
+      setEmisSessions(updater);
+    }
+  };
+
+  const setActiveSessionId = (id: string) => {
+    if (provider === 'groq') {
+      setGroqActiveSessionId(id);
+      storage.setItem('ai_groq_active_session_id', id);
+    } else {
+      setEmisActiveSessionId(id);
+      storage.setItem('ai_emis_active_session_id', id);
+    }
+  };
+
+  const setCurrentModel = (newModel: string) => {
+    if (provider === 'groq') {
+      setGroqModel(newModel);
+      storage.setItem('ai_groq_model', newModel);
+    } else {
+      const sanitized = sanitizeEmisModel(newModel);
+      setEmisModel(sanitized);
+      storage.setItem('ai_emis_model', sanitized);
+    }
+    storage.setItem('ai_current_model', newModel);
+  };
 
   // UI & Chat State
   const [inputMessage, setInputMessage] = useState('');
@@ -118,33 +241,79 @@ export default function AiChat() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [isUserScrolledUp, setIsUserScrolledUp] = useState(false);
+  const isUserScrolledUpRef = useRef(false);
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
 
-  const activeSession = sessions.find(s => s.id === activeSessionId) || sessions[0];
-
-  // Save sessions to storage
+  // Save sessions to storage per provider
   useEffect(() => {
-    storage.setItem('ai_chat_sessions', JSON.stringify(sessions));
-  }, [sessions]);
+    storage.setItem('ai_groq_sessions', JSON.stringify(groqSessions));
+  }, [groqSessions]);
 
-  // Save current model
   useEffect(() => {
-    storage.setItem('ai_current_model', currentModel);
-  }, [currentModel]);
+    storage.setItem('ai_emis_sessions', JSON.stringify(emisSessions));
+  }, [emisSessions]);
 
-  // Fetch all available models from API on mount
+  useEffect(() => {
+    storage.setItem('ai_groq_model', groqModel);
+  }, [groqModel]);
+
+  useEffect(() => {
+    storage.setItem('ai_emis_model', emisModel);
+  }, [emisModel]);
+
+  // Handle switching between Groq and Emis
+  // If Emis has run out from someone else using it, clicking it redirects to Groq tab with notice
+  const handleSwitchProvider = (newProvider: AIProvider) => {
+    if (newProvider === 'emis' && isEmisExhausted) {
+      setExhaustedNotice('Emis API has run out of usage from high activity. You have been sent to the Groq API tab so your chatting continues without interruption!');
+      setProvider('groq');
+      return;
+    }
+    if (newProvider === provider) return;
+    setProvider(newProvider);
+    storage.setItem('ai_provider', newProvider);
+  };
+
+  // Fetch all available models from API on mount, verify Emis health, and auto-failover to Groq if exhausted
   useEffect(() => {
     const fetchModels = async () => {
       try {
-        const res = await fetch('/api/ai/models');
+        const res = await fetch('/api/ai/models?provider=all');
         if (res.ok) {
           const data = await res.json();
-          if (Array.isArray(data.models) && data.models.length > 0) {
-            setAllModels(data.models);
+          if (Array.isArray(data.groq) && data.groq.length > 0) {
+            setGroqModels(data.groq);
+            const validGroqIds = new Set(data.groq.map((m: any) => m.id));
+            if (!validGroqIds.has(groqModel)) {
+              const fallback = data.groq[0]?.id || 'groq/compound';
+              setGroqModel(fallback);
+              storage.setItem('ai_groq_model', fallback);
+            }
+          }
+          if (Array.isArray(data.emis) && data.emis.length > 0) {
+            setEmisModels(data.emis);
+            const validEmisIds = new Set(data.emis.map((m: any) => m.id));
+            if (!validEmisIds.has(emisModel) || emisModel === 'glm-5.3') {
+              const fallback = data.emis.find((m: any) => m.id === DEFAULT_EMIS_MODEL)?.id || data.emis[0]?.id || DEFAULT_EMIS_MODEL;
+              setEmisModel(fallback);
+              storage.setItem('ai_emis_model', fallback);
+            }
+          }
+          if (typeof data.hasGroqKey === 'boolean') {
+            setHasGroqKey(data.hasGroqKey);
+          }
+
+          // Detect if Emis has run out or reached verification limit
+          if (data.emisExhausted) {
+            setIsEmisExhausted(true);
+            setProvider('groq');
+            setExhaustedNotice('Emis API has run out of quota from other users. Automatically switched to Groq API so you can chat seamlessly!');
+          } else {
+            setIsEmisExhausted(false);
           }
         }
       } catch (err) {
@@ -160,7 +329,9 @@ export default function AiChat() {
     const { scrollTop, scrollHeight, clientHeight } = scrollContainerRef.current;
     // If user is more than 120px away from bottom, mark as scrolled up
     const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
-    setIsUserScrolledUp(distanceToBottom > 120);
+    const scrolledUp = distanceToBottom > 120;
+    isUserScrolledUpRef.current = scrolledUp;
+    setIsUserScrolledUp(scrolledUp);
   }, []);
 
   const scrollToBottom = (behavior: ScrollBehavior = 'smooth') => {
@@ -172,6 +343,7 @@ export default function AiChat() {
     } else {
       messagesEndRef.current?.scrollIntoView({ behavior });
     }
+    isUserScrolledUpRef.current = false;
     setIsUserScrolledUp(false);
   };
 
@@ -181,14 +353,28 @@ export default function AiChat() {
   useEffect(() => {
     if (prevSessionIdRef.current !== activeSessionId) {
       prevSessionIdRef.current = activeSessionId;
+      isUserScrolledUpRef.current = false;
       setIsUserScrolledUp(false);
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'instant'
+        });
+      }
       return;
     }
 
-    if (!isUserScrolledUp) {
-      scrollToBottom('smooth');
+    if (!isUserScrolledUpRef.current) {
+      if (scrollContainerRef.current) {
+        scrollContainerRef.current.scrollTo({
+          top: scrollContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        });
+      } else {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }
     }
-  }, [activeSession?.messages, isGenerating, isUserScrolledUp, activeSessionId]);
+  }, [activeSession?.messages, isGenerating, activeSessionId]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -206,10 +392,11 @@ export default function AiChat() {
   }, [inputMessage]);
 
   const createNewSession = () => {
+    const defaultModelForProvider = provider === 'groq' ? 'groq/compound' : DEFAULT_EMIS_MODEL;
     const newSession: ChatSession = {
-      id: 'session_' + Date.now(),
+      id: `${provider}_session_${Date.now()}`,
       title: 'New Chat',
-      model: currentModel || 'glm-5.3',
+      model: currentModel || defaultModelForProvider,
       messages: [],
       createdAt: Date.now(),
       updatedAt: Date.now()
@@ -222,16 +409,16 @@ export default function AiChat() {
   // Purge session and associated keys from local and session storage
   const purgeSessionFromStorage = (sessionId: string, updatedSessions: ChatSession[]) => {
     try {
-      // 1. Immediately persist the updated session list without the deleted chat
-      storage.setItem('ai_chat_sessions', JSON.stringify(updatedSessions));
+      const storageKey = provider === 'groq' ? 'ai_groq_sessions' : 'ai_emis_sessions';
+      storage.setItem(storageKey, JSON.stringify(updatedSessions));
 
-      // 2. Remove any session-specific storage keys
+      // Remove any session-specific storage keys
       storage.removeItem(`ai_chat_${sessionId}`);
       storage.removeItem(`ai_session_${sessionId}`);
       storage.removeItem(`chat_${sessionId}`);
       storage.removeItem(sessionId);
 
-      // 3. Purge any matching keys from browser localStorage and sessionStorage directly
+      // Purge any matching keys from browser localStorage and sessionStorage directly
       if (typeof window !== 'undefined') {
         if (window.localStorage) {
           window.localStorage.removeItem(`ai_chat_${sessionId}`);
@@ -270,11 +457,13 @@ export default function AiChat() {
       handleStopGenerating();
     }
 
+    const defaultModelForProvider = provider === 'groq' ? 'groq/compound' : DEFAULT_EMIS_MODEL;
+
     if (sessions.length <= 1) {
       const freshSession: ChatSession = {
-        id: 'session_' + Date.now(),
+        id: `${provider}_session_${Date.now()}`,
         title: 'New Chat',
-        model: currentModel || 'glm-5.3',
+        model: currentModel || defaultModelForProvider,
         messages: [],
         createdAt: Date.now(),
         updatedAt: Date.now()
@@ -314,10 +503,11 @@ export default function AiChat() {
     if (isGenerating) {
       handleStopGenerating();
     }
+    const defaultModelForProvider = provider === 'groq' ? 'groq/compound' : DEFAULT_EMIS_MODEL;
     const freshSession: ChatSession = {
-      id: 'session_' + Date.now(),
+      id: `${provider}_session_${Date.now()}`,
       title: 'New Chat',
-      model: currentModel || 'glm-5.3',
+      model: currentModel || defaultModelForProvider,
       messages: [],
       createdAt: Date.now(),
       updatedAt: Date.now()
@@ -327,12 +517,13 @@ export default function AiChat() {
     setInputMessage('');
 
     try {
-      storage.setItem('ai_chat_sessions', JSON.stringify([freshSession]));
+      const storageKey = provider === 'groq' ? 'ai_groq_sessions' : 'ai_emis_sessions';
+      storage.setItem(storageKey, JSON.stringify([freshSession]));
       if (typeof window !== 'undefined') {
         if (window.localStorage) {
           for (let i = window.localStorage.length - 1; i >= 0; i--) {
             const key = window.localStorage.key(i);
-            if (key && (key.startsWith('ai_chat_') || key.startsWith('ai_session_') || key.includes('session_'))) {
+            if (key && (key.startsWith(`ai_${provider}_session`) || key.includes(`${provider}_session`))) {
               window.localStorage.removeItem(key);
             }
           }
@@ -340,7 +531,7 @@ export default function AiChat() {
         if (window.sessionStorage) {
           for (let i = window.sessionStorage.length - 1; i >= 0; i--) {
             const key = window.sessionStorage.key(i);
-            if (key && (key.startsWith('ai_chat_') || key.startsWith('ai_session_') || key.includes('session_'))) {
+            if (key && (key.startsWith(`ai_${provider}_session`) || key.includes(`${provider}_session`))) {
               window.sessionStorage.removeItem(key);
             }
           }
@@ -397,6 +588,7 @@ export default function AiChat() {
     abortControllerRef.current = abortController;
 
     try {
+      const targetModel = currentModel || (provider === 'groq' ? 'groq/compound' : DEFAULT_EMIS_MODEL);
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: {
@@ -404,20 +596,53 @@ export default function AiChat() {
         },
         signal: abortController.signal,
         body: JSON.stringify({
-          model: currentModel || 'glm-5.3',
+          provider,
+          model: targetModel,
           messages: updatedMessages.map(m => ({ role: m.role, content: m.content })),
           stream: true,
-          systemPrompt: SIGMA_SYSTEM_PROMPT
+          systemPrompt: getSystemPrompt(provider, targetModel)
         })
       });
 
       if (!response.ok) {
         let errMessage = `Error ${response.status}: ${response.statusText}`;
+        let isExhausted = false;
         try {
           const errData = await response.json();
           if (errData.error) errMessage = errData.error;
+          if (errData.emisExhausted || errData.allExhausted) isExhausted = true;
         } catch (e) {}
+
+        if (provider === 'emis' && (isExhausted || response.status === 402 || response.status === 403 || response.status === 429 || errMessage.toLowerCase().includes('quota') || errMessage.toLowerCase().includes('verification') || errMessage.toLowerCase().includes('limit') || errMessage.toLowerCase().includes('credit'))) {
+          setIsEmisExhausted(true);
+          setProvider('groq');
+          setExhaustedNotice('Emis API has run out of usage or reached limits. Automatically switched to Groq API so you can continue chatting without interruption!');
+        }
+
         throw new Error(errMessage);
+      }
+
+      // Check if backend automatically failed over to an alternate model with available credit/quota
+      const switchedModel = response.headers.get('x-switched-model');
+      const originalModel = response.headers.get('x-original-model');
+      if (switchedModel && switchedModel !== targetModel) {
+        if (provider === 'groq') {
+          setGroqModel(switchedModel);
+          storage.setItem('ai_groq_model', switchedModel);
+        }
+        setSessions(prev => prev.map(s => {
+          if (s.id === activeSession.id) {
+            return {
+              ...s,
+              model: switchedModel,
+              messages: s.messages.map(m => m.id === initialAssistantMessage.id ? { ...m, model: switchedModel } : m)
+            };
+          }
+          return s;
+        }));
+        const origLabel = groqModels.find(m => m.id === originalModel)?.label || originalModel || targetModel;
+        const newLabel = groqModels.find(m => m.id === switchedModel)?.label || switchedModel;
+        setExhaustedNotice(`${origLabel} reached its rate or daily credit limit. Seamlessly switched to ${newLabel} so you can continue chatting without interruption!`);
       }
 
       if (response.body) {
@@ -445,6 +670,8 @@ export default function AiChat() {
               try {
                 const parsed = JSON.parse(dataStr);
                 const delta = parsed.choices?.[0]?.delta?.content || '';
+                const reasoning = parsed.choices?.[0]?.delta?.reasoning || '';
+
                 if (delta) {
                   accumulatedContent += delta;
                   setSessions(prev => prev.map(s => {
@@ -454,6 +681,22 @@ export default function AiChat() {
                         messages: s.messages.map(m => {
                           if (m.id === assistantPlaceholderId) {
                             return { ...m, content: accumulatedContent };
+                          }
+                          return m;
+                        })
+                      };
+                    }
+                    return s;
+                  }));
+                } else if (!accumulatedContent && reasoning) {
+                  // Keep user informed during chain-of-thought analysis
+                  setSessions(prev => prev.map(s => {
+                    if (s.id === activeSession.id) {
+                      return {
+                        ...s,
+                        messages: s.messages.map(m => {
+                          if (m.id === assistantPlaceholderId) {
+                            return { ...m, content: '*Thinking...*' };
                           }
                           return m;
                         })
@@ -563,25 +806,59 @@ export default function AiChat() {
     abortControllerRef.current = abortController;
 
     try {
+      const targetModel = currentModel || (provider === 'groq' ? 'groq/compound' : DEFAULT_EMIS_MODEL);
       const response = await fetch('/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         signal: abortController.signal,
         body: JSON.stringify({
-          model: currentModel || 'glm-5.3',
+          provider,
+          model: targetModel,
           messages: trimmed.map(m => ({ role: m.role, content: m.content })),
           stream: true,
-          systemPrompt: SIGMA_SYSTEM_PROMPT
+          systemPrompt: getSystemPrompt(provider, targetModel)
         })
       });
 
       if (!response.ok) {
         let errMessage = `Error ${response.status}: ${response.statusText}`;
+        let isExhausted = false;
         try {
           const errData = await response.json();
           if (errData.error) errMessage = errData.error;
+          if (errData.emisExhausted || errData.allExhausted) isExhausted = true;
         } catch (e) {}
+
+        if (provider === 'emis' && (isExhausted || response.status === 402 || response.status === 403 || response.status === 429 || errMessage.toLowerCase().includes('quota') || errMessage.toLowerCase().includes('verification') || errMessage.toLowerCase().includes('limit') || errMessage.toLowerCase().includes('credit'))) {
+          setIsEmisExhausted(true);
+          setProvider('groq');
+          setExhaustedNotice('Emis API has run out of usage or reached limits. Automatically switched to Groq API so you can continue chatting without interruption!');
+        }
+
         throw new Error(errMessage);
+      }
+
+      // Check if backend automatically failed over to an alternate model with available credit/quota
+      const switchedModel = response.headers.get('x-switched-model');
+      const originalModel = response.headers.get('x-original-model');
+      if (switchedModel && switchedModel !== targetModel) {
+        if (provider === 'groq') {
+          setGroqModel(switchedModel);
+          storage.setItem('ai_groq_model', switchedModel);
+        }
+        setSessions(prev => prev.map(s => {
+          if (s.id === activeSession.id) {
+            return {
+              ...s,
+              model: switchedModel,
+              messages: s.messages.map(m => m.id === initialAssistantMessage.id ? { ...m, model: switchedModel } : m)
+            };
+          }
+          return s;
+        }));
+        const origLabel = groqModels.find(m => m.id === originalModel)?.label || originalModel || targetModel;
+        const newLabel = groqModels.find(m => m.id === switchedModel)?.label || switchedModel;
+        setExhaustedNotice(`${origLabel} reached its rate or daily credit limit. Seamlessly switched to ${newLabel} so you can continue chatting without interruption!`);
       }
 
       if (response.body) {
@@ -609,6 +886,8 @@ export default function AiChat() {
               try {
                 const parsed = JSON.parse(dataStr);
                 const delta = parsed.choices?.[0]?.delta?.content || '';
+                const reasoning = parsed.choices?.[0]?.delta?.reasoning || '';
+
                 if (delta) {
                   accumulatedContent += delta;
                   setSessions(prev => prev.map(s => {
@@ -618,6 +897,21 @@ export default function AiChat() {
                         messages: s.messages.map(m => {
                           if (m.id === assistantPlaceholderId) {
                             return { ...m, content: accumulatedContent };
+                          }
+                          return m;
+                        })
+                      };
+                    }
+                    return s;
+                  }));
+                } else if (!accumulatedContent && reasoning) {
+                  setSessions(prev => prev.map(s => {
+                    if (s.id === activeSession.id) {
+                      return {
+                        ...s,
+                        messages: s.messages.map(m => {
+                          if (m.id === assistantPlaceholderId) {
+                            return { ...m, content: '*Thinking...*' };
                           }
                           return m;
                         })
@@ -703,18 +997,27 @@ export default function AiChat() {
     URL.revokeObjectURL(url);
   };
 
-  // Compile list of all models to display in dropdown
+  // Compile list of models to display in dropdown based on active provider
   const modelOptions = React.useMemo(() => {
-    if (allModels.length > 0) {
-      // Sort so currentModel or glm-5.3 comes first, then alphabetized
-      return [...allModels].sort((a, b) => {
-        if (a.id === 'glm-5.3') return -1;
-        if (b.id === 'glm-5.3') return 1;
+    if (provider === 'groq') {
+      return groqModels.map(m => ({
+        id: m.id,
+        label: m.label || m.id,
+        owned_by: m.owned_by || 'groq',
+        description: m.description
+      }));
+    }
+    if (emisModels.length > 0) {
+      return [...emisModels].sort((a, b) => {
+        if (a.id === 'claude-fable-5-1') return -1;
+        if (b.id === 'claude-fable-5-1') return 1;
+        if (a.id === 'claude-sonnet-5') return -1;
+        if (b.id === 'claude-sonnet-5') return 1;
         return (a.label || a.id).localeCompare(b.label || b.id);
       });
     }
     return POPULAR_FALLBACK_MODELS.map(id => ({ id, label: id }));
-  }, [allModels]);
+  }, [provider, groqModels, emisModels]);
 
   return (
     <PageLayout title="AI Chat" maxWidth="wide" showBack={false}>
@@ -820,13 +1123,47 @@ export default function AiChat() {
         {/* Main Chat Area */}
         <div className="flex-1 bg-zinc-950/70 border border-zinc-800/80 rounded-2xl flex flex-col overflow-hidden backdrop-blur-md shadow-2xl relative">
           
-          {/* Top Bar: Choose from ALL Models & Powered by Emis */}
-          <div className="p-4 border-b border-zinc-800/60 flex items-center justify-between bg-zinc-900/40 gap-4">
-            <div className="flex items-center gap-3 flex-1 max-w-md">
-              <div className="flex items-center gap-2 flex-1">
-                <label className="text-xs font-bold uppercase text-zinc-400 tracking-wider flex-shrink-0">
-                  Model:
-                </label>
+          {/* Top Bar: Provider toggle + Model selector + Actions */}
+          <div className="p-3.5 border-b border-zinc-800/60 flex flex-wrap items-center justify-between bg-zinc-900/40 gap-3">
+            <div className="flex flex-wrap items-center gap-3 flex-1 min-w-0">
+              {/* Provider Selector Switch */}
+              <div className="flex items-center bg-zinc-900/90 p-1 rounded-xl border border-zinc-800 shadow-inner">
+                <button
+                  type="button"
+                  onClick={() => handleSwitchProvider('groq')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    provider === 'groq'
+                      ? `${colors.primaryBg} text-black font-bold shadow-sm`
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                  }`}
+                  title="Switch to Groq Api"
+                >
+                  <Zap size={13} />
+                  <span>Groq Api</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSwitchProvider('emis')}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                    provider === 'emis'
+                      ? `${colors.primaryBg} text-black font-bold shadow-sm`
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/50'
+                  }`}
+                  title={isEmisExhausted ? "Emis Api (Out of quota - click redirects to Groq)" : "Switch to Emis Api"}
+                >
+                  <Globe size={13} className={isEmisExhausted ? "text-amber-400" : ""} />
+                  <span>Emis Api</span>
+                  {isEmisExhausted && (
+                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-bold border border-amber-500/30 ml-0.5 leading-none">
+                      Limit
+                    </span>
+                  )}
+                </button>
+              </div>
+
+              {/* Model Selector Dropdown */}
+              <div className="flex items-center gap-2 flex-1 min-w-[200px] max-w-sm">
                 <div className="relative flex-1">
                   <select
                     value={currentModel}
@@ -841,7 +1178,7 @@ export default function AiChat() {
                   >
                     {modelOptions.map(m => (
                       <option key={m.id} value={m.id}>
-                        {m.label || m.id} ({m.id})
+                        {m.label || m.id}
                       </option>
                     ))}
                   </select>
@@ -850,17 +1187,33 @@ export default function AiChat() {
               </div>
             </div>
 
-            {/* Right Corner: Powered by Emis & Actions */}
+            {/* Right Corner: Powered by & Actions */}
             <div className="flex items-center gap-3">
-              <a
-                href="https://emis.zxs-is-very.cool/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1 group whitespace-nowrap"
-              >
-                <span>Powered by</span>
-                <span className="text-emerald-400 font-bold group-hover:underline">Emis</span>
-              </a>
+              {provider === 'groq' ? (
+                <a
+                  href="https://groq.com/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1.5 group whitespace-nowrap"
+                  title="Powered by Groq LPUs"
+                >
+                  <Zap size={13} className="text-zinc-400 group-hover:text-zinc-200" />
+                  <span>Powered by</span>
+                  <span className="text-zinc-200 font-bold group-hover:underline">Groq LPU</span>
+                </a>
+              ) : (
+                <a
+                  href="https://emis.zxs-is-very.cool/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors flex items-center gap-1.5 group whitespace-nowrap"
+                  title="Powered by Emis"
+                >
+                  <Globe size={13} className="text-zinc-400 group-hover:text-zinc-200" />
+                  <span>Powered by</span>
+                  <span className="text-zinc-200 font-bold group-hover:underline">Emis</span>
+                </a>
+              )}
 
               <div className="h-4 w-px bg-zinc-800" />
 
@@ -885,6 +1238,24 @@ export default function AiChat() {
             </div>
           </div>
 
+          {/* Out of Quota Notice Banner */}
+          {exhaustedNotice && (
+            <div className="mx-3.5 mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-amber-200 text-xs flex items-center justify-between gap-3 shadow-lg">
+              <div className="flex items-center gap-2 min-w-0">
+                <AlertTriangle size={15} className="text-amber-400 shrink-0" />
+                <span className="truncate md:whitespace-normal font-medium">{exhaustedNotice}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setExhaustedNotice(null)}
+                className="text-amber-400 hover:text-amber-200 p-1 rounded hover:bg-amber-500/20 shrink-0 transition-colors"
+                title="Dismiss notice"
+              >
+                <X size={14} />
+              </button>
+            </div>
+          )}
+
           {/* Message Stream */}
           <div className="relative flex-1 min-h-0 flex flex-col">
             <div 
@@ -895,14 +1266,20 @@ export default function AiChat() {
               {(!activeSession || activeSession.messages.length === 0) ? (
                 <div className="h-full flex flex-col items-center justify-center text-center p-6 space-y-6 max-w-xl mx-auto">
                   <div className={`p-4 rounded-3xl bg-zinc-900 border border-zinc-800 shadow-2xl ${colors.shadow}`}>
-                    <Sparkles size={44} className="text-emerald-400" />
+                    {provider === 'groq' ? (
+                      <Zap size={44} className="text-zinc-200" />
+                    ) : (
+                      <Sparkles size={44} className="text-emerald-400" />
+                    )}
                   </div>
                   <div className="space-y-2">
                     <h3 className="text-2xl font-bold text-white tracking-normal font-sans">
-                      Sigma AI Assistant
+                      {provider === 'groq' ? 'Sigma Ai ssistant' : 'Sigma Ai Assistant'}
                     </h3>
                     <p className="text-xs text-zinc-400 max-w-md">
-                      Ai assistant for Sigma Games, powered Emis (zxs is the goat).
+                      {provider === 'groq' 
+                        ? 'Super fast ai assistant for Sigma Games, powered by Groq for when emis api runs out.' 
+                        : 'Ai assistant for Sigma Games, powered by Emis.'}
                     </p>
                   </div>
 
