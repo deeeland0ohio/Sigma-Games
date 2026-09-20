@@ -33,6 +33,7 @@ export default defineConfig(({mode}) => {
         'lucide-react',
         'ably',
         'three',
+        'react-markdown',
       ],
     },
     server: {

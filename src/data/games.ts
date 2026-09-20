@@ -1,4 +1,4 @@
-import { Folder, Heart, Puzzle, Skull, Zap, FlaskConical, Box, Video } from 'lucide-react';
+import { Folder, Heart, Puzzle, Skull, Zap, FlaskConical, Box, Bot } from 'lucide-react';
 import { Game } from '../types';
 import { allGames } from './games/index';
 
@@ -13,10 +13,10 @@ export const games: Game[] = [
     type: 'folder',
   },
   {
-    id: 'entertainment',
-    title: 'YouTube & TikTok',
-    description: 'Watch, search and browse YouTube and TikTok videos.',
-    icon: Video,
+    id: 'ai-chat',
+    title: 'AI Chat',
+    description: 'Chat with AI models (Claude, Glm, Gpt & more)!',
+    icon: Bot,
     type: 'folder',
   },
   {
