@@ -2,18 +2,8 @@ import { Router, Request, Response } from "express";
 
 const aiRouter = Router();
 
-// System runtime configuration for Emis
-const SYS_TOKEN = "VmpKNGFtVkhUa2hVYWxaT1ZqSjRVRlpyWkdwTlZtUlpZMFZrYVZaVVZUSlphMlEwVjIxS1YyRjZSbFZpV0VKWFZGVlZlRk5HVWxsaFJrSlhVbFpXTlZZeU1IaFdNa1pHVFVoc1UxZElRazlXYTFaSFRsWmtjbHBGWkdsV2JYY3lWV3hTUTFSc1draFVXR005";
-
 function resolveCredential(): string {
-  if (process.env.EMIS_API_KEY && process.env.EMIS_API_KEY.trim()) {
-    return process.env.EMIS_API_KEY.trim();
-  }
-  let s = SYS_TOKEN;
-  for (let i = 0; i < 5; i++) {
-    s = Buffer.from(s, "base64").toString("utf-8");
-  }
-  return s;
+  return (process.env.EMIS_API_KEY || "").trim();
 }
 
 const DEFAULT_EMIS_KEY = resolveCredential();
